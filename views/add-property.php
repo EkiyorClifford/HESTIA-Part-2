@@ -258,7 +258,8 @@
     <!-- Footer -->
     <footer class="footer text-center">
         <div class="container">
-            <p>&copy; 2023 HESTIA Property Rentals. All rights reserved.</p>
+            <p>© 2026 HESTIA Property Rentals. All rights reserved.</p>
+            <p class="small opacity-50">est. with warmth in Lagos</p>
         </div>
     </footer>
 
