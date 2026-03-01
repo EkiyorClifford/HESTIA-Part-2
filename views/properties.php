@@ -260,7 +260,7 @@
                 <div class="col-md-4">
                     <div class="card h-100">
                         <span class="badge bg-success mb-2">For Sale</span>
-                        <img src="image/4BED-MASSIONETTE-1B.png" class="card-img-top" alt="4-bedroom cozy maisonette in city center" loading="lazy">
+                        <img src="../image/4BED-MASSIONETTE-1B.png" class="card-img-top" alt="4-bedroom cozy maisonette in city center" loading="lazy">
                         <div class="card-body">
                         <h5 class="card-title">Cozy Maisonette</h5>
                         <p class="card-text">A beautiful 4-bedroom maisonette in the city center.</p>
@@ -275,7 +275,7 @@
                 <div class="col-md-4">
                 <div class="card h-100">
                         <span class="badge bg-primary mb-2">For Rent</span>
-                    <img src="image/4-DETACHED-700M.png" class="card-img-top" alt="Spacious detached family house with patio" loading="lazy">
+                    <img src="../image/4-DETACHED-700M.png" class="card-img-top" alt="Spacious detached family house with patio" loading="lazy">
                     <div class="card-body">
                     <h5 class="card-title">Spacious House</h5>
                     <p class="card-text">A family-friendly house with a patio.</p>
@@ -291,7 +291,7 @@
                 <div class="card h-100">
                     <span class="badge bg-success mb-2">For Sale</span>
 
-                    <img src="image/5-BED-DUPE-500MI.png" class="card-img-top" alt="Luxury condo apartment for modern living" loading="lazy">
+                    <img src="../image/5-BED-DUPE-500MI.png" class="card-img-top" alt="Luxury condo apartment for modern living" loading="lazy">
                     <div class="card-body">
                     <h5 class="card-title">Luxury Condo</h5>
                     <p class="card-text">A sleek studio perfect for singles.</p>
@@ -307,7 +307,7 @@
                 <div class="card h-100">
                     <span class="badge bg-primary mb-2">For Rent</span>
 
-                    <img src="image/2BEDROOM3BED.png" class="card-img-top" alt="Luxury apartment with city skyline view" loading="lazy">
+                    <img src="../image/2BEDROOM3BED.png" class="card-img-top" alt="Luxury apartment with city skyline view" loading="lazy">
                     <div class="card-body">
                     <h5 class="card-title">Luxury Apartments</h5>
                     <p class="card-text">High-end apartment with city views.</p>
@@ -323,7 +323,7 @@
                 <div class="card h-100">
                     <span class="badge bg-success mb-2">For Sale</span>
 
-                    <img src="image/NEW-5-850.png" class="card-img-top" alt="Large charming mansion in quiet neighborhood" loading="lazy">
+                    <img src="../image/NEW-5-850.png" class="card-img-top" alt="Large charming mansion in quiet neighborhood" loading="lazy">
                     <div class="card-body">
                     <h5 class="card-title">Charming Mansion</h5>
                     <p class="card-text">Quaint mansion in a quiet neighborhood.</p>
@@ -339,7 +339,7 @@
                 <div class="card h-100">
                     <span class="badge bg-primary mb-2">For Rent</span>
 
-                    <img src="image/2-BED-3-BED.png" class="card-img-top" alt="Urban loft apartment in city center" loading="lazy">
+                    <img src="../image/2-BED-3-BED.png" class="card-img-top" alt="Urban loft apartment in city center" loading="lazy">
                     <div class="card-body">
                     <h5 class="card-title">Urban Loft</h5>
                         <p class="card-text">Modern loft apartment in the heart of the city.</p>
