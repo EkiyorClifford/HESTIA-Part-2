@@ -1,3 +1,11 @@
+<?php
+session_start();
+require_once '../userguard.php';
+require_once '../classes/User.php';
+$user = new User();
+$usr_id = $_SESSION['user_id'];
+$usr = $user->get_user($usr_id);
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>

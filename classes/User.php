@@ -34,6 +34,20 @@ class User extends Db{
         }
     }
 
+     //method to get user by id
+    public function get_user($user_id){
+        try{
+            $sql = "SELECT * FROM users WHERE id=?";
+            $stmt = $this->dbconn->prepare($sql);
+            $stmt->execute([$user_id]);
+            $record = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $record;
+        }catch(PDOException $e){
+            //echo $e->getMessage(); exit();
+            return false;
+        }
+    }
+
 
     public function emailExists($email){
         try{
@@ -137,19 +151,7 @@ class User extends Db{
             return false;
         }
     }
-    //method to get user by id
-    public function get_user($user_id){
-        try{
-            $sql = "SELECT * FROM users WHERE id=?";
-            $stmt = $this->dbconn->prepare($sql);
-            $stmt->execute([$user_id]);
-            $record = $stmt->fetch(PDO::FETCH_ASSOC);
-            return $record;
-        }catch(PDOException $e){
-            //echo $e->getMessage(); exit();
-            return false;
-        }
-    }
+
 }
 
 
