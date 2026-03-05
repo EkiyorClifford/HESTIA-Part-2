@@ -333,24 +333,24 @@ class Property extends Db{
     // }
 
     //A METHOD TO UPDATE A PROPERTY
-    public function update_property($id, $pti, $broom, $furnished, $lga, $state_id, $ltype, $amount, $status, $title, $description, $address){
+    public function update_property($prop_id,$user_id, $bedroom, $furnished, $ltype, $amount, $status, $title, $description){
         try{
-            $sql = "UPDATE properties SET property_type_id=?, bedroom=?, furnished=?, lga_id=?, state_id=?, listing_type=?, amount=?, `status`=?, title=?, `description`=?, `prop_address`=? WHERE property_id=?";
+            $sql = 'UPDATE properties SET bedroom=?, furnished=?, listing_type=?, amount=?, `status`=?, title=?,`description`=?, updated_at=now(), updated_by=? WHERE property_id=? AND user_id=?';
             $stmt = $this->dbconn->prepare($sql);
-            $stmt->execute([$pti, $broom, $furnished, $lga, $state_id, $ltype, $amount, $status, $title, $description, $address, $id]);
-            return true;
-        }catch(PDOException $e){
+            $stmt->execute([$bedroom, $furnished, $ltype, $amount, $status, $title, $description, $user_id, $prop_id,$user_id]);
+            return $stmt->rowCount() > 0;      
+            }catch(PDOException $e){
             //echo $e->getMessage(); exit();
             return false;
         }
     }
 
     //A METHOD TO DELETE A PROPERTY
-    public function delete_property($id){
+    public function delete_property($prop_id, $user_id){
         try{
-            $sql = "UPDATE properties SET `status`='deleted', deleted_at=NOW() WHERE property_id=?";
+            $sql = "UPDATE properties SET `status`='deleted', deleted_at=NOW() WHERE property_id=? AND user_id=? AND `status` != 'deleted'";
             $stmt = $this->dbconn->prepare($sql);
-            $stmt->execute([$id]);
+            $stmt->execute([$prop_id, $user_id]);
             return $stmt->rowCount() > 0;
         }catch(PDOException $e){
             //echo $e->getMessage(); exit();

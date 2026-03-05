@@ -2,7 +2,7 @@
 require_once '../classes/State.php';
 
 $state = new State();
-$states = $state->get_states();
+$states = $state->get_active_states();
 $lglist = '<option value="" selected disabled>— select LGA —</option>';
 $ptypes = $state->get_property_types();
 ?>

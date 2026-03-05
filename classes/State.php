@@ -7,16 +7,16 @@ class State extends Db{
     {
         $this->dbconn = $this->connect();
     }
-    
-    public function get_states(){
-        $sql = "SELECT * FROM states";
+    //method for active states
+    public function get_active_states(){
+        $sql = "SELECT * FROM states WHERE is_active=1";
         $stmt = $this->dbconn->prepare($sql);
         $stmt->execute();
         $states= $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $states;
     }
-    //method to get lgas by state id 
-    public function get_lgas_by_state_id($state_id){
+    //method to get lgas by state id tat are active 
+    public function get_active_lgas_by_state_id($state_id){
         $sql = "SELECT * FROM lgas WHERE state_id=?";
         $stmt = $this->dbconn->prepare($sql);
         $stmt->execute([$state_id]);
