@@ -11,6 +11,18 @@ class Property extends Db{
     }
         //default fir status is available. 
 
+
+        //method to save filename and file
+    public function save_property_images($property_id, $files){
+        try{
+            $sql= "INSERT INTO property_images(property_id,image_path) VALUES(?,?)";
+            $stmt = $this->dbconn->prepare($sql);
+            $stmt->execute([$property_id,$files]);
+            return true;
+        }catch(PDOException $e){
+            return false;
+        }
+    }
     //a method to ctreate a new property{}
     public function create_property($ui,$pti,$broom,$furnished,$lga,$state_id,$ltype,$amount,$title,$description,$address){
         try{
@@ -25,33 +37,33 @@ class Property extends Db{
         }
     }
 
-       //a method to fetch a property by id
-    public function get_property_by_id($id){
-    try{
-        $sql = "SELECT * FROM properties WHERE property_id=?";
+    //a method to save property amenities
+    public function save_property_amenities($property_id, $amenities){
+        $sql = "INSERT INTO property_amenities (property_id, amenity_id) VALUES (?, ?)";
         $stmt = $this->dbconn->prepare($sql);
-        $stmt->execute([$id]);
-        $data = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $data;
-    }catch(PDOException $e){
-        //echo $e->getMessage(); exit();    
-        return false;
-    }
+        foreach($amenities as $amenity_id){
+            if(is_numeric($amenity_id)){
+                $stmt->execute([$property_id, $amenity_id]);
+            }
+        }
+        return true;
     }
 
-    //a method to fetch all properties
-    public function get_all_properties_Admin(){
+       //a method to fetch a property by id
+    public function get_property_by_id($id){
         try{
-            $sql = "SELECT * FROM properties";
+            $sql = "SELECT * FROM properties WHERE property_id=?";
             $stmt = $this->dbconn->prepare($sql);
-            $stmt->execute();
-            $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $stmt->execute([$id]);
+            $data = $stmt->fetch(PDO::FETCH_ASSOC);
             return $data;
         }catch(PDOException $e){
-            //echo $e->getMessage(); exit();
+            //echo $e->getMessage(); exit();    
             return false;
         }
     }
+
+    
 
     // a method to fetch all available properties
     public function get_all_available_properties(){
@@ -63,51 +75,6 @@ class Property extends Db{
             return $data;
         }catch(PDOException $e){
             //echo $e->getMessage(); exit();
-            return false;
-        }
-    }
-    
-
-    ///one search method to get all properties by either lga or state or amount or property type id or listing type(rent,sale) bed room count or furnished status or property status
-    
-    public function search(array $filters = [], $limit = 20, $offset = 0) {
-        try {
-            $sql = "SELECT * FROM properties WHERE deleted_at IS NULL";
-            $params = [];
-
-            $map = [
-                'status' => '`status` = ?',
-                'lga_id' => 'lga_id = ?',
-                'state_id' => 'state_id = ?',
-                'property_type_id' => 'property_type_id = ?',
-                'listing_type' => 'listing_type = ?',
-                'bedroom' => 'bedroom = ?',
-                'furnished' => 'furnished = ?'
-            ];
-
-            foreach ($map as $key => $clause) {
-                if (isset($filters[$key]) && $filters[$key] !== '') {
-                    $sql .= " AND $clause";
-                    $params[] = $filters[$key];
-                }
-            }
-
-            if (isset($filters['min_amount']) && $filters['min_amount'] !== '') {
-                $sql .= " AND amount >= ?";
-                $params[] = $filters['min_amount'];
-            }
-
-            if (isset($filters['max_amount']) && $filters['max_amount'] !== '') {
-                $sql .= " AND amount <= ?";
-                $params[] = $filters['max_amount'];
-            }
-
-            $sql .= " ORDER BY created_at DESC LIMIT " . ($limit) . " OFFSET " . ($offset);
-
-            $stmt = $this->dbconn->prepare($sql);
-            $stmt->execute($params);
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
             return false;
         }
     }
@@ -142,13 +109,16 @@ class Property extends Db{
     //method to restore archived/deleted property
     public function restore_property($property_id, $status = 'available'){
         try{
+            if(!is_numeric($property_id)){
+                return false;
+            }
             $allowed = ['available','taken','inactive'];
             if(!in_array($status, $allowed, true)){
                 $status = 'available';
             }
             $sql = "UPDATE properties
                     SET `status`=?, deleted_at=NULL
-                    WHERE property_id=?";
+                    WHERE property_id=? AND deleted_at IS NOT NULL";
             $stmt = $this->dbconn->prepare($sql);
             $stmt->execute([$status, $property_id]);
             return $stmt->rowCount() > 0;
@@ -227,6 +197,56 @@ class Property extends Db{
 
         return $clean;
     }
+    ///one search method to get all properties by either lga or state or amount or property type id or listing type(rent,sale) bed room count or furnished status or property status
+    public function search(array $filters = [], $limit = 20, $offset = 0) {
+
+        $filters = $this->validate_filters($filters);
+
+        try {
+
+            $sql = "SELECT * FROM properties WHERE deleted_at IS NULL";
+            $params = [];
+
+            $map = [
+                'status' => '`status` = ?',
+                'lga_id' => 'lga_id = ?',
+                'state_id' => 'state_id = ?',
+                'property_type_id' => 'property_type_id = ?',
+                'listing_type' => 'listing_type = ?',
+                'bedroom' => 'bedroom = ?',
+                'furnished' => 'furnished = ?'
+            ];
+
+            foreach ($map as $key => $clause) {
+                if (isset($filters[$key]) && $filters[$key] !== '') {
+                    $sql .= " AND $clause";
+                    $params[] = $filters[$key];
+                }
+            }
+
+            if (isset($filters['min_amount']) && $filters['min_amount'] !== '') {
+                $sql .= " AND amount >= ?";
+                $params[] = $filters['min_amount'];
+            }
+
+            if (isset($filters['max_amount']) && $filters['max_amount'] !== '') {
+                $sql .= " AND amount <= ?";
+                $params[] = $filters['max_amount'];
+            }
+
+            $sql .= " ORDER BY created_at DESC LIMIT ? OFFSET ?";
+            $params[] = (int)$limit;
+            $params[] = (int)$offset;
+
+            $stmt = $this->dbconn->prepare($sql);
+            $stmt->execute($params);
+
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        }catch (PDOException $e) {
+            return false;
+        }
+    }
 
     //method to fetch property stats for landlord dashboard
     public function get_property_stats_by_user($user_id){
@@ -262,76 +282,6 @@ class Property extends Db{
         }
     }
 
-    // //a method to fetch properties by property type id
-    // public function get_properties_by_property_type_id($property_type_id){
-    //     try{
-    //         $sql = "SELECT * FROM properties WHERE property_type_id=?";
-    //         $stmt = $this->dbconn->prepare($sql);
-    //         $stmt->execute([$property_type_id]);
-    //         $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    //         return $data;
-    //     }catch(PDOException $e){
-    //         //echo $e->getMessage(); exit();
-    //         return false;
-    //     }
-    // }
-
-    // //A METHOD TO FETCH PROPERTIES BY AMOUNT RANGE
-    // public function get_properties_by_amount_range($min_amount, $max_amount){
-    //     try{
-    //         $sql = "SELECT * FROM properties WHERE amount>=? AND amount<=?";
-    //         $stmt = $this->dbconn->prepare($sql);
-    //         $stmt->execute([$min_amount, $max_amount]);
-    //         $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    //         return $data;
-    //     }catch(PDOException $e){
-    //         //echo $e->getMessage(); exit();
-    //         return false;
-    //     }
-    // }
-
-    // //A METHOD TO FETCH PROPERTIES BY STATE ID
-    // public function get_properties_by_state_id($state_id){
-    //     try{
-    //         $sql = "SELECT * FROM properties WHERE state_id=?";
-    //         $stmt = $this->dbconn->prepare($sql);
-    //         $stmt->execute([$state_id]);
-    //         $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    //         return $data;
-    //     }catch(PDOException $e){
-    //         //echo $e->getMessage(); exit();
-    //         return false;
-    //     }
-    // }
-    
-    // //a method to fetch properties by lga id
-    // public function get_properties_by_lga_id($lga_id){
-    //     try{
-    //         $sql = "SELECT * FROM properties WHERE lga_id=?";
-    //         $stmt = $this->dbconn->prepare($sql);
-    //         $stmt->execute([$lga_id]);
-    //         $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    //         return $data;
-    //     }catch(PDOException $e){
-    //         //echo $e->getMessage(); exit();
-    //         return false;
-    //     }
-    // }
-
-    // //a method to fetch properties by listing type:rented or for sale
-    // public function get_properties_by_listing_type($listing_type){
-    //     try{
-    //         $sql = "SELECT * FROM properties WHERE listing_type=?";
-    //         $stmt = $this->dbconn->prepare($sql);
-    //         $stmt->execute([$listing_type]);
-    //         $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    //         return $data;
-    //     }catch(PDOException $e){
-    //         //echo $e->getMessage(); exit();
-    //         return false;
-    //     }
-    // }
-
     //A METHOD TO UPDATE A PROPERTY
     public function update_property($prop_id,$user_id, $bedroom, $furnished, $ltype, $amount, $status, $title, $description){
         try{
@@ -361,7 +311,7 @@ class Property extends Db{
     //a method
 }
 
-// //usage examples
+//testing testing
 
 //     $prop = new Property();
 

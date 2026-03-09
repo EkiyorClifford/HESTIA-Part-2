@@ -115,7 +115,7 @@ class User extends Db{
         return true;
     }
 
-    public function update($id, $fname, $lname, $email, $pnumber, $password){
+    public function update_profile($id, $fname, $lname, $email, $pnumber, $password){
         try{
             $sql = 'UPDATE users SET first_name=?, last_name=?, email=?, p_number=?, p_word=? WHERE id=?';
             $stmt = $this->dbconn->prepare($sql);
@@ -148,18 +148,6 @@ class User extends Db{
             return true;
         }catch(PDOException $e){
             //echo $e->getMessage(); exit();
-            return false;
-        }
-    }
-
-    public function updateProperty($prop_id, $user_id, $bedroom, $listing_type, $amount, $status, $title, $description){
-        try{
-            $sql = 'UPDATE properties SET bedroom=?, furnished=?, listing_type=?, amount=?, `status`=?, title=?,`description`=?, updated_at=now(), updated_by=? WHERE property_id=?';
-            $stmt = $this->dbconn->prepare($sql);
-            $stmt->execute([$prop_id, $user_id, $bedroom, $listing_type, $amount, $status, $title, $description, $prop_id]);
-            return true;
-        }catch(PDOException $e){
-            //echo $e->getMessage(); die();
             return false;
         }
     }
