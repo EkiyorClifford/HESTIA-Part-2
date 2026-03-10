@@ -1,0 +1,19 @@
+inside the property table for landlord dashboard
+
+<tbody>
+    <?php foreach($my_properties as $p): ?>
+    <tr>
+        <td><?php echo htmlspecialchars($p['title']); ?></td>
+        <td>
+            <span class="status-badge <?php echo ($p['status'] == 'available') ? 'status-available' : 'status-rented'; ?>">
+                <?php echo ucfirst($p['status']); ?>
+            </span>
+        </td>
+        <td>₦<?php echo number_format($p['amount'], 2); ?></td>
+        <td class="action-btns">
+            <a href="edit-property.php?id=<?php echo $p['id']; ?>" class="action-btn edit">Edit</a>
+            <a href="../views/property-details.php?id=<?php echo $p['id']; ?>" class="action-btn view">View</a>
+        </td>
+    </tr>
+    <?php endforeach; ?>
+</tbody>

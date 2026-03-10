@@ -1,3 +1,6 @@
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -120,28 +123,7 @@
 </head>
 <body>
     <!-- Header with Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container">
-            <a class="navbar-brand" href="index.php">HESTIA</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="register.php">Register</a></li>
-                    <li class="nav-item"><a class="nav-link" href="login.php">Login</a></li>
-                    <li class="nav-item"><a class="nav-link" href="dashboard.php">Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" href="properties.php">Properties</a></li>
-                    <li class="nav-item"><a class="nav-link" href="property-details.php">Property Details</a></li>
-                    <li class="nav-item"><a class="nav-link" href="wishlist.php">Wishlist</a></li>
-                    <li class="nav-item"><a class="nav-link" href="landlord-dashboard.php">Landlord Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" href="add-property.php">Add Property</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="requests.php">Requests</a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+   <?php include '../partials/nav.php'; ?>
 
     <!-- Main Content -->
     <main class="container my-5">

@@ -1,11 +1,15 @@
 <?php
+session_start();
 require_once '../classes/State.php';
 require_once '../partials/messages.php';
+require_once '../userguard.php';
 
 $state = new State();
 $states = $state->get_active_states();
 $lglist = '<option value="" selected disabled>— select LGA —</option>';
 $ptypes = $state->get_property_types();
+$saved_data = $_SESSION['form_data'] ?? [];
+
 
 ?>
 <!DOCTYPE html>
@@ -25,22 +29,7 @@ $ptypes = $state->get_property_types();
 </head>
 <body>
     <!-- Header with Navigation - HESTIA style -->
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
-        <div class="container">
-            <a class="navbar-brand" href="index.php">HESTIA</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="properties.php">Properties</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="add-property.php">Add Property</a></li>
-                    <li class="nav-item"><a class="nav-link" href="landlord-dashboard.php">Dashboard</a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+    <?php include '../partials/nav.php'; ?>
 
     <!-- Main Content -->
     <main class="container" style="margin-top: 100px;">
@@ -49,20 +38,20 @@ $ptypes = $state->get_property_types();
             <h2>Add property</h2>
             <div class="form-subtitle">List your space with HESTIA</div>
             
-            <form action="process/process_add_property.php" method="POST" enctype="multipart/form-data">
+            <form action="../process/process_add_property.php" method="POST" enctype="multipart/form-data">
                 <!-- Basic Information Section -->
                 <div class="section-title">Basic Information</div>
                 
                 <!-- Title (from DB: title) -->
                 <div class="mb-4">
                     <label for="title" class="form-label required">Property Title</label>
-                    <input type="text" class="form-control" id="title" name="title" placeholder="e.g., Cozy 2-Bedroom Apartment" value="<?php echo isset($_SESSION['form_data']['title']) ? htmlspecialchars($_SESSION['form_data']['title']) : ''; ?>" required>
+                    <input type="text" class="form-control" id="title" name="title" placeholder="e.g., Cozy 2-Bedroom Apartment" value="<?php echo isset($saved_data['title']) ? htmlspecialchars($saved_data['title']) : ''; ?>" required>
                 </div>
                 
                 <!-- Description (from DB: description) -->
                 <div class="mb-4">
                     <label for="description" class="form-label required">Description</label>
-                    <textarea class="form-control" id="description" name="description" rows="4" placeholder="Describe your property..." required><?php echo isset($_SESSION['form_data']['description']) ? htmlspecialchars($_SESSION['form_data']['description']) : ''; ?></textarea>
+                    <textarea class="form-control" id="description" name="description" rows="4" placeholder="Describe your property..." required><?php echo isset($saved_data['description']) ? htmlspecialchars($saved_data['description']) : ''; ?></textarea>
                 </div>
                 
                 <div class="row">
@@ -72,7 +61,7 @@ $ptypes = $state->get_property_types();
                         <select class="form-select" id="property_type_id" name="property_type_id" required>
                             <option value="" selected disabled>— select type —</option>
                             <?php foreach ($ptypes as $ptype) { ?>
-                                <option value="<?php echo $ptype['type_id']; ?>" <?php echo (isset($_SESSION['form_data']['property_type_id']) && $_SESSION['form_data']['property_type_id'] == $ptype['type_id']) ? 'selected' : ''; ?>><?php echo $ptype['type_name']; ?></option>
+                                <option value="<?php echo $ptype['type_id']; ?>" <?php echo (isset($saved_data['property_type_id']) && $saved_data['property_type_id'] == $ptype['type_id']) ? 'selected' : ''; ?>><?php echo $ptype['type_name']; ?></option>
                             <?php } ?>
                         </select>
                     </div>
@@ -82,8 +71,8 @@ $ptypes = $state->get_property_types();
                         <label for="listing_type" class="form-label required">Listing Type</label>
                         <select class="form-select" id="listing_type" name="listing_type" required>
                             <option value="" selected disabled>— select —</option>
-                            <option value="rent" <?php echo (isset($_SESSION['form_data']['listing_type']) && $_SESSION['form_data']['listing_type'] == 'rent') ? 'selected' : ''; ?>>For Rent</option>
-                            <option value="sale" <?php echo (isset($_SESSION['form_data']['listing_type']) && $_SESSION['form_data']['listing_type'] == 'sale') ? 'selected' : ''; ?>>For Sale</option>
+                            <option value="rent" <?php echo (isset($saved_data['listing_type']) && $saved_data['listing_type'] == 'rent') ? 'selected' : ''; ?>>For Rent</option>
+                            <option value="sale" <?php echo (isset($saved_data['listing_type']) && $saved_data['listing_type'] == 'sale') ? 'selected' : ''; ?>>For Sale</option>
                         </select>
                     </div>
                 </div>
@@ -93,7 +82,7 @@ $ptypes = $state->get_property_types();
                     <label for="amount" class="form-label required">Price</label>
                     <div class="input-group">
                         <span class="input-group-text bg-transparent border-1 border-end-0 rounded-start-16" style="border-color: var(--hestia-stone-warm);">₦</span>
-                        <input type="number" step="0.01" class="form-control rounded-start-0" id="amount" name="amount" placeholder="250,000" value="<?php echo isset($_SESSION['form_data']['amount']) ? htmlspecialchars($_SESSION['form_data']['amount']) : ''; ?>" required>
+                        <input type="number" step="0.01" class="form-control rounded-start-0" id="amount" name="amount" placeholder="250,000" value="<?php echo isset($saved_data['amount']) ? htmlspecialchars($saved_data['amount']) : ''; ?>" required>
                     </div>
                 </div>
                 
@@ -107,7 +96,7 @@ $ptypes = $state->get_property_types();
                         <select class="form-select" id="state_id" name="state_id" required>
                             <option value="" selected disabled>— select state —</option>
                             <?php foreach($states as $state){ ?>
-                                <option value="<?php echo $state['state_id']; ?>" <?php echo (isset($_SESSION['form_data']['state_id']) && $_SESSION['form_data']['state_id'] == $state['state_id']) ? 'selected' : ''; ?>><?php echo $state['state_name']; ?></option>
+                                <option value="<?php echo $state['state_id']; ?>" <?php echo (isset($saved_data['state_id']) && $saved_data['state_id'] == $state['state_id']) ? 'selected' : ''; ?>><?php echo $state['state_name']; ?></option>
                             <?php } ?>
                         </select>
                     </div>
@@ -124,7 +113,7 @@ $ptypes = $state->get_property_types();
                 <!-- Property Address (from DB: prop_address) -->
                 <div class="mb-4">
                     <label for="prop_address" class="form-label required">Street Address</label>
-                    <input type="text" class="form-control" id="prop_address" name="prop_address" placeholder="123, Mind Your Biz Street" value="<?php echo isset($_SESSION['form_data']['prop_address']) ? htmlspecialchars($_SESSION['form_data']['prop_address']) : ''; ?>" required>
+                    <input type="text" class="form-control" id="prop_address" name="prop_address" placeholder="123, Mind Your Biz Street" value="<?php echo isset($saved_data['prop_address']) ? htmlspecialchars($saved_data['prop_address']) : ''; ?>" required>
                 </div>
                 
                 <!-- Property Details Section -->
@@ -134,7 +123,7 @@ $ptypes = $state->get_property_types();
                     <!-- Bedrooms (from DB: bedroom) -->
                     <div class="col-md-4 mb-4">
                         <label for="bedroom" class="form-label required">Bedrooms</label>
-                        <input type="number" class="form-control" id="bedroom" name="bedroom" placeholder="2" min="0" value="<?php echo isset($_SESSION['form_data']['bedroom']) ? htmlspecialchars($_SESSION['form_data']['bedroom']) : ''; ?>" required>
+                        <input type="number" class="form-control" id="bedroom" name="bedroom" placeholder="2" min="0" value="<?php echo isset($saved_data['bedroom']) ? htmlspecialchars($saved_data['bedroom']) : ''; ?>" required>
                     </div>
                     
                     <!-- Furnished (from DB: furnished) -->
@@ -142,8 +131,8 @@ $ptypes = $state->get_property_types();
                         <label for="furnished" class="form-label required">Furnished</label>
                         <select class="form-select" id="furnished" name="furnished" required>
                             <option value="" selected disabled>— select —</option>
-                            <option value="Furnished" <?php echo (isset($_SESSION['form_data']['furnished']) && $_SESSION['form_data']['furnished'] == 'Furnished') ? 'selected' : ''; ?>>Furnished</option>
-                            <option value="Unfurnished" <?php echo (isset($_SESSION['form_data']['furnished']) && $_SESSION['form_data']['furnished'] == 'Unfurnished') ? 'selected' : ''; ?>>Unfurnished</option>
+                            <option value="Furnished" <?php echo (isset($saved_data['furnished']) && $saved_data['furnished'] == 'Furnished') ? 'selected' : ''; ?>>Furnished</option>
+                            <option value="Unfurnished" <?php echo (isset($saved_data['furnished']) && $saved_data['furnished'] == 'Unfurnished') ? 'selected' : ''; ?>>Unfurnished</option>
                         </select>
                     </div>
                     
@@ -205,6 +194,7 @@ $ptypes = $state->get_property_types();
                 </div>
             </form>
         </div>
+        <?php unset($_SESSION['form_data']); ?>
     </main>
 
     <!-- Footer -->

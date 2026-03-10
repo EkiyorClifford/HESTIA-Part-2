@@ -4,9 +4,6 @@ require_once '../classes/property.php';
 require_once '../classes/User.php';
 $landlord = new Property();
 $userObj = new User();
-$user_id = $_SESSION['user_online'];
-$land1=$landlord->get_property_stats_by_user($user_id);
-$land2=$userObj->getUserDeets($user_id);
 if(isset($_SESSION['user_id'])){
     $user_id = $_SESSION['user_id'];
     $user = $userObj->get_user($user_id);
@@ -27,7 +24,7 @@ if($_SESSION['user_role'] != 'landlord') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile & Trust Score - HESTIA Property Rentals</title>
+    <title>Landlord Profile - HESTIA Property Rentals</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
@@ -525,7 +522,7 @@ if($_SESSION['user_role'] != 'landlord') {
 
     <!-- Main Content -->
     <main class="container">
-        <h1 class="page-title"><i class="fas fa-user-circle"></i> Profile & Trust Score</h1>
+        <h1 class="page-title"><i class="fas fa-user-circle"></i> Landlord Profile</h1>
 
         <!-- Trust Score Section -->
         <div class="trust-score-container">

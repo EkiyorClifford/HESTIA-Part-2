@@ -298,7 +298,7 @@
             border-radius: 0;
             font-size: 1rem;
             font-weight: 450;
-            text-transform: capitalize;
+            
             background: transparent;
             transition: border-color 0.2s;
         }
@@ -342,6 +342,10 @@
 
         .forgot-link:hover {
             border-bottom-color: #C44536;
+        }
+
+        input[type="email"] {
+            text-transform: lowercase;
         }
 
         /* BUTTONS */

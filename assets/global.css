@@ -1,0 +1,74 @@
+/* fonting font */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght=300;400;500;600;700&display=swap');
+
+:root {
+    --font-heading: 'Playfair Display', serif;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+
+body {
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+
+
+.navbar-brand {
+    font-family: 'Playfair Display', serif;  /* Logo */
+    font-weight: 800;
+    font-size: 1.8rem;
+}
+
+.navbar-nav .nav-link {
+    font-family: 'Inter', sans-serif;  /* Menu items are very hjelpful */
+    font-weight: 500;
+    font-size: 0.95rem;
+    letter-spacing: -0.01em;
+    text-transform: none;  /* No uppercase abeg*/
+}
+
+/* Dropdow */
+.dropdown-item {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 0.9rem;
+}
+
+/* Mobile menu button */
+.mobile-menu-btn {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+}
+
+h1, h2, h3, h4, h5, h6,
+.logo, 
+.hero-title,
+.section-title,
+.card-title {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+
+h1 { font-weight: 800; }
+h2 { font-weight: 700; }
+h3 { font-weight: 600; }
+
+
+button,
+.nav-link,
+.btn,
+input,
+select,
+textarea {
+    font-family: var(--font-body);
+}
+
+
+.navbar-brand {
+    font-family: var(--font-heading);
+    font-weight: 800;
+}

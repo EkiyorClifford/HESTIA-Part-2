@@ -29,7 +29,6 @@ class Admin extends Db{
             return false;
         }
     }
-    
     public function admin_logout(){
         session_destroy();
     }
@@ -57,43 +56,6 @@ class Admin extends Db{
         }catch(PDOException $e){
             //echo $e->getMessage(); exit();
             return false;
-        }
-    }
-
-
-    // method that allows Admin to see all users
-    public function get_all_users() {
-        try {
-            $sql = "SELECT id, first_name, last_name, email, role_, is_active, created_at FROM users ORDER BY created_at DESC";
-            $stmt = $this->dbconn->prepare($sql);
-            $stmt->execute();
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            return [];
-        }
-    }
-
-    // method that allows Admin to ban a user
-    public function toggle_user_status($user_id, $current_status) {
-        try {
-            $new_status = ($current_status == 'yes') ? 'no' : 'yes';
-            $sql = "UPDATE users SET is_active = ? WHERE id = ?";
-            $stmt = $this->dbconn->prepare($sql);
-            return $stmt->execute([$new_status, $user_id]);
-        } catch (PDOException $e) {
-            return false;
-        }
-    }
-
-    // method that allows Admin to see all properties
-    public function get_all_properties_with_landlord() {
-        try {
-            $sql = "SELECT p.*, u.first_name, u.last_name FROM properties p JOIN users u ON p.user_id = u.id ORDER BY p.created_at DESC";
-            $stmt = $this->dbconn->prepare($sql);
-            $stmt->execute();
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            return [];
         }
     }
 }

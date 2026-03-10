@@ -1,68 +1,83 @@
 <?php
 session_start();
-require_once "../classes/Common.php";
-require_once "../classes/User.php";
-echo "<pre>";
-print_r($_POST);
-echo "</pre>";
+require_once "../classes/User.php"; // Adjust this path to where your class is defined
 
-//instantiate an option of dev class so we can have access to the methods within the class
 $user = new User();
-// check if button was clicked(form was submitted?)
-//woukld store error messages in $_SESSION['error]
-//would store feedback in $_SESSION['feedback]
 
-
-if(isset($_POST['registerbtn'])){
-    //2. retrieve form data and store in variables //3. Sanitize
-    $firstname =common::cleandata(($_POST['fname']));
-    $lastname = common::cleandata($_POST['lname']);
-    $email = $_POST['email'];
-    $phone = $_POST['phone'];
-    $role = $_POST['role'];
+if (isset($_POST['registerbtn'])) {
+    // Sanitize inputs
+    $fname = trim($_POST['fname']);
+    $lname = trim($_POST['lname']);
+    $email = trim($_POST['email']);
+    $phone = trim($_POST['phone']);
     $password = $_POST['password'];
-    $confirmpass = $_POST['confirm_password'];
-//4. Validate
-    if(empty($firstname) || empty($lastname) || empty($email) || empty($phone) || empty($role) || empty($password)){
-        $_SESSION['error'] = "All fields are required";
-        header("location:../views/register.php");
-        exit();
-    }else if($user -> emailExists($email) >0){
-        $_SESSION['error'] = "Email already exists <a href='../views/login.php'>Login Here</a>";
-        header("location:../views/register.php");
+    $confirm_password = $_POST['confirm_password'];
+    $role = $_POST['role'];
+
+    // Validation
+    if (empty($fname) || empty($lname) || empty($email) || empty($phone) || empty($password) || empty($role)) {
+        $_SESSION['error'] = "All fields are required.";
+        header("location: ../views/register.php"); 
         exit();
     }
-    else if(common::is_email($email) === false){//invalid email format
-        $_SESSION['error'] = "Invalid email format";
-        header("location:../views/register.php");
+
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $_SESSION['error'] = "Invalid email format.";
+        header("location: ../views/register.php");
         exit();
-    } else if($password != $confirmpass){
-        $_SESSION['error'] = "Passwords do not match";
-        header("location:../views/register.php");
+    }
+
+    if ($password !== $confirm_password) {
+        $_SESSION['error'] = "Passwords do not match.";
+        header("location: ../views/register.php");
         exit();
-    } else{
-        //5. Process
-        $response = $user -> insert_user($firstname, $lastname, $email, $phone, $password, $role);
-        if($response){
-            $_SESSION['user_online'] = $response;
-            header("location:../views/index.php");
-            exit();
-        }else{
-            $_SESSION['error'] = "Registration failed";
-            header("location:../views/register.php");
-            exit();
-        }
+    }
+
+    if (strlen($password) < 6) {
+        $_SESSION['error'] = "Password must be at least 6 characters.";
+        header("location: ../views/register.php");
+        exit();
+    }
+
+    // Check if email exists
+    if ($user->emailExists($email)) {
+        $_SESSION['error'] = "Email is already registered.";
+        header("location: ../views/register.php");
+        exit();
+    }
+
+    // Insert User
+    $data = [
+    'fname'    => $_POST['fname'],
+    'lname'    => $_POST['lname'],
+    'email'    => $_POST['email'],
+    'pnumber'  => $_POST['phone'],
+    'password' => $_POST['password'],
+    'role'     => $_POST['role']
+    ];
+    $result = $user->save($data);
+
+    if ($result) {
+        $_SESSION['user_id'] = $result;
+        $_SESSION['user_role'] = $role;
+        $_SESSION['user_name'] = $fname . ' ' . $lname;
+        $_SESSION['user_email'] = $email;
+        $_SESSION['user_phone'] = $phone;
+        $_SESSION['feedback'] = "Registration successful! Welcome to Hestia.";
         
-
+        // Redirect based on role
+        if ($role == 'landlord') {
+            header("location: ../views/landlord-profile.php");
+        } else {
+            header("location: ../tenant/tenant-profile.php");
+        }
+        exit();
+    } else {
+        $_SESSION['error'] = "Something went wrong. Please try again.";
+        header("location: ../views/register.php");
+        exit();
     }
-} else{
-   $_SESSION['error'] = "You need to complete the form";
-   header("location:../views/register.php");
-   exit();
-
+} else {
+    header("location: ../views/register.php");
+    exit();
 }
-
-
-
-?>
-

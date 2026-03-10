@@ -1,161 +1,121 @@
 <?php
 require_once "Db.php";
-
-class User extends Db{
+class User extends Db {
     private $dbconn;
-    public function __construct(){
+
+    public function __construct() {
         $this->dbconn = $this->connect();
     }
-    public function insert_user($fname, $lname, $email, $pnumber, $password, $role){
-        try{
-            $sql = 'INSERT INTO users(first_name, last_name, email, p_number, p_word, role_) VALUES (?,?,?,?,?,?)';
-            $stmt = $this->dbconn->prepare($sql);
-            $hashed = password_hash($password, PASSWORD_DEFAULT);
-            $stmt->execute([$fname, $lname, $email, $pnumber, $hashed, $role]);
-            $usr_id = $this->dbconn->lastInsertId();
-            return $usr_id;
-        }catch(PDOException $e){
-            //echo $e->getMessage(); exit();
-            return false;
-        }
-    }
 
-
-    public function findByEmail($email){
-        try{
-            $sql = 'SELECT * FROM users WHERE email=?';
-            $stmt = $this->dbconn->prepare($sql);
-            $stmt->execute([$email]);
-            $data = $stmt->fetch(PDO::FETCH_ASSOC);
-            return $data;
-        }catch(PDOException $e){
-            //echo $e->getMessage(); exit();
-            return false;
-        }
-    }
-
-     //method to get user by id
-    public function get_user($user_id){
-        try{
-            $sql = "SELECT * FROM users WHERE id=?";
+    public function get_property_stats_by_user($user_id) {
+        try {
+            $sql = "SELECT * FROM properties WHERE user_id = ?";
             $stmt = $this->dbconn->prepare($sql);
             $stmt->execute([$user_id]);
-            $record = $stmt->fetch(PDO::FETCH_ASSOC);
-            return $record;
-        }catch(PDOException $e){
-            //echo $e->getMessage(); exit();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
             return false;
         }
     }
 
-
-    public function emailExists($email){
-        try{
-            $sql = 'SELECT id FROM users WHERE email=?';
+    //method to get user by field
+    public function get_user_by($field, $value) {
+        try {
+            $allowed_fields = ['id', 'email'];
+            if (!in_array($field, $allowed_fields)) return false;
+            $sql = "SELECT * FROM users WHERE $field = ?";
             $stmt = $this->dbconn->prepare($sql);
-            $stmt->execute([$email]);
-            $data = $stmt->rowCount();
-            if($data > 0){
-                return true;
-            }
-            return false;
-        }catch(PDOException $e){
-            //echo $e->getMessage(); exit();
+            $stmt->execute([$value]);
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
             return false;
         }
-
     }
-
-    // public function verifyPassword($email, $password){
-    //     try{
-    //         $sql = 'SELECT * FROM users WHERE email=?';
-    //         $stmt = $this->dbconn->prepare($sql);
-    //         $stmt->execute([$email]);
-    //         $data = $stmt->fetch(PDO::FETCH_ASSOC);
-    //         if($data){
-    //             return password_verify($password, $data['p_word']);
-    //         }
-    //         return false;
-    //     }catch(PDOException $e){
-    //         //echo $e->getMessage(); exit();
-    //         return false;
-    //     }
-    // }
-
-    //method to log in
-    public function login($email, $password){
-        try{
-            $sql = 'SELECT * FROM users WHERE email=?';
+        //method to get user role
+    public function getUserRole($userId) {
+        try {
+            $sql = "SELECT role_ FROM users WHERE id = ?";
             $stmt = $this->dbconn->prepare($sql);
-            $stmt->execute([$email]);
-            $data = $stmt->fetch(PDO::FETCH_ASSOC);
-            if($data){
-                //should i have a session start here?
-                //session_start();
-                $stored_password = $data['p_word'];
-                $check = password_verify($password, $stored_password);
-                if($check){
-                    return $data['id'];
-                } else{
-                    $_SESSION['error'] = "Wrong password";
-                    return false;
+            $stmt->execute([$userId]);
+            return $stmt->fetch(PDO::FETCH_ASSOC)['role_'];
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+    //method to save or update user
+    public function save($data, $id = null) {
+        try {//saw this on twitter, turns out you can pass this kind of conditional to save lines and time
+            if ($id) {
+                // UPDATE logic
+                $sql = "UPDATE users SET first_name=?, last_name=?, email=?, p_number=? WHERE id=?";
+                $params = [$data['fname'], $data['lname'], $data['email'], $data['pnumber'], $id];
+                
+                // If password is being updated specifically
+                if (!empty($data['password'])) {
+                    $sql = "UPDATE users SET p_word=? WHERE id=?";
+                    $params = [password_hash($data['password'], PASSWORD_DEFAULT), $id];
                 }
+            } else {
+                // INSERT logic tht is (Registration)
+                $sql = "INSERT INTO users (first_name, last_name, email, p_number, p_word, role_) VALUES (?,?,?,?,?,?)";
+                $hashed = password_hash($data['password'], PASSWORD_DEFAULT);
+                $params = [$data['fname'], $data['lname'], $data['email'], $data['pnumber'], $hashed, $data['role']];
             }
-            $_SESSION['error'] = "Wrong email";
-            return false;
-        }catch(PDOException $e){
-            //echo $e->getMessage(); exit();
+
+            $stmt = $this->dbconn->prepare($sql);
+            return $stmt->execute($params) ? ($id ?? $this->dbconn->lastInsertId()) : false;
+        } catch (PDOException $e) {
             return false;
         }
     }
 
-    //method to log out
-    public function logout(){
+    //method to login
+    public function login($email, $password) {
+        $user = $this->get_user_by('email', $email);//apparently you can call methods within methods
+        
+        if ($user) {
+            if ($user['is_active'] === 'no') {//incase I or an admin ban the user, they can't gain access again
+                $_SESSION['error'] = "This account has been deactivated/banned.";
+                return false;
+            }
+
+            if (password_verify($password, $user['p_word'])) {
+                $_SESSION['user_role'] = $user['role_'];
+                return $user['id'];
+            }
+            $_SESSION['error'] = "Invalid password.";
+        } else {
+            $_SESSION['error'] = "No account found with that email.";
+        }
+        return false;
+    }
+
+    // method to set user status (ban/deactivate)
+    public function set_status($id, $status = 'no') {
+        try {
+            $sql = "UPDATE users SET is_active = ? WHERE id = ?";
+            $stmt = $this->dbconn->prepare($sql);
+            return $stmt->execute([$status, $id]);
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+    // method to log out
+    public function logout() {
+        session_unset();
         session_destroy();
         return true;
     }
 
-    public function update_profile($id, $fname, $lname, $email, $pnumber, $password){
-        try{
-            $sql = 'UPDATE users SET first_name=?, last_name=?, email=?, p_number=?, p_word=? WHERE id=?';
-            $stmt = $this->dbconn->prepare($sql);
-            $stmt->execute([$fname, $lname, $email, $pnumber, $password, $id]);
-            return true;
-        }catch(PDOException $e){
-            //echo $e->getMessage(); exit();
-            return false;
-        }
+    // method to check if email exists
+    public function email_exists($email) {
+        return $this->get_user_by('email', $email) ? true : false;
     }
-
-    public function delete($id){//soft delete
-        try{
-            $sql = "UPDATE users SET is_active='no' WHERE id=?";
-            $stmt = $this->dbconn->prepare($sql);
-            $stmt->execute([$id]);
-            return true;
-        }catch(PDOException $e){
-            //echo $e->getMessage(); exit();
-            return false;
-        }
-    }
-    //method to update password
-
-    public function updatePassword($id, $password){
-        try{
-            $sql = 'UPDATE users SET p_word=? WHERE id=?';
-            $stmt = $this->dbconn->prepare($sql);
-            $stmt->execute([$password, $id]);
-            return true;
-        }catch(PDOException $e){
-            //echo $e->getMessage(); exit();
-            return false;
-        }
-    }
-
 }
-
-
-
-
+//testing testing
+// $user = new User();
+// echo "<pre>";
+// print_r($user->get_user_by('id', 12));
+// echo "</pre>";
 
 ?>

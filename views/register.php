@@ -1,3 +1,6 @@
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,6 +10,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="../assets/register.css">
+    <link rel="stylesheet" href="../assets/global.css">
 </head>
 <body>
     <div class="auth-container">
@@ -36,12 +40,10 @@
                         <i class="fa-solid fa-arrow-left"></i>
                     </a>
                 </div>
-
                 <div class="form-header">
                     <h2>Welcome Home</h2>
                     <p>Sign in or create your account</p>
                 </div>
-
                 <!-- Tabs -->
                 <div class="auth-tabs">
                     <button class="tab-btn active" id="loginTab">Login</button>
@@ -49,10 +51,21 @@
                 </div>
 
                 <!-- Login Form -->
-                <form class="auth-form" id="loginForm">
+                <form class="auth-form" id="loginForm" action="../process/process_login.php" method="post">
+                    <?php if(isset($_SESSION['error'])): ?>
+                        <div class="alert alert-danger">
+                            <?php echo $_SESSION['error']; unset($_SESSION['error']); ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if(isset($_SESSION['feedback'])): ?>
+                        <div class="alert alert-success">
+                            <?php echo $_SESSION['feedback']; unset($_SESSION['feedback']); ?>
+                        </div>
+                    <?php endif; ?>
                     <div class="form-group">
                         <label>Your Email</label>
-                        <input type="email" name="email" id="email" class="form-control" placeholder="you@example.com" required>
+                        <input type="email" name="email" id="email" class="form-control" placeholder="you@example.com" required autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="email">
                     </div>
 
                     <div class="form-group">
@@ -100,22 +113,22 @@
                     
                     <div class="form-group">
                         <label>Email</label>
-                        <input type="email" name="email" id="email" class="form-control" placeholder="you@example.com" required>
+                        <input type="email" name="email" id="email" class="form-control" placeholder="you@example.com" required autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="email">
                     </div>
 
                     <div class="form-group">
                         <label>Phone Number</label>
-                        <input type="text" name="phone" id="phone" class="form-control" placeholder="0712345678" required>
+                        <input type="text" name="phone" id="phone" class="form-control" placeholder="0712345678" required autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="tel">
                     </div>
 
                     <div class="form-group">
                         <label>Password</label>
-                        <input type="password" name="password" id="password" class="form-control" placeholder="create password" required>
+                        <input type="password" name="password" id="password" class="form-control" placeholder="create password" required autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="new-password">
                     </div>
 
                     <div class="form-group">
                         <label>Confirm Password</label>
-                        <input type="password" name="confirm_password" id="confirm_password" class="form-control" placeholder="confirm password" required>
+                        <input type="password" name="confirm_password" id="confirm_password" class="form-control" placeholder="confirm password" required autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="new-password">
                     </div>
 
                     <div class="form-group">
