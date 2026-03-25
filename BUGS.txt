@@ -1,0 +1,124 @@
+BUG AUDIT FOR Hestia-PHP
+
+Date: 2026-03-23
+
+Notes:
+- This is a code review style bug list based on code inspection across the project.
+- Items below are either confirmed breakages or high-probability bugs/risks.
+
+1. Registration calls a method that does not exist
+File: process/process_register.php:43
+Issue: The code calls $user->emailExists($email), but the User class only defines email_exists().
+Impact: Registration will throw a fatal error before a user can sign up.
+Related file: classes/User.php:101
+
+2. Landlord registration redirects to a deleted/nonexistent page
+File: process/process_register.php:70
+Issue: Successful landlord registration redirects to ../views/landlord-profile.php, but that file has been removed and the active page is now under landlord/landlord-profile.php.
+Impact: New landlord accounts will be sent to a broken route after signup.
+
+3. Add-property process still prints debug output before redirects
+File: process/process_add_property.php:7-9
+Issue: The file echoes debug output before any redirect headers.
+Impact: This can cause "headers already sent" failures and breaks normal form handling. It also leaks request data to the response.
+
+4. Add-property debug print can raise notices when the submit key is missing
+File: process/process_add_property.php:8
+Issue: $_POST['add_property'] is accessed before checking if it exists.
+Impact: Requests that hit this file directly or malformed submissions can trigger notices/warnings.
+
+5. Inspection process uses the wrong guard filename casing
+File: process/process_inspection.php:5
+Issue: It requires ../UserGuard.php, but the file in the repo is userguard.php.
+Impact: This will work on Windows but fail on case-sensitive filesystems such as Linux deployments.
+
+6. Inspection validation redirects to the wrong property-details query parameter
+File: process/process_inspection.php:21
+Issue: On invalid date it redirects to property-details.php?id=$prop_id, but the page expects property_id.
+Impact: Users can be redirected to an invalid or empty property page.
+Related file: views/property-details.php:7
+
+7. Inspection cancel action is done via GET and lacks ownership verification
+File: process/process_inspection.php:36-42
+Issue: Cancel is triggered with query-string parameters and directly updates status without verifying that the inspection belongs to the logged-in user.
+Impact: This is both a security issue and a behavior bug. A crafted URL could cancel someone else’s inspection if IDs are guessed.
+
+8. Landlord inspection query joins on the wrong property key
+File: classes/Inspection.php:34
+Issue: The join uses i.property_id = p.id, but the rest of the project uses properties.property_id.
+Impact: Landlord inspection retrieval is likely broken or always empty.
+
+9. Property-details page dereferences property data before confirming the property exists
+File: views/property-details.php:14-18
+Issue: $details['user_id'] is used before checking whether $details is false/null.
+Impact: Invalid property IDs can trigger warnings/notices before the redirect executes.
+
+10. Admin landlord-details page is completely blocked by debug output and die()
+File: admin/views/landlord-details.php:5-9
+Issue: The page prints a hardcoded user record and stops execution with die().
+Impact: The page is unusable in its current state.
+
+11. Admin tenant-fetch endpoint checks the wrong session keys
+File: admin/process/process_get-tenant.php:8-15
+Issue: The endpoint checks $_SESSION['user_id'] and $_SESSION['role'], while the admin area uses admin_id/admin_role/is_admin.
+Impact: Legitimate admin users may be rejected as unauthorized, so tenant modal fetches can fail.
+
+12. User-details modal builds an edit URL with a field that does not exist
+File: admin/views/user-details.php:285
+Issue: The JS uses user.user_id, but the fetched tenant payload uses id.
+Impact: The generated edit link will be wrong or contain "undefined".
+
+13. Wishlist toggle trusts HTTP_REFERER blindly
+File: process/process_wishlist.php:23
+Issue: Redirect target is taken directly from $_SERVER['HTTP_REFERER'] with no fallback and no validation.
+Impact: Missing referrers can break the flow, and untrusted referrers create an open redirect risk.
+
+14. Public nav still uses GET logout while other areas moved toward safer POST logout
+File: partials/nav.php:66
+Issue: Logout is still a plain anchor link to process_logout.php.
+Impact: Inconsistent logout behavior and easier accidental/logout-trigger requests. This is also weaker than a POST form.
+
+15. Register view has duplicate DOM ids across the login and register forms
+File: views/register.php:69, 74, 116, 126
+Issue: The page repeats id="email" and id="password" across multiple form inputs.
+Impact: Labels, DOM selection, browser autofill, and client-side scripting can behave unpredictably.
+
+16. Register page still contains dead placeholder links
+File: views/register.php:81, 96, 162
+Issue: Forgot password and the auth-switch links still use # placeholders.
+Impact: The UI contains dead interactions and can confuse users or break navigation expectations.
+
+17. Admin login page still contains a dead forgot-password link
+File: admin/views/admin-login.php:330
+Issue: Forgot password still points to #.
+Impact: Incomplete UX and a dead control in a critical auth path.
+
+18. Contact page still contains dead social links
+File: views/contact.php:199-203
+Issue: Social icons all use #.
+Impact: Broken outward navigation and low-quality user experience.
+
+19. Soft-delete filtering logic is fragile and may leak deleted rows if data becomes inconsistent
+File: classes/Property.php:175, 194, 216, 233
+Issue: Deleted filtering uses (deleted_at IS NULL OR status <> 'deleted'). In practice this should usually be an AND check.
+Impact: If either field becomes inconsistent, deleted properties can reappear in lists/stat queries.
+
+20. Admin/user/session model is still inconsistent across parts of the codebase
+Examples:
+- admin/process/process_get-tenant.php uses user_id/role
+- admin/process/process_toggle.php uses admin_id/admin_role
+- partials/nav.php uses user_role
+Issue: Different sections assume different session contracts.
+Impact: Authorization bugs and broken behavior are likely when code paths interact or when pages are reused.
+
+21. There are multiple leftover debug/dead-code artifacts in production paths
+Examples:
+- admin/views/landlord-details.php:6-9
+- process/process_add_property.php:7-9
+- comments and old dev files under classes/dev.php and admin/classes/dev.php
+Impact: Higher risk of accidental output, broken redirects, and confusion during maintenance.
+
+22. The repo still contains large placeholder/demo pages with dead links
+Example: views/DASHBOARD-2.php
+Issue: Multiple # links and mock content remain in tracked code.
+Impact: If linked accidentally or reused later, these pages will ship broken behavior.

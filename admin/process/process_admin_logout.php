@@ -1,6 +1,11 @@
 <?php
 session_start();
 
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header("Location: ../views/admin-dashboard.php");
+    exit();
+}
+
 $_SESSION = [];
 
 if (ini_get('session.use_cookies')) {
@@ -9,6 +14,7 @@ if (ini_get('session.use_cookies')) {
 }
 
 session_destroy();
-header("Location: ../views/index.php");
+header("Location: ../views/admin-login.php");
 exit();
+
 ?>

@@ -1,8 +1,9 @@
 <?php
 session_start();
 require_once '../classes/Property.php';
+require_once '../classes/User.php';
 
-// Fix: Match the key 'id' sent from properties.php
+
 $id = $_GET['property_id'] ?? null; 
 if (!$id) {
     header("Location: ../views/properties.php");
@@ -11,6 +12,9 @@ if (!$id) {
 
 $property = new Property();
 $details = $property->get_property_by_id($id);
+
+$user = new User();
+$user_details = $user->get_user_by('id', $details['user_id']);
 
 // Redirect if property doesn't exist
 if (!$details) {
@@ -53,13 +57,13 @@ $amenities = $property->get_amenities_by_property($id);
 
                 <!-- Dynamic Gallery -->
                 <div class="gallery row g-2">
-                    <?php foreach($images as $key => $img): if($key == 0) continue; // Skip main image ?>
+                    <?php foreach($images as $key => $img){ if($key == 0) continue; // Skip main image ?>
                     <div class="col-md-4">
                         <div class="gallery-item">
                             <img src="../upload/properties/<?php echo $img['image_path']; ?>" class="img-fluid rounded-2" style="height: 150px; width: 100%; object-fit: cover;">
                         </div>
                     </div>
-                    <?php endforeach; ?>
+                    <?php } ?>
                 </div>
 
                 <!-- Dynamic Description -->
@@ -87,7 +91,6 @@ $amenities = $property->get_amenities_by_property($id);
                     <h3><i class="fas fa-map-marker-alt text-primary"></i> Location</h3>
                     <p><strong>Address:</strong> <?php echo htmlspecialchars($details['prop_address']); ?>, <?php echo $details['lga_name']; ?>, <?php echo $details['state_name']; ?></p>
                     <div class="map-container rounded-3 overflow-hidden shadow-sm mt-3">
-                        <!-- Map can stay static for now, or use Google Maps API with address string -->
                         <iframe width="100%" height="300" src="https://maps.google.com/maps?q=<?php echo urlencode($details['prop_address']); ?>&t=&z=13&ie=UTF8&iwloc=&output=embed"></iframe>
                     </div>
                 </div>
@@ -95,30 +98,46 @@ $amenities = $property->get_amenities_by_property($id);
 
             <!-- Sidebar Card -->
             <div class="col-lg-4">
-                <div class="property-details-card shadow-lg p-4 bg-white rounded-4 sticky-top" style="top: 100px;">
+                <div class="property-details-card shadow-lg p-4 bg-white rounded-4">
                     <div class="mb-3">
                         <span class="badge bg-<?php echo ($details['listing_type'] == 'sale') ? 'success' : 'primary'; ?> me-2">For <?php echo ucfirst($details['listing_type']); ?></span>
                         <span class="badge bg-info">Verified</span>
                     </div>
-                    <h2 class="h4 fw-bold"><?php echo htmlspecialchars($details['title']); ?></h2>
+                    <h2 class="h4 fw-bold" style="text-transform: capitalize;"><?php echo htmlspecialchars($details['title']); ?></h2>
                     <div class="price-tag h3 text-danger fw-bold my-3">₦<?php echo number_format($details['amount'], 2); ?></div>
 
                     <div class="specs mt-4">
-                        <div class="d-flex justify-content-between mb-2">
-                            <span><i class="fas fa-bed me-2 text-muted"></i> Bedrooms</span>
-                            <span class="fw-bold"><?php echo $details['bedroom']; ?></span>
+                        <div class="spec-item">
+                        <div class="spec-icon"><i class="fas fa-bed"></i></div>
+                        <div class="spec-text">
+                            <div class="spec-label">Bedrooms</div>
+                            <div class="spec-value"><?php echo $details['bedroom']; ?></div>
                         </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span><i class="fas fa-couch me-2 text-muted"></i> Furnished</span>
-                            <span class="fw-bold"><?php echo $details['furnished']; ?></span>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-icon"><i class="fas fa-couch"></i></div>
+                        <div class="spec-text">
+                            <div class="spec-label">Furnished</div>
+                            <div class="spec-value"><?php echo $details['furnished']; ?></div>
                         </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span><i class="fas fa-home me-2 text-muted"></i> Type</span>
-                            <span class="fw-bold"><?php echo $details['type_name']; ?></span>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-icon"><i class="fas fa-home"></i></div>
+                        <div class="spec-text">
+                            <div class="spec-label">Type</div>
+                            <div class="spec-value"><?php echo $details['type_name']; ?></div>
                         </div>
                     </div>
 
+                    <h5 style="color: #1A0F1E; font-weight: 700; margin-bottom: 12px; margin-left: 20px;">Status</h5>
+                    <p style="color: #666; margin-bottom: 20px; margin-left: 20px; text-transform: capitalize; font-weight: 500;"><?php echo $details['status']; ?></p>
+
                     <hr>
+                     <!-- Contact Info -->
+                    <div style="background: linear-gradient(135deg, #fce4ec 0%, #f3e5f5 100%); padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #f8bbd0;">
+                        <p style="color: #666; font-size: 0.9rem; margin-bottom: 8px;"><i class="fas fa-phone" style="color: #C44536; margin-right: 8px;"></i><?php echo $user_details['p_number']; ?></p>
+                        <p style="color: #666; font-size: 0.9rem; margin: 0;"><i class="fas fa-envelope" style="color: #C44536; margin-right: 8px;"></i><?php echo $user_details['email']; ?></p>
+                    </div>
 
                     <!-- Inspection/Request Action -->
                     <?php if(isset($_SESSION['user_role']) && $_SESSION['user_role'] == 'tenant'): ?>
@@ -128,13 +147,14 @@ $amenities = $property->get_amenities_by_property($id);
                                 <label class="small fw-bold">Select Inspection Date</label>
                                 <input type="date" name="inspection_date" class="form-control" required min="<?php echo date('Y-m-d'); ?>">
                             </div>
-                            <button type="submit" name="request_btn" class="btn btn-primary w-100 py-2 mb-2">Request Viewing</button>
+                            <button type="submit" name="request_btn" class="btn btn-primary w-100 mb-2"><i class="fas fa-eye me-2"></i> Request Viewing</button>
                         </form>
                     <?php else: ?>
                         <div class="alert alert-warning small">Please login as a tenant to book inspections.</div>
                     <?php endif; ?>
-                    
-                    <button class="btn btn-outline-secondary w-100 mb-2"><i class="far fa-heart me-2"></i> Save to Wishlist</button>
+                    <!-- action buttons -->
+                    <button class="btn btn-outline-primary w-100 mb-2"><i class="fas fa-heart me-2"></i> Save to Wishlist</button>
+                    <button class="btn btn-outline-primary w-100"><i class="fas fa-share-alt me-2"></i> Share Property</button>
                 </div>
             </div>
         </div>

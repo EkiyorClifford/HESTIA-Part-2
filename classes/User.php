@@ -21,7 +21,7 @@ class User extends Db {
     //method to get user by field
     public function get_user_by($field, $value) {
         try {
-            $allowed_fields = ['id', 'email'];
+            $allowed_fields = ['id', 'email', 'p_number'];
             if (!in_array($field, $allowed_fields)) return false;
             $sql = "SELECT * FROM users WHERE $field = ?";
             $stmt = $this->dbconn->prepare($sql);
@@ -46,15 +46,16 @@ class User extends Db {
     public function save($data, $id = null) {
         try {//saw this on twitter, turns out you can pass this kind of conditional to save lines and time
             if ($id) {
-                // UPDATE logic
-                $sql = "UPDATE users SET first_name=?, last_name=?, email=?, p_number=? WHERE id=?";
-                $params = [$data['fname'], $data['lname'], $data['email'], $data['pnumber'], $id];
-                
-                // If password is being updated specifically
+                $sql = "UPDATE users SET first_name=?, last_name=?, email=?, p_number=?";
+                $params = [$data['fname'], $data['lname'], $data['email'], $data['pnumber']];
+
                 if (!empty($data['password'])) {
-                    $sql = "UPDATE users SET p_word=? WHERE id=?";
-                    $params = [password_hash($data['password'], PASSWORD_DEFAULT), $id];
+                    $sql .= ", p_word=?";
+                    $params[] = password_hash($data['password'], PASSWORD_DEFAULT);
                 }
+
+                $sql .= " WHERE id=?";
+                $params[] = $id;
             } else {
                 // INSERT logic tht is (Registration)
                 $sql = "INSERT INTO users (first_name, last_name, email, p_number, p_word, role_) VALUES (?,?,?,?,?,?)";
@@ -107,9 +108,18 @@ class User extends Db {
         return true;
     }
 
-    // method to check if email exists
-    public function email_exists($email) {
-        return $this->get_user_by('email', $email) ? true : false;
+    // method to check if email exists and also if they want to update
+    public function email_exists($email, $exclude_id = null) {
+        $sql = "SELECT id FROM users WHERE email = ?";
+        
+        if ($exclude_id) {
+            $sql .= " AND id != $exclude_id";
+        }
+
+        $stmt = $this->dbconn->prepare($sql);
+        $stmt->execute([$email]);
+
+        return $stmt->rowCount() > 0;
     }
 }
 //testing testing

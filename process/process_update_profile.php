@@ -1,49 +1,86 @@
 <?php
-
 session_start();
 require_once '../userguard.php';
 require_once '../classes/User.php';
 
-// Check if user is logged in. would have to change to updatebtn
-if (!isset($_SESSION['user_id'])) {
-    header("location: ../views/index.php");
+$user_id = $_SESSION['user_id'] ?? null;
+if (!$user_id) {
+    header('Location: ../views/register.php');
     exit();
 }
 
-// Get user data from POST
-$fname = $_POST['fname'];
-$lname = $_POST['lname'];
-$email = $_POST['email'];
-$phone = $_POST['phone'];
-$role = $_POST['role'];
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header('Location: ../views/update-profile.php');
+    exit();
+}
 
-// Initialize User class
 $user = new User();
+$current_user = $user->get_user_by('id', $user_id);
 
-// Update user
-$result = $user->save([
+if (!$current_user) {
+    $_SESSION['error'] = 'User account not found.';
+    header('Location: ../views/register.php');
+    exit();
+}
+
+$fname = trim($_POST['fname'] ?? '');
+$lname = trim($_POST['lname'] ?? '');
+$email = trim($_POST['email'] ?? '');
+$phone = trim($_POST['phone'] ?? '');
+$password = $_POST['password'] ?? '';
+$confirm_password = $_POST['confirm_password'] ?? '';
+
+$errors = [];
+
+if ($fname === '' || $lname === '' || $email === '' || $phone === '') {
+    $errors[] = 'All profile fields are required.';
+}
+
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    $errors[] = 'Enter a valid email address.';
+}
+
+if ($user->email_exists($email, $user_id)) {
+    $errors[] = 'That email address is already in use.';
+}
+
+if ($password !== '' || $confirm_password !== '') {
+    if ($password !== $confirm_password) {
+        $errors[] = 'Passwords do not match.';
+    }
+
+    if (strlen($password) < 6) {
+        $errors[] = 'Password must be at least 6 characters.';
+    }
+}
+
+if (!empty($errors)) {
+    $_SESSION['error'] = implode('<br>', $errors);
+    header('Location: ../views/update-profile.php');
+    exit();
+}
+
+$payload = [
     'fname' => $fname,
     'lname' => $lname,
     'email' => $email,
-    'pnumber' => $phone
-], $_SESSION['user_id']);
+    'pnumber' => $phone,
+];
+
+if ($password !== '') {
+    $payload['password'] = $password;
+}
+
+$result = $user->save($payload, $user_id);
 
 if ($result) {
-    $_SESSION['feedback'] = "Profile updated successfully!";
-    //rediect based on role
-    if ($role === 'landlord') {
-        header("location: ../landlord/landlord-profile.php");
-    } else {
-        header("location: ../tenant/tenant-profile.php");
-    }
-    exit();
+    $_SESSION['user_name'] = $fname . ' ' . $lname;
+    $_SESSION['user_email'] = $email;
+    $_SESSION['user_phone'] = $phone;
+    $_SESSION['feedback'] = 'Profile updated successfully.';
 } else {
-    $_SESSION['error'] = "Failed to update profile. Please try again.";
-    //rediect based on role
-    if ($role === 'landlord') {
-        header("location: ../landlord/landlord-profile.php");
-    } else {
-        header("location: ../tenant/tenant-profile.php");
-    }
-    exit();
+    $_SESSION['error'] = 'Failed to update profile. Please try again.';
 }
+
+header('Location: ../views/update-profile.php');
+exit();

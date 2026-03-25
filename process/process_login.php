@@ -5,8 +5,8 @@ require_once "../classes/User.php";
 $user = new User();
 
 if (isset($_POST['loginbtn'])) {
-    $email = trim($_POST['email']);
-    $password = $_POST['password'];
+    $email = trim($_POST['login_email']);
+    $password = $_POST['login_password'];
 
     if (empty($email) || empty($password)) {
         $_SESSION['error'] = "Please provide both email and password.";

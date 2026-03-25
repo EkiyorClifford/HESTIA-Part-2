@@ -47,16 +47,15 @@ $all_props = $propObj->get_properties($filters);
                             <input type="text" name="keyword" class="form-control border-start-0" placeholder="Search by title, street, or city..." value="<?php echo htmlspecialchars($_GET['keyword'] ?? ''); ?>">
                         </div>
                     </div>
-
                     <div class="col-md-3">
                         <label class="form-label small fw-bold">Property Type</label>
                         <select name="type" class="form-select">
                             <option value="">All Types</option>
-                            <?php foreach($ptypes as $ptype): ?>
+                            <?php foreach($ptypes as $ptype){ ?>
                                 <option value="<?php echo $ptype['type_id']; ?>" <?php echo (isset($_GET['type']) && $_GET['type'] == $ptype['type_id']) ? 'selected' : ''; ?>>
                                     <?php echo $ptype['type_name']; ?>
                                 </option>
-                            <?php endforeach; ?>
+                            <?php } ?>
                         </select>
                     </div>
 
@@ -110,8 +109,8 @@ $all_props = $propObj->get_properties($filters);
 
         <!-- PROPERTIES LIST -->
         <div class="row g-4">
-    <?php if (!empty($all_props)): ?>
-        <?php foreach ($all_props as $p): ?>
+    <?php if (!empty($all_props)){ ?>
+        <?php foreach ($all_props as $p){ ?>
             <div class="col-md-4">
                 <div class="card h-100 position-relative">
                     
@@ -119,16 +118,15 @@ $all_props = $propObj->get_properties($filters);
                     <div class="position-absolute top-0 end-0 p-2" style="z-index: 10;">
                         <?php if (isset($_SESSION['user_id'])): ?>
                             <?php 
-                                // We use the $propObj instance created at the top of your page
-                                $is_saved = $propObj->is_saved($_SESSION['user_id'], $p['id']); 
+                                $is_saved = $propObj->is_saved($_SESSION['user_id'], $p['property_id']); 
                             ?>
-                            <a href="../process/process_wishlist.php?prop_id=<?php echo $p['id']; ?>" 
+                            <a href="../process/process_wishlist.php?prop_id=<?php echo $p['property_id']; ?>" 
                                class="btn btn-white btn-sm rounded-circle shadow-sm bg-white" 
                                title="<?php echo $is_saved ? 'Remove from Wishlist' : 'Add to Wishlist'; ?>">
                                 <i class="<?php echo $is_saved ? 'fas fa-heart text-danger' : 'far fa-heart'; ?>"></i>
                             </a>
                         <?php else: ?>
-                            <!-- If not logged in, clicking the heart takes them to login -->
+                            <!-- If not logged in, clicking the heart takes them to login as tenant only o -->
                             <a href="register.php" class="btn btn-white btn-sm rounded-circle shadow-sm bg-white">
                                 <i class="far fa-heart"></i>
                             </a>
@@ -149,7 +147,7 @@ $all_props = $propObj->get_properties($filters);
                     <img src="../upload/properties/<?php echo $img; ?>" class="card-img-top" alt="<?php echo htmlspecialchars($p['title']); ?>" style="height: 200px; object-fit: cover;">
                     
                     <div class="card-body">
-                        <h5 class="card-title text-truncate"><?php echo htmlspecialchars($p['title']); ?></h5>
+                        <h5 class="card-title text-truncate" style="text-transform: capitalize;"><?php echo htmlspecialchars($p['title']); ?></h5>
                         <p class="small text-muted mb-2">
                             <i class="fas fa-map-marker-alt me-1"></i> 
                             <?php echo htmlspecialchars($p['lga_name'] . ', ' . $p['state_name']); ?>
@@ -161,19 +159,24 @@ $all_props = $propObj->get_properties($filters);
                         </div>
 
                         <div class="d-flex justify-content-between align-items-center">
-                            <p class="price-text mb-0 fw-bold" style="color: #C44536;">₦<?php echo number_format($p['amount'], 2); ?></p>
-                            <a href="property-details.php?id=<?php echo $p['id']; ?>" class="btn btn-primary btn-sm">Details</a>
+                            <p class="price-text mb-0 fw-bold" style="color: #C44536;">
+                                ₦<?php echo number_format($p['amount']); ?>
+                                <?php if($p['listing_type'] == 'rent'){?>
+                                    <small class="text-muted fw-normal" style="font-size: 0.7rem;">/ year</small>
+                                <?php }?>
+                            </p>
+                            <a href="../views/property-details.php?property_id=<?php echo $p['property_id']; ?>" class="btn btn-primary btn-sm">Details</a>
                         </div>
                     </div>
                 </div>
             </div>
-        <?php endforeach; ?>
-    <?php else: ?>
+        <?php } ?>
+    <?php } else{?>
         <div class="col-12 text-center py-5">
             <h4 class="mt-3 text-muted">No properties found matching your search.</h4>
             <a href="properties.php" class="btn btn-link">Clear all filters</a>
         </div>
-    <?php endif; ?>
+    <?php } ?>
 </div>
     </main>
 

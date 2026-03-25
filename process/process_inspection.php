@@ -1,30 +1,72 @@
 <?php
 session_start();
-require_once '../classes/Property.php';
-$prop = new Property();
+require_once '../classes/Inspection.php';
+//require userguard
+require_once '../userguard.php';
 
-$action = $_POST['action'] ?? $_GET['action'] ?? null;
 
-switch($action) {
-    case 'request':
-        $res = $prop->request_inspection($_POST['property_id'], $_SESSION['user_id'], $_POST['inspection_date']);
-        break;
+$insp = new Inspection();
 
-    case 'cancel':
-        $res = $prop->update_inspection_status($_GET['id'], 'rejected'); // Or add a 'canceled' enum
-        break;
 
-    case 'reschedule':
-        $res = $prop->reschedule_inspection($_POST['inspection_id'], $_POST['new_date']);
-        break;
-        
-    case 'approve': // For Landlord
-        $res = $prop->update_inspection_status($_GET['id'], 'approved');
-        break;
+
+$user_id = $_SESSION['user_id'];
+
+// --- ACTION 1: NEW REQUEST (POST) ---
+if (isset($_POST['request_btn'])) {
+    $prop_id = $_POST['property_id'];
+    $date = $_POST['inspection_date'];
+
+    if (empty($date)) {
+        $_SESSION['error'] = "Please select a valid date.";
+        header("Location: ../views/property-details.php?id=$prop_id");
+        exit();
+    }
+
+    $result = $insp->request_inspection($prop_id, $user_id, $date);
+
+    if ($result) {
+        $_SESSION['feedback'] = "Inspection request sent successfully!";
+    } else {
+        $_SESSION['error'] = "Failed to send request. Try again.";
+    }
+    header("Location: ../tenant/tenant-profile.php#inspections");
+    exit();
 }
 
-if($res) {
-    $_SESSION['feedback'] = "Inspection updated successfully.";
+// --- ACTION 2: CANCEL (GET) ---
+if (isset($_GET['action']) && $_GET['action'] == 'cancel') {
+    $insp_id = $_GET['id'];
+    
+    // Safety check: Ensure the inspection belongs to this user before deleting/updating
+    // (You can add a check inside the method)
+    $result = $insp->update_inspection_status($insp_id, 'rejected'); // We use 'rejected' or add 'cancelled' to ENUM
+
+    if ($result) {
+        $_SESSION['feedback'] = "Inspection cancelled.";
+    } else {
+        $_SESSION['error'] = "Could not cancel inspection.";
+    }
+    header("Location: ../tenant/tenant-profile.php#inspections");
+    exit();
 }
-header("Location: " . $_SERVER['HTTP_REFERER']); // Sends them back to the page they were on
+
+// --- ACTION 3: RESCHEDULE (POST) ---
+if (isset($_POST['action']) && $_POST['action'] == 'reschedule') {
+    $insp_id = $_POST['inspection_id'];
+    $new_date = $_POST['new_date'];
+
+    $result = $insp
+    ->reschedule_inspection($insp_id, $new_date);
+
+    if ($result) {
+        $_SESSION['feedback'] = "Inspection date updated to " . date('M d, Y', strtotime($new_date));
+    } else {
+        $_SESSION['error'] = "Could not update date.";
+    }
+    header("Location: ../tenant/tenant-profile.php#inspections");
+    exit();
+}
+
+// If no valid action is found
+header("Location: ../tenant/tenant-profile.php");
 exit();

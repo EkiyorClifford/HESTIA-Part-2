@@ -9,8 +9,6 @@ $states = $state->get_active_states();
 $lglist = '<option value="" selected disabled>— select LGA —</option>';
 $ptypes = $state->get_property_types();
 $saved_data = $_SESSION['form_data'] ?? [];
-
-
 ?>
 <!DOCTYPE html>
 <html lang="en">

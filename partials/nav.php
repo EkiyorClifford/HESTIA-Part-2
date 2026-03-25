@@ -24,7 +24,6 @@ $base_url = "/Hestia-PHP/";
 
 <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
-        <!-- Use absolute paths starting with / so they work from any folder -->
         <a class="navbar-brand" href="<?php echo $base_url; ?>views/index.php">HESTIA</a>
 
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -44,28 +43,35 @@ $base_url = "/Hestia-PHP/";
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li>
+                                <a class="dropdown-item" href="<?php echo $base_url; ?>views/update-profile.php">
+                                    <i class="fas fa-user-pen me-2"></i>Profile
+                                </a>
+                            </li>
+                            <li>
                                 <a class="dropdown-item" href="<?php 
                                     echo ($user_role == 'landlord') 
-                                        ? '../views/landlord-profile.php' 
-                                        : '../tenant/tenant-profile.php'; 
+                                        ? $base_url . 'landlord/landlord-profile.php' 
+                                        : $base_url . 'tenant/tenant-profile.php'; 
                                 ?>">
                                     <i class="fas fa-gauge-high me-2"></i>Dashboard
                                 </a>
                             </li>
                             
-                            <?php if($user_role == 'landlord'): ?>
-                                <li><a class="dropdown-item" href="../landlord/add-property.php"><i class="fas fa-plus me-2"></i>Add Property</a></li>
-                            <?php endif; ?>
+                            <?php if($user_role == 'landlord'){ ?>
+                                <li><a class="dropdown-item" href="<?php echo $base_url; ?>landlord/add-property.php"><i class="fas fa-plus me-2"></i>Add Property</a></li>
+                            <?php } ?>
 
-                            <?php if($user_role == 'tenant'): ?>
-                                <li><a class="dropdown-item" href="../tenant/wishlist.php"><i class="fas fa-heart me-2"></i>Wishlist</a></li>
-                            <?php endif; ?>
+                            <?php if($user_role == 'tenant'){ ?>
+                                <li><a class="dropdown-item" href="<?php echo $base_url; ?>tenant/wishlist.php"><i class="fas fa-heart me-2"></i>Wishlist</a></li>
+                            <?php } ?>
 
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                <a class="dropdown-item text-danger" href="../process/process_logout.php">
-                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
-                                </a>
+                                <form method="post" action="<?php echo $base_url; ?>process/process_logout.php" class="m-0">
+                                    <button type="submit" class="dropdown-item text-danger">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                    </button>
+                                </form>
                             </li>
                         </ul>
                     </li>

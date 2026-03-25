@@ -1,0 +1,130 @@
+Changes made in the recent admin dashboard refactor:
+
+1. Refactored admin dashboard
+- Updated admin/views/admin-dashboard.php.
+- Added a proper admin session guard.
+- Moved data fetching and data processing to the top of the file.
+- Removed debug session output.
+- Replaced fake dashboard sections with real data-backed sections.
+- Replaced the placeholder "Recent Properties" table with live property data.
+- Added empty states for properties and applications.
+- Replaced fake "Recent Activity" with a real "Recent Applications" section.
+- Removed fake trend text such as "+12% this month".
+- Reduced the dashboard to MVP-focused sections around properties and applications.
+- Added real quick action links.
+
+2. Standardized dashboard data handling
+- Updated admin/classes/Admin.php.
+- Standardized dashboard totals with safe default keys.
+- Added total applications to dashboard totals.
+- Improved get_users() to support filtering.
+- Improved search_users() to support filtering by role.
+- Updated get_user_active_status() so it can return either grouped counts or a single user's status.
+- Added get_recent_applications() to fetch real application records.
+- Returned empty arrays instead of false in several dashboard-related methods to avoid fragile UI checks.
+
+3. Added reusable admin partials
+- Added admin/partials/navbar.php.
+- Added admin/partials/sidebar.php.
+- Replaced duplicate navigation usage with reusable partials.
+- Converted admin/partials/nav.php into a compatibility wrapper that includes the new navbar partial.
+
+4. Fixed admin login/logout session flow
+- Updated admin/process/process_admin_login.php.
+- Added session_regenerate_id(true) on successful login.
+- Stored a consistent admin_name session value.
+- Updated admin/process/process_admin_logout.php.
+- Changed logout to POST-only.
+- Cleared session data and session cookie before destroying the session.
+- Redirected logout back to the admin login page.
+
+5. Updated shared admin styling
+- Updated admin/assets/admin.css.
+- Added layout support for navbar, sidebar, and content shell.
+- Fixed top spacing through layout structure instead of margin hacks.
+- Added empty-state, quick-action, and table-action styling.
+- Added responsive behavior for the new admin layout.
+
+6. Cleaned user management page
+- Updated admin/views/user-details.php.
+- Added the same admin session guard used by the dashboard.
+- Removed debug session output.
+- Switched search to use filtered search logic.
+- Replaced brittle role/stat indexing with normalized maps.
+- Integrated the shared navbar and sidebar partials.
+- Removed the unused delete confirmation redirect function.
+
+7. Verification completed
+- Ran PHP syntax checks on the updated admin files.
+- No syntax errors were found in the edited files during that pass.
+
+Files changed in this pass:
+- admin/views/admin-dashboard.php
+- admin/views/user-details.php
+- admin/classes/Admin.php
+- admin/assets/admin.css
+- admin/partials/navbar.php
+- admin/partials/sidebar.php
+- admin/partials/nav.php
+- admin/process/process_admin_login.php
+- admin/process/process_admin_logout.php
+
+
+Additional changes made for the landlord dashboard refactor:
+
+1. Refactored landlord dashboard
+- Updated landlord/landlord-profile.php.
+- Added a landlord role/session guard.
+- Moved data fetching and processing to the top of the file.
+- Replaced the hardcoded Recent Properties table with real landlord property data.
+- Replaced fake Recent Activity with real Recent Applications data.
+- Added empty states for both properties and applications.
+- Removed fake trust score, ratings, and fake trend copy.
+- Replaced dead quick action links with real routes and in-page anchors.
+- Added live search filtering for properties and applications from the dashboard search bar.
+
+2. Added landlord dashboard partials
+- Added landlord/partials/navbar.php.
+- Added landlord/partials/sidebar.php.
+- Removed duplicate sidebar/navigation markup from landlord-profile.php by reusing partials.
+
+3. Added landlord-facing property/application queries
+- Updated classes/Property.php.
+- Added get_landlord_dashboard_stats().
+- Added get_landlord_properties().
+- Added get_landlord_applications().
+- These methods now provide the live data used by the landlord dashboard.
+
+4. Fixed landlord property actions
+- Added process/process_property_action.php.
+- Converted property deletion to a POST-based action.
+- Wired delete buttons on the landlord dashboard to the new POST handler.
+
+5. Fixed landlord edit flow
+- Added landlord/edit-property.php so the Edit action now leads to a real page.
+- Updated process/process_edit_property.php to use the correct property_type_id key expected by save_property().
+
+6. Fixed landlord auth/navigation flow
+- Updated process/process_login.php so successful landlord login now redirects to landlord/landlord-profile.php instead of the public home page.
+- Updated process/process_logout.php to clear session data and cookie before destroy.
+
+7. Cleaned related landlord page issues
+- Updated landlord/add-property.php.
+- Removed leftover debug output that printed POST data on the page.
+
+8. Updated landlord dashboard styling
+- Replaced assets/landlord-profile.css.
+- Added styles for the new landlord dashboard structure, cards, empty states, tables, actions, and partial-based layout.
+
+Files changed in the landlord dashboard pass:
+- landlord/landlord-profile.php
+- landlord/partials/navbar.php
+- landlord/partials/sidebar.php
+- landlord/edit-property.php
+- assets/landlord-profile.css
+- classes/Property.php
+- process/process_property_action.php
+- process/process_edit_property.php
+- process/process_login.php
+- process/process_logout.php
+- landlord/add-property.php

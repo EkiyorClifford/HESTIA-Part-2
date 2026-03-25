@@ -1,0 +1,212 @@
+:root {
+    --profile-ink: #251821;
+    --profile-plum: #4f2950;
+    --profile-plum-deep: #1d1021;
+    --profile-accent: #c44536;
+    --profile-accent-light: #ef7a54;
+    --profile-surface: #fff;
+    --profile-mist: #f7f2ef;
+    --profile-line: #ebdfd7;
+    --profile-soft: #786873;
+    --profile-shadow: 0 22px 60px rgba(37, 24, 33, 0.1);
+}
+
+body {
+    font-family: 'Manrope', sans-serif;
+    background:
+        radial-gradient(circle at top left, rgba(196, 69, 54, 0.08), transparent 24%),
+        linear-gradient(180deg, #fcfaf8 0%, var(--profile-mist) 100%);
+    color: var(--profile-ink);
+}
+
+h1, h2 {
+    font-family: 'Fraunces', serif;
+}
+
+.navbar {
+    background: var(--profile-plum-deep) !important;
+    box-shadow: 0 10px 30px rgba(29, 16, 33, 0.14);
+    padding: 1rem 0;
+}
+
+.navbar-brand {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #fff !important;
+}
+
+.navbar-nav .nav-link {
+    color: rgba(255, 255, 255, 0.86) !important;
+    font-weight: 600;
+}
+
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link.active {
+    color: #fff !important;
+}
+
+.dropdown-menu {
+    border: 1px solid var(--profile-line);
+    border-radius: 18px;
+    box-shadow: 0 18px 40px rgba(37, 24, 33, 0.12);
+    padding: 0.6rem;
+}
+
+.dropdown-item {
+    border-radius: 12px;
+    padding: 0.75rem 0.9rem;
+    font-weight: 600;
+}
+
+.dropdown-item:hover {
+    background: #f7f1ee;
+    color: var(--profile-accent);
+}
+
+.dropdown-item.text-danger {
+    border: 0;
+    background: transparent;
+}
+
+.profile-editor-page {
+    padding: 3rem 0 4rem;
+}
+
+.profile-editor-shell {
+    display: grid;
+    grid-template-columns: minmax(260px, 360px) minmax(0, 1fr);
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.profile-intro-card,
+.profile-form-card {
+    background: var(--profile-surface);
+    border: 1px solid var(--profile-line);
+    border-radius: 26px;
+    box-shadow: var(--profile-shadow);
+}
+
+.profile-intro-card {
+    padding: 2rem;
+    background: linear-gradient(160deg, var(--profile-plum-deep), var(--profile-plum));
+    color: #fff;
+}
+
+.profile-intro-card p {
+    color: rgba(255, 255, 255, 0.82);
+}
+
+.eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 0.75rem;
+    opacity: 0.72;
+}
+
+.identity-chip {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    margin: 1.5rem 0;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.identity-chip span {
+    display: block;
+    color: rgba(255, 255, 255, 0.72);
+    margin-top: 0.2rem;
+}
+
+.avatar-badge {
+    width: 58px;
+    height: 58px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--profile-accent), var(--profile-accent-light));
+    color: #fff;
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.profile-form-card {
+    padding: 2rem;
+}
+
+.section-heading {
+    margin-bottom: 1.5rem;
+}
+
+.section-heading p {
+    color: var(--profile-soft);
+    margin-bottom: 0;
+}
+
+.form-label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--profile-soft);
+}
+
+.form-control {
+    border-radius: 16px;
+    padding: 0.9rem 1rem;
+    border: 1.5px solid var(--profile-line);
+}
+
+.form-control:focus {
+    border-color: var(--profile-accent);
+    box-shadow: 0 0 0 0.2rem rgba(196, 69, 54, 0.12);
+}
+
+.readonly-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1rem;
+    border-radius: 999px;
+    background: #f5ede9;
+    color: var(--profile-ink);
+    font-weight: 700;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding-top: 0.5rem;
+}
+
+.btn-primary {
+    background: linear-gradient(90deg, var(--profile-accent), var(--profile-accent-light));
+    border: 0;
+    border-radius: 999px;
+    padding-inline: 1.25rem;
+}
+
+.btn-outline-secondary {
+    border-radius: 999px;
+    padding-inline: 1.25rem;
+}
+
+@media (max-width: 991.98px) {
+    .profile-editor-shell {
+        grid-template-columns: 1fr;
+    }
+}

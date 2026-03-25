@@ -17,3 +17,25 @@ inside the property table for landlord dashboard
     </tr>
     <?php endforeach; ?>
 </tbody>
+
+
+add property now works and i can view details and the search works. unto the dashboard now
+remain admin and then the dashboards.
+the login and logout feels smooth and okayy
+
+
+
+My Progress Report:
+Fixed Property Class: Resolved the property_id vs id naming conflict across all SQL queries.
+Dynamic Filtering: The Properties listing now filters by Price, Type, Bedrooms, and Keywords.
+Property Details: Fixed the "View Details" navigation and the dynamic image/amenities gallery.
+Tenant Dashboard: Completed the "Saved Properties" tab and "Inspections" tab with real-time status colors and rescheduling modals.
+Inspection Logic: Built the processing engine to handle requests, cancellations, and date updates.
+Tomorrow's Roadmap:
+Landlord Dashboard:
+Displaying the list of properties owned by the logged-in landlord.
+Viewing "Incoming Inspection Requests" from tenants.
+Building the Approve/Reject logic (The Landlord's version of process_inspection.php).
+Admin Dashboard:
+Overview of all users and properties.
+"Verify" property logic to give listings that blue checkmark.

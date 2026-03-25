@@ -4,6 +4,10 @@ require_once "../userguard.php";
 require_once "../classes/Common.php";
 require_once "../classes/Property.php";
 
+// echo "<pre>";
+// print_r($_POST['add_property']);
+// echo "</pre>";
+
 
 if(!isset($_POST['add_property'])){
     header("Location: ../landlord/add-property.php");
@@ -95,13 +99,13 @@ try {
     if($property_id){
         // Save images
         if(isset($_FILES['images']) && !empty($_FILES['images']['name'][0])){
-            $property->save_property_images($property_id, $_FILES['images']);
+            $property->save_images($property_id, $_FILES['images']);
         }
 
         // Save amenities
-        if(!empty($_POST['amenities'])){
-            $property->save_property_amenities($property_id, $_POST['amenities']);
-        }
+        // if(!empty($_POST['amenities'])){
+        //     $property->save_property_amenities($property_id, $_POST['amenities']);
+        // }
 
         // SUCCESS: but i have to clear form data
         unset($_SESSION['form_data']); 

@@ -1,103 +1,296 @@
 <?php
 require_once "Db.php";
 
-class Admin extends Db{
+class Admin extends Db {
     private $dbconn;
-    public function __construct(){
+
+    public function __construct() {
         $this->dbconn = $this->connect();
     }
 
-    //method to facilitate admin login and logout
-    public function admin_login($email, $password){
-        try{
-            $sql = "SELECT * from admins WHERE adm_email =?";
-            $stmt= $this->dbconn->prepare($sql);
-            $stmt->execute([$email, $password]);
+    public function admin_login($email, $password) {
+        try {
+            $sql = "SELECT * FROM admins WHERE email = ?";
+            $stmt = $this->dbconn->prepare($sql);
+            $stmt->execute([$email]);
             $record = $stmt->fetch(PDO::FETCH_ASSOC);
-            if($record){
+
+            if ($record) {
                 $stored_password = $record['adm_password'];
-                $check = password_verify($password,$stored_password);
-                if($check){
-                    $_SESSION['admin_id'] = $record['adm_id'];
-                    return true;
+                if (password_verify($password, $stored_password)) {
+                    $_SESSION['admin_id'] = $record['admin_id'];
+                    $_SESSION['admin_role'] = $record['role'];
+                    return $record;
                 }
             }
-            $_SESSION['error'] = "Wrong email or password";
             return false;
-        }catch(PDOException $e){
-            //echo $e->getMessage(); exit();
+        } catch (PDOException $e) {
             return false;
         }
     }
-    
-    public function admin_logout(){
-        session_destroy();
-    }
 
-    //method to allow only admins to add property type
-    public function admin_prop_type($ptp_name){
+    //method to fetch all users
+    public function get_users($filter = 'all'){
         try{
-            $sql = "INSERT INTO property_types(ptp_name) VALUES(?)";
+            $sql = "SELECT * FROM users";
+            $params = [];
+
+            if ($filter !== 'all') {
+                $sql .= " WHERE role_ = ?";
+                $params[] = $filter;
+            }
+
+            $sql .= " ORDER BY created_at DESC";
             $stmt = $this->dbconn->prepare($sql);
-            $stmt->execute([$ptp_name]);
-            return true;
+            $stmt->execute($params);
+            $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $users;
         }catch(PDOException $e){
+            // echo $e->getMessage();
+            // die();
             return false;
         }
     }
 
-    //a method to fetch all properties
-    public function get_all_properties_Admin(){
+    // classes/Admin.php
+    public function update_user_status($id, $new_status) {
+        // Ensure $new_status is exactly 'yes' or 'no'
+        $sql = "UPDATE users SET is_active = ? WHERE id = ?";
+        $stmt = $this->dbconn->prepare($sql);
+        $result = $stmt->execute([$new_status, $id]);
+        
+        // rowCount helps verify if the database actually changed a row
+        return ($result && $stmt->rowCount() > 0);
+    }
+    // method to get user by id
+
+    public function get_user_by_id($id){
         try{
-            $sql = "SELECT * FROM properties";
-            $stmt = $this->dbconn->prepare($sql);
-            $stmt->execute();
-            $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            return $data;
+        $sql= "SELECT * FROM users WHERE id =?";
+        $stmt= $this->dbconn->prepare($sql);
+        $stmt->execute([$id]);
+        $res = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $res;
         }catch(PDOException $e){
-            //echo $e->getMessage(); exit();
+            // echo $e->getMessage(); die();
             return false;
         }
     }
 
+    public function get_dashboard_totals() {
+        $defaults = [
+            'total_users' => 0,
+            'total_properties' => 0,
+            'total_inspections' => 0,
+            'total_applications' => 0
+        ];
 
-    // method that allows Admin to see all users
-    public function get_all_users() {
         try {
-            $sql = "SELECT id, first_name, last_name, email, role_, is_active, created_at FROM users ORDER BY created_at DESC";
-            $stmt = $this->dbconn->prepare($sql);
-            $stmt->execute();
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $stats = $defaults;
+            $stats['total_users'] = $this->dbconn->query("SELECT COUNT(id) FROM users")->fetchColumn();
+            $stats['total_properties'] = $this->dbconn->query("SELECT COUNT(property_id) FROM properties")->fetchColumn();
+            $stats['total_inspections'] = $this->dbconn->query("SELECT COUNT(*) FROM inspections")->fetchColumn();
+            $stats['total_applications'] = $this->dbconn->query("SELECT COUNT(*) FROM applications")->fetchColumn();
+
+            return $stats;
         } catch (PDOException $e) {
-            return [];
+            return $defaults;
         }
     }
 
-    // method that allows Admin to ban a user
-    public function toggle_user_status($user_id, $current_status) {
-        try {
-            $new_status = ($current_status == 'yes') ? 'no' : 'yes';
-            $sql = "UPDATE users SET is_active = ? WHERE id = ?";
-            $stmt = $this->dbconn->prepare($sql);
-            return $stmt->execute([$new_status, $user_id]);
-        } catch (PDOException $e) {
-            return false;
+     public function search_users($keyword, $filter = 'all') {
+        $sql = "SELECT * FROM users WHERE (first_name LIKE ? OR last_name LIKE ? OR email LIKE ? OR p_number LIKE ?)";
+        $term = "%$keyword%";
+        $params = [$term, $term, $term, $term];
+
+        if ($filter !== 'all') {
+            $sql .= " AND role_ = ?";
+            $params[] = $filter;
         }
+
+        $sql .= " ORDER BY created_at DESC";
+        $stmt = $this->dbconn->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // method that allows Admin to see all properties
-    public function get_all_properties_with_landlord() {
-        try {
-            $sql = "SELECT p.*, u.first_name, u.last_name FROM properties p JOIN users u ON p.user_id = u.id ORDER BY p.created_at DESC";
-            $stmt = $this->dbconn->prepare($sql);
-            $stmt->execute();
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            return [];
-        }
+    public function get_todays_activity() {
+    try {
+        $stats = [];
+        
+        // 1. New Users Today
+        $stmt = $this->dbconn->query("SELECT COUNT(id) FROM users WHERE DATE(created_at) = CURDATE()");
+        $stats['new_users'] = $stmt->fetchColumn();
+
+        // 2. New Properties Today
+        $stmt = $this->dbconn->query("SELECT COUNT(property_id) FROM properties WHERE DATE(created_at) = CURDATE()");
+        $stats['new_props'] = $stmt->fetchColumn();
+
+        // 3. Inspections Scheduled Today
+        $stmt = $this->dbconn->query("SELECT COUNT(inspection_id) FROM inspections WHERE DATE(inspection_date) = CURDATE()");
+        $stats['inspections'] = $stmt->fetchColumn();
+
+        return $stats;
+    } catch (PDOException $e) {
+        return ['new_users' => 0, 'new_props' => 0, 'inspections' => 0];
     }
 }
 
+    public function get_property_status_stats() {
+        try{
+        $sql = "SELECT status, COUNT(*) as count FROM properties GROUP BY status";
+        $stmt = $this->dbconn->prepare($sql);
+        $stmt->execute();
+        $res= $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $res;
+    }catch(PDOException $e){
+        // echo $e->getMessage;
+        // die();
+        return [];
+    }
+    }
+
+    public function get_user_role_stats() {
+        try{
+        $sql = "SELECT role_, COUNT(*) as count FROM users GROUP BY role_";
+        $stmt = $this->dbconn->prepare($sql);
+        $stmt -> execute();
+        $data =  $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $data;
+        }catch(PDOException $e){
+         // echo $e->getMessage;
+        // die();
+        return [];
+        }
+    }
+
+    // method to get landlord details and properties 
+    public function get_landlord_details($id) {
+       try{
+        $sql = "SELECT u.*, p.property_id, p.title, p.status, p.address, p.bedroom, p.created_at, s.state_name
+                FROM users u 
+                LEFT JOIN properties p ON u.id = p.user_id 
+                JOIN states s ON p.state_id = s.state_id
+                WHERE u.id = ?";
+        $stmt = $this->dbconn->prepare($sql);
+        $stmt->execute([$id]);
+        $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $data;
+       }catch(PDOException $e){
+        // echo $e->getMessage;
+        // die();
+        return false;
+       }
+    }
+
+    // method to get user active status by id
+    public function get_user_active_status($id = null) {
+        try{
+        if ($id !== null) {
+            $sql = "SELECT is_active FROM users WHERE id = ?";
+            $stmt = $this->dbconn->prepare($sql);
+            $stmt->execute([$id]);
+            return $stmt->fetchColumn();
+        }
+
+        $sql = "SELECT is_active, COUNT(*) as count FROM users GROUP BY is_active";
+        $stmt = $this->dbconn->prepare($sql);
+        $stmt -> execute();
+        $data =  $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $data;
+        }catch(PDOException $e){
+         // echo $e->getMessage;
+        // die();
+        return $id !== null ? null : [];
+        }
+    }
 
 
-?>
+    public function get_top_locations() {
+        try{
+        $sql = "SELECT s.state_name, COUNT(p.property_id) as count 
+                FROM properties p 
+                JOIN states s ON p.state_id = s.state_id 
+                GROUP BY s.state_name 
+                ORDER BY count DESC LIMIT 4";
+        $stmt = $this->dbconn->prepare($sql);
+        $stmt->execute();
+        $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $res;
+        } catch(PDOException $e){
+            // echo $e->getMessage();
+            // die();
+        return [];
+        }
+    }
+
+    /**
+     * Get Recent Properties for the Table
+     */
+    public function get_recent_properties($limit = 5) {
+        try {
+            $sql = "SELECT p.*, t.type_name, s.state_name, l.lga_name 
+                FROM properties p 
+                JOIN property_types t ON p.property_type_id = t.type_id
+                JOIN states s ON p.state_id = s.state_id
+                JOIN lgas l ON p.lga_id = l.lga_id
+                ORDER BY p.created_at DESC LIMIT :limit"; // Use a named placeholder
+            
+            $stmt = $this->dbconn->prepare($sql);
+            
+            // Explicitly bind as an Integer
+            $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+            
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            // Log error if needed: echo $e->getMessage();
+            return [];
+        }
+    }
+
+    public function get_recent_applications($limit = 5) {
+        try {
+            $sql = "SELECT a.*, p.property_id, p.title, u.first_name, u.last_name
+                    FROM applications a
+                    JOIN properties p ON a.property_id = p.property_id
+                    JOIN users u ON a.user_id = u.id
+                    ORDER BY a.created_at DESC
+                    LIMIT :limit";
+
+            $stmt = $this->dbconn->prepare($sql);
+            $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
+
+    // // method for the search on users page
+    // public function search_users($filters = []){
+    //        if (!empty($filters['keyword'])) {
+    //         $sql .= " AND (p.title LIKE ? OR p.prop_address LIKE ? OR l.lga_name LIKE ?)";
+    //         $search = "%" . $filters['keyword'] . "%";
+    //         $params[] = $search; $params[] = $search; $params[] = $search;
+    //     }
+
+    // }
+
+    //method to toggle status(users)
+    public function toggle_status($id, $currentstatus){
+        try{
+            $sql= "UPDATE users SET is_active = ? WHERE id = ?";
+            $stmt= $this->dbconn->prepare($sql);
+            $move= $stmt->execute([$id, $currentstatus]);
+            return ($move && $stmt->rowCount() > 0);
+        }catch(PDOException $e){
+            // echo $e->getMessage(); exit();
+            return false;
+        }
+    }
+
+    public function admin_logout() {
+        session_destroy();
+    }
+}

@@ -1,5 +1,6 @@
 <?php
 session_start();
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -65,18 +66,17 @@ session_start();
                     <?php endif; ?>
                     <div class="form-group">
                         <label>Your Email</label>
-                        <input type="email" name="email" id="email" class="form-control" placeholder="you@example.com" required autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="email">
+                        <input type="email" name="login_email" id="login_email" class="form-control" placeholder="you@example.com" required autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="email">
                     </div>
 
                     <div class="form-group">
                         <label>Password</label>
-                        <input type="password" name="password" id="password" class="form-control" placeholder="••••••••" required>
+                        <input type="password" name="login_password" id="login_password" class="form-control" placeholder="••••••••" required>
                     </div>
 
                     <div class="form-options">
                         <label class="remember-me">
-                            <input type="checkbox"> 
-                            <span>Remember Me</span>
+                            <a href="../admin/views/admin-login.php">Admin Login</a> 
                         </label>
                         <a href="#" class="forgot-link">Forgot?</a>
                     </div>

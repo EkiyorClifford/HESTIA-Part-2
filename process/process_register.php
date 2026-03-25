@@ -40,7 +40,7 @@ if (isset($_POST['registerbtn'])) {
     }
 
     // Check if email exists
-    if ($user->emailExists($email)) {
+    if ($user->email_exists($email)) {
         $_SESSION['error'] = "Email is already registered.";
         header("location: ../views/register.php");
         exit();
@@ -67,7 +67,7 @@ if (isset($_POST['registerbtn'])) {
         
         // Redirect based on role
         if ($role == 'landlord') {
-            header("location: ../views/landlord-profile.php");
+            header("location: ../landlord/landlord-profile.php");
         } else {
             header("location: ../tenant/tenant-profile.php");
         }

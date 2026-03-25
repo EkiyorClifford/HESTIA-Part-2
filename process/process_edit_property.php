@@ -65,7 +65,7 @@ if (isset($_POST['updatebtn'])) {
     // 5.insertion
     $data = [
         'user_id'      => $user_id,
-        'type_id'      => $type_id,
+        'property_type_id' => $type_id,
         'bedroom'      => $bedroom,
         'furnished'    => $furnished,
         'lga_id'       => $lga_id,
