@@ -209,8 +209,8 @@
             background: transparent;
         }
         .btn-outline-primary:hover {
-            background-color: #C44536;
-            color: white;
+            background-color: #fbfff1;
+            color: #C44536;
             transform: translateY(-2px);
         }
         .property-details-section {

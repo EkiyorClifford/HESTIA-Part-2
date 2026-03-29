@@ -1,0 +1,44 @@
+Work Summary
+============
+
+Date: March 29, 2026
+
+Summary of changes since last commit:
+- Added a new admin property management page at `admin/views/property_management.php`.
+- Added `admin/process/process_get-property.php` for AJAX property detail loading.
+- Added `admin/views/update-profile.php` and `Admin::get_admin_details()` to support admin profile editing.
+- Extended `admin/classes/Admin.php` with dashboard totals, search helpers, property/user fetch methods, status stats, and property status update methods.
+- Updated `admin/partials/sidebar.php` to link to the new property management page and add an edit profile menu item.
+- Updated `partials/nav.php` to support admin dropdown navigation and separate public/user session logic.
+- Added view tracking and analytics support with `classes/PropertyTracker.php`, including:
+  - `track_view()` to count property page views
+  - `count_stats()` to fetch view/application/inspection totals
+  - `get_last_viewed()` for recent engagement info
+  - `get_view_count()` for listing display
+- Added API endpoint `api/track-view.php` to receive POST events from property listings.
+- Updated `views/properties.php` to fetch view counts via `PropertyTracker` and render per-property engagement on cards.
+- Updated `views/property-details.php` to:
+  - track views on each page load
+  - display engagement metrics
+  - block landlords from inspecting/applying on their own listings
+  - improve UI and call-to-action sections
+- Hardened inspection flow in `classes/Inspection.php` and `process/process_inspection.php` with ownership checks.
+- Added a new application workflow with `classes/Applications.php` and `process/process_application.php`.
+- Updated `admin/process/process_toggle.php` to support both user and property toggles with validated request types.
+- Added UI style improvements in `assets/property-details.css` and `assets/property.css` for button hover states, view-count sections, and listing metadata.
+- Improved `views/contact.php` by adding external link targets and a WhatsApp contact button.
+- Deleted obsolete or prototype files: `Post.php`, `process_post.php`, `process_upload.php`, `views/DASHBOARD-2.php`, `views/Style.php`, and `views/design.css`.
+
+Notes:
+- New functionality centers on property management, tracking, admin UX, and application/inspection workflows.
+- The repository now includes both backend tracking classes and frontend display updates for better platform analytics.
+
+Tomorrow's to-do list:
+1. Review `admin/views/property_management.php` for any logic bugs or missing authentication checks.
+2. Add CSRF protection for all admin POST actions, especially property toggles and profile updates.
+3. Test the new view-tracking flow end-to-end in `views/properties.php` and `api/track-view.php`.
+4. Verify `views/property-details.php` does not allow landlords to inspect/apply on their own properties.
+5. Check `classes/Applications.php` and `process/process_application.php` for consistent error handling and validation.
+6. Clean up any remaining redirect/url path issues in `partials/nav.php` and admin page links.
+7. Confirm all deleted prototype files are safe to remove and not referenced anywhere.
+8. Add any missing unit test or manual test notes to `documentation.txt` or a new task list file.

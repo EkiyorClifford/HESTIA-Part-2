@@ -12,12 +12,14 @@ $admin = new Admin();
 
 // fetch data
 $dashboard_totals = $admin->get_dashboard_totals();
-$property_stats = $admin->get_property_status_stats();
 $user_roles = $admin->get_user_role_stats();
 $top_locations = $admin->get_top_locations();
 $recent_properties = $admin->get_recent_properties();
 $recent_applications = $admin->get_recent_applications();
 $today = $admin->get_todays_activity();
+
+// fetch all properties for management table
+$all_properties = $admin->get_all_properties();
 
 // process data
 $stats = array_merge([
@@ -58,18 +60,13 @@ $today = array_merge([
     'new_props' => 0,
     'inspections' => 0,
 ], $today);
-
+// progress bar calculations
 $total_properties = max(1, (int) $stats['total_properties']);
 $available_width = min(100, ($property_counts['available'] / $total_properties) * 100);
 $taken_width = min(100, ($property_counts['taken'] / $total_properties) * 100);
 $inactive_width = min(100, ($property_counts['inactive'] / $total_properties) * 100);
 
-$active_admin_page = 'dashboard';
-$page_heading = 'Admin Dashboard';
-$page_subheading = 'Properties and applications are the only sections surfaced here.';
-
-function application_status_badge(string $status): string
-{
+function application_status_badge($status){
     $status = strtolower(trim($status));
 
     if ($status === 'approved' || $status === 'accepted') {
@@ -375,5 +372,6 @@ function application_status_badge(string $status): string
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>

@@ -2,9 +2,11 @@
 session_start();
 require_once '../classes/Property.php';
 require_once "../classes/State.php";
+require_once "../classes/PropertyTracker.php";
 
 $propObj = new Property();
 $stateObj = new State();
+$trackerObj = new PropertyTracker();
 
 // 1. Fetch data for dropdowns
 $states = $stateObj->get_active_states();
@@ -17,6 +19,11 @@ if(!isset($filters['status'])) {
     $filters['status'] = 'available';
 }
 $all_props = $propObj->get_properties($filters);
+// $view_counts = [];
+// foreach($all_props as $prop) {
+//     $view_counts[$prop['property_id']] = $trackerObj->get_view_count($prop['property_id']);
+// }
+
 ?>
 
 <!DOCTYPE html>
@@ -109,75 +116,90 @@ $all_props = $propObj->get_properties($filters);
 
         <!-- PROPERTIES LIST -->
         <div class="row g-4">
-    <?php if (!empty($all_props)){ ?>
-        <?php foreach ($all_props as $p){ ?>
-            <div class="col-md-4">
-                <div class="card h-100 position-relative">
-                    
-                    <!-- WISHLIST HEART ICON -->
-                    <div class="position-absolute top-0 end-0 p-2" style="z-index: 10;">
-                        <?php if (isset($_SESSION['user_id'])): ?>
+            <?php if (!empty($all_props)){ ?>
+                <?php foreach ($all_props as $p){ ?>
+                    <div class="col-md-4">
+                        <div class="card h-100 position-relative">
+                            
+                            <!-- WISHLIST HEART ICON -->
+                            <div class="position-absolute top-0 end-0 p-2" style="z-index: 10;">
+                                <?php if (isset($_SESSION['user_id'])): ?>
+                                    <?php 
+                                        $is_saved = $propObj->is_saved($_SESSION['user_id'], $p['property_id']); 
+                                    ?>
+                                    <a href="../process/process_wishlist.php?prop_id=<?php echo $p['property_id']; ?>" 
+                                    class="btn btn-white btn-sm rounded-circle shadow-sm bg-white" 
+                                    title="<?php echo $is_saved ? 'Remove from Wishlist' : 'Add to Wishlist'; ?>">
+                                        <i class="<?php echo $is_saved ? 'fas fa-heart text-danger' : 'far fa-heart'; ?>"></i>
+                                    </a>
+                                <?php else: ?>
+                                    <!-- If not logged in, clicking the heart takes them to login as tenant only o -->
+                                    <a href="register.php" class="btn btn-white btn-sm rounded-circle shadow-sm bg-white">
+                                        <i class="far fa-heart"></i>
+                                    </a>
+                                <?php endif; ?>
+                            </div>
+
+                            <!-- Listing Type Badge -->
+                            <div class="position-absolute top-0 start-0 p-2">
+                                <span class="badge <?php echo ($p['listing_type'] == 'sale') ? 'bg-success' : 'bg-primary'; ?>">
+                                    For <?php echo ucfirst($p['listing_type']); ?>
+                                </span>
+                            </div>
+
+                            <!-- Property Image -->
                             <?php 
-                                $is_saved = $propObj->is_saved($_SESSION['user_id'], $p['property_id']); 
+                                $img = (!empty($p['thumbnail'])) ? $p['thumbnail'] : 'default_property.png';
                             ?>
-                            <a href="../process/process_wishlist.php?prop_id=<?php echo $p['property_id']; ?>" 
-                               class="btn btn-white btn-sm rounded-circle shadow-sm bg-white" 
-                               title="<?php echo $is_saved ? 'Remove from Wishlist' : 'Add to Wishlist'; ?>">
-                                <i class="<?php echo $is_saved ? 'fas fa-heart text-danger' : 'far fa-heart'; ?>"></i>
-                            </a>
-                        <?php else: ?>
-                            <!-- If not logged in, clicking the heart takes them to login as tenant only o -->
-                            <a href="register.php" class="btn btn-white btn-sm rounded-circle shadow-sm bg-white">
-                                <i class="far fa-heart"></i>
-                            </a>
-                        <?php endif; ?>
-                    </div>
+                            <img src="../upload/properties/<?php echo $img; ?>" class="card-img-top" alt="<?php echo htmlspecialchars($p['title']); ?>" style="height: 200px; object-fit: cover;">
+                            
+                            <div class="card-body">
+                                <h5 class="card-title text-truncate" style="text-transform: capitalize;"><?php echo htmlspecialchars($p['title']); ?></h5>
+                                <p class="small text-muted mb-2">
+                                    <i class="fas fa-map-marker-alt me-1"></i> 
+                                    <?php echo htmlspecialchars($p['lga_name'] . ', ' . $p['state_name']); ?>
+                                </p>
+                                
+                                <div class="specs mb-3 small">
+                                    <span><i class="fas fa-bed"></i> <?php echo $p['bedroom']; ?> Beds</span> | 
+                                    <span><i class="fas fa-couch"></i> <?php echo $p['furnished']; ?></span>
+                                </div>
 
-                    <!-- Listing Type Badge -->
-                    <div class="position-absolute top-0 start-0 p-2">
-                        <span class="badge <?php echo ($p['listing_type'] == 'sale') ? 'bg-success' : 'bg-primary'; ?>">
-                            For <?php echo ucfirst($p['listing_type']); ?>
-                        </span>
-                    </div>
-
-                    <!-- Property Image -->
-                    <?php 
-                        $img = (!empty($p['thumbnail'])) ? $p['thumbnail'] : 'default_property.png';
-                    ?>
-                    <img src="../upload/properties/<?php echo $img; ?>" class="card-img-top" alt="<?php echo htmlspecialchars($p['title']); ?>" style="height: 200px; object-fit: cover;">
-                    
-                    <div class="card-body">
-                        <h5 class="card-title text-truncate" style="text-transform: capitalize;"><?php echo htmlspecialchars($p['title']); ?></h5>
-                        <p class="small text-muted mb-2">
-                            <i class="fas fa-map-marker-alt me-1"></i> 
-                            <?php echo htmlspecialchars($p['lga_name'] . ', ' . $p['state_name']); ?>
-                        </p>
-                        
-                        <div class="specs mb-3 small">
-                            <span><i class="fas fa-bed"></i> <?php echo $p['bedroom']; ?> Beds</span> | 
-                            <span><i class="fas fa-couch"></i> <?php echo $p['furnished']; ?></span>
-                        </div>
-
-                        <div class="d-flex justify-content-between align-items-center">
-                            <p class="price-text mb-0 fw-bold" style="color: #C44536;">
-                                ₦<?php echo number_format($p['amount']); ?>
-                                <?php if($p['listing_type'] == 'rent'){?>
-                                    <small class="text-muted fw-normal" style="font-size: 0.7rem;">/ year</small>
-                                <?php }?>
-                            </p>
-                            <a href="../views/property-details.php?property_id=<?php echo $p['property_id']; ?>" class="btn btn-primary btn-sm">Details</a>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <p class="price-text mb-0 fw-bold" style="color: #C44536;">
+                                        ₦<?php echo number_format($p['amount']); ?>
+                                        <?php if($p['listing_type'] == 'rent'){?>
+                                            <small class="text-muted fw-normal" style="font-size: 0.7rem;">/ year</small>
+                                        <?php }?>
+                                    </p>
+                                    <a href="../views/property-details.php?property_id=<?php echo $p['property_id']; ?>" class="btn btn-primary btn-sm">Details</a>
+                                </div>
+                                
+                                <!-- View Count -->
+                                <hr class="my-3">
+                                <div class="d-flex justify-content-between align-items-center property-card-footer">
+                                    <div class="d-flex align-items-center gap-2 view-count" data-property-id="<?php echo $p['property_id']; ?>">
+                                        <i class="far fa-eye text-muted small"></i>
+                                        <span class="small text-muted view-count-number">
+                                            <?php echo number_format($views= $trackerObj->get_view_count($p['property_id'])['views_count'] ?? 0); ?> views
+                                        </span>
+                                    </div>
+                                    <small class="text-muted small listing-date">
+                                        <i class="far fa-calendar-alt me-1"></i>
+                                        <?php echo date('M d, Y', strtotime($p['created_at'])); ?>
+                                    </small>
+                                </div>
+                            </div>
                         </div>
                     </div>
+                <?php } ?>
+            <?php } else{?>
+                <div class="col-12 text-center py-5">
+                    <h4 class="mt-3 text-muted">No properties found matching your search.</h4>
+                    <a href="properties.php" class="btn btn-link">Clear all filters</a>
                 </div>
-            </div>
-        <?php } ?>
-    <?php } else{?>
-        <div class="col-12 text-center py-5">
-            <h4 class="mt-3 text-muted">No properties found matching your search.</h4>
-            <a href="properties.php" class="btn btn-link">Clear all filters</a>
+            <?php } ?>
         </div>
-    <?php } ?>
-</div>
     </main>
 
     <footer class="footer text-center mt-5">
@@ -187,5 +209,46 @@ $all_props = $propObj->get_properties($filters);
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    // Track views when user clicks on property details
+    document.addEventListener('DOMContentLoaded', function() {
+        const propertyLinks = document.querySelectorAll('a[href*="property-details.php"]');
+        
+        propertyLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                const propertyId = href.match(/property_id=(\d+)/);//i use this to get the property id from the url
+                
+                if (propertyId) {
+                    const propId = propertyId[1];
+                    trackView(propId);
+                }
+            });
+        });
+        
+        function trackView(propertyId) {
+            const formData = new FormData();
+            formData.append('property_id', propertyId);
+            
+            fetch('../api/track-view.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.view_count !== undefined) {
+                    // Update the view count display
+                    const viewCountElement = document.querySelector(`[data-property-id="${propertyId}"] .view-count-number`);
+                    if (viewCountElement) {
+                        viewCountElement.textContent = `${data.view_count} views`;
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error tracking view:', error);
+            });
+        }
+    });
+    </script>
 </body>
 </html>

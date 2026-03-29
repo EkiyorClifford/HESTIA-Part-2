@@ -196,11 +196,11 @@ session_start();
             <h2 style="color: #1A0F1E; font-weight: 800; margin-bottom: 30px;">Connect With Us</h2>
             <p style="color: #666; margin-bottom: 25px; font-size: 1.05rem;">Follow our social media channels for updates, property listings, and exclusive offers</p>
             <div class="social-links" style="justify-content: center;">
-                <a href="#" title="Facebook"><i class="fab fa-facebook-f"></i></a>
-                <a href="#" title="Twitter"><i class="fab fa-twitter"></i></a>
-                <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
-                <a href="#" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-                <a href="#" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                <a href="#" target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" target="_blank" title="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="#" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" target="_blank" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                <a href="https://wa.me/2348112177604?text=Hello%20%20Hestia%2C%20I%20would%20like%20to%20make%20an%20inquiry" target="_blank" rel="noopener noreferrer" style="background:#25D366;color:white;padding:10px 20px;border-radius:5px;text-decoration:none;" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
             </div>
         </div>
     </main>

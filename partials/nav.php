@@ -9,6 +9,8 @@ $userObj = new User();
 
 $user_name = "";
 $user_role = $_SESSION['user_role'] ?? null;
+// admin username
+$admin_name = $_SESSION['admin_name'] ?? null;
 
 // 2. Fetch logged-in user details only if session exists
 if (isset($_SESSION['user_id'])) {
@@ -36,7 +38,33 @@ $base_url = "/Hestia-PHP/";
                 <li class="nav-item"><a class="nav-link" href="<?php echo $base_url; ?>views/properties.php">Browse</a></li>
                 <li class="nav-item"><a class="nav-link" href="<?php echo $base_url; ?>views/contact.php">Contact</a></li>
 
-                <?php if(isset($_SESSION['user_id'])){ ?>
+                <!-- Admin nav -->
+                <?php if(isset($_SESSION['admin_id'])){ ?>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fa fa-user-circle me-1"></i> Hi, <?php echo htmlspecialchars($admin_name); ?>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="<?php echo $base_url; ?>/admin/views/update-profile.php">
+                                    <i class="fas fa-user-pen me-2"></i>Profile
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="<?php echo $base_url; ?>/admin/views/admin-dashboard.php">
+                                    <i class="fas fa-user-pen me-2"></i>Admin Dashboard
+                                </a>
+                            </li>
+                            <li class="dropdown-item text-center">
+                                <form method="post" action="<?= $base_url ?>admin/process/process_admin_logout.php" class="m-0">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                                        <i class="fas fa-sign-out-alt me-1"></i> Logout
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                <?php } else if(isset($_SESSION['user_id'])){ ?>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
                             <i class="fa fa-user-circle me-1"></i> Hi, <?php echo htmlspecialchars($user_name); ?>

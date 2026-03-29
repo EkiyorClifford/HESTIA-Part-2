@@ -19,6 +19,14 @@ class Inspection extends Db {
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    //method to ensure a landlord is not inspecting his own property
+    public function is_landlord_own_property($prop_id, $landlord_id) {
+        $sql = "SELECT * FROM properties WHERE property_id = ? AND user_id = ?";
+        $stmt = $this->dbconn->prepare($sql);
+        $stmt->execute([$prop_id, $landlord_id]);
+        return $stmt->rowCount() > 0;
+    }
+
         // Get applications for the Tenant Dashboard
     public function get_tenant_applications($user_id) {
         $sql = "SELECT a.*, p.title, p.amount, p.listing_type FROM applications a JOIN properties p ON a.property_id = p.property_id WHERE a.user_id = ? ORDER BY a.created_at DESC";
@@ -41,6 +49,11 @@ class Inspection extends Db {
 
     // Create an inspection request
     public function request_inspection($prop_id, $user_id, $date) {
+        try{
+            // Check if user is landlord of this property
+            if ($this->is_landlord_own_property($prop_id, $user_id)) {
+                return "error:own_property";
+            }
         // Check if a pending request already exists for this property by this user
         $check = "SELECT * FROM inspections WHERE property_id = ? AND user_id = ? AND status = 'pending'";
         $stmt = $this->dbconn->prepare($check);
@@ -53,7 +66,14 @@ class Inspection extends Db {
         $sql = "INSERT INTO inspections (property_id, user_id, inspection_date, status) VALUES (?, ?, ?, 'pending')";
         $stmt= $this->dbconn->prepare($sql);
         $data= $stmt->execute([$prop_id, $user_id, $date]);
+        if(!$data) {
+            error_log("Failed to insert. PDO Error: " . print_r($stmt->errorInfo(), true));
+        }
         return $data;
+        } catch (PDOException $e) {
+            error_log("Exception in request_inspection: " . $e->getMessage());
+            return false;
+        }
     }  
 
     // Update inspection status (For Cancel, Approve, or Reject)
@@ -70,6 +90,23 @@ class Inspection extends Db {
         $stmt = $this->dbconn->prepare($sql);
         $data = $stmt->execute([$new_date, $inspection_id]);
         return $data;
+    }
+
+    //method that checks if a user has applied to inspect a property
+    public function check_inspection($property_id, $user_id){
+        try {
+        $sql = "SELECT * FROM inspections WHERE property_id = ? AND user_id = ? AND (status = 'pending' OR status = 'approved')";
+        $stmt = $this->dbconn->prepare($sql);
+        $stmt->execute([$property_id, $user_id]);
+        $result = $stmt->rowCount() > 0;
+        if($result) {
+            return true;
+        }
+        return false;
+        } catch (PDOException $e) {
+            error_log("Failed to check inspection: " . $e->getMessage());
+            return false;
+        }
     }
 }
 

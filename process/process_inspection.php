@@ -16,6 +16,13 @@ if (isset($_POST['request_btn'])) {
     $prop_id = $_POST['property_id'];
     $date = $_POST['inspection_date'];
 
+    // Check if user is trying to inspect their own property(thieves)
+    if ($insp->is_landlord_own_property($prop_id, $user_id)) {
+        $_SESSION['error'] = "You cannot request an inspection for your own property.";
+        header("Location: ../views/property-details.php?id=$prop_id");
+        exit();
+    }
+
     if (empty($date)) {
         $_SESSION['error'] = "Please select a valid date.";
         header("Location: ../views/property-details.php?id=$prop_id");

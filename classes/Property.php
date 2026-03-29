@@ -172,7 +172,7 @@ class Property extends Db {
 
             $sql = "SELECT status, COUNT(*) AS count
                     FROM properties
-                    WHERE user_id = ? AND (deleted_at IS NULL OR status <> 'deleted')
+                    WHERE user_id = ? AND (deleted_at IS NULL AND status <> 'deleted')
                     GROUP BY status";
             $stmt = $this->dbconn->prepare($sql);
             $stmt->execute([$user_id]);
@@ -191,7 +191,7 @@ class Property extends Db {
             $sql = "SELECT COUNT(*)
                     FROM applications a
                     JOIN properties p ON a.property_id = p.property_id
-                    WHERE p.user_id = ? AND (p.deleted_at IS NULL OR p.status <> 'deleted')";
+                    WHERE p.user_id = ? AND (p.deleted_at IS NULL AND p.status <> 'deleted')";
             $stmt = $this->dbconn->prepare($sql);
             $stmt->execute([$user_id]);
             $stats['applications'] = (int) $stmt->fetchColumn();
@@ -213,7 +213,7 @@ class Property extends Db {
                     JOIN states s ON p.state_id = s.state_id
                     JOIN lgas l ON p.lga_id = l.lga_id
                     JOIN property_types pt ON p.property_type_id = pt.type_id
-                    WHERE p.user_id = ? AND (p.deleted_at IS NULL OR p.status <> 'deleted')
+                    WHERE p.user_id = ? AND (p.deleted_at IS NULL AND p.status <> 'deleted')
                     ORDER BY p.created_at DESC";
 
             $stmt = $this->dbconn->prepare($sql . ($limit !== null ? " LIMIT " . (int) $limit : ""));
@@ -230,7 +230,7 @@ class Property extends Db {
                     FROM applications a
                     JOIN properties p ON a.property_id = p.property_id
                     JOIN users u ON a.user_id = u.id
-                    WHERE p.user_id = ? AND (p.deleted_at IS NULL OR p.status <> 'deleted')
+                    WHERE p.user_id = ? AND (p.deleted_at IS NULL AND p.status <> 'deleted')
                     ORDER BY a.created_at DESC";
 
             $stmt = $this->dbconn->prepare($sql . ($limit !== null ? " LIMIT " . (int) $limit : ""));

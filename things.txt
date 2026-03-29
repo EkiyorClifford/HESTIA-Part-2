@@ -1,41 +1,8 @@
-inside the property table for landlord dashboard
+When listed
+Number of views
+Inspection requests
+Application count
 
-<tbody>
-    <?php foreach($my_properties as $p): ?>
-    <tr>
-        <td><?php echo htmlspecialchars($p['title']); ?></td>
-        <td>
-            <span class="status-badge <?php echo ($p['status'] == 'available') ? 'status-available' : 'status-rented'; ?>">
-                <?php echo ucfirst($p['status']); ?>
-            </span>
-        </td>
-        <td>₦<?php echo number_format($p['amount'], 2); ?></td>
-        <td class="action-btns">
-            <a href="edit-property.php?id=<?php echo $p['id']; ?>" class="action-btn edit">Edit</a>
-            <a href="../views/property-details.php?id=<?php echo $p['id']; ?>" class="action-btn view">View</a>
-        </td>
-    </tr>
-    <?php endforeach; ?>
-</tbody>
-
-
-add property now works and i can view details and the search works. unto the dashboard now
-remain admin and then the dashboards.
-the login and logout feels smooth and okayy
-
-
-
-My Progress Report:
-Fixed Property Class: Resolved the property_id vs id naming conflict across all SQL queries.
-Dynamic Filtering: The Properties listing now filters by Price, Type, Bedrooms, and Keywords.
-Property Details: Fixed the "View Details" navigation and the dynamic image/amenities gallery.
-Tenant Dashboard: Completed the "Saved Properties" tab and "Inspections" tab with real-time status colors and rescheduling modals.
-Inspection Logic: Built the processing engine to handle requests, cancellations, and date updates.
-Tomorrow's Roadmap:
-Landlord Dashboard:
-Displaying the list of properties owned by the logged-in landlord.
-Viewing "Incoming Inspection Requests" from tenants.
-Building the Approve/Reject logic (The Landlord's version of process_inspection.php).
-Admin Dashboard:
-Overview of all users and properties.
-"Verify" property logic to give listings that blue checkmark.
+make sure properties have a table just like user in the admin dashboard. 
+Also another page to show properties that are pending and not been approved by the user.
+Implement view count.

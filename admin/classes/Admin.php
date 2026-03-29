@@ -28,6 +28,20 @@ class Admin extends Db {
             return false;
         }
     }
+    // geet admin details
+    public function get_admin_details($id){
+        try{
+            $sql = "SELECT * FROM admins WHERE admin_id = ?";
+            $stmt = $this->dbconn->prepare($sql);
+            $stmt->execute([$id]);
+            $record = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $record;
+        }catch(PDOException $e){
+            // echo $e->getMessage();
+            // die();
+            return false;
+        }
+    }
 
     //method to fetch all users
     public function get_users($filter = 'all'){
@@ -52,18 +66,16 @@ class Admin extends Db {
         }
     }
 
-    // classes/Admin.php
+    // method to update new user status
     public function update_user_status($id, $new_status) {
-        // Ensure $new_status is exactly 'yes' or 'no'
         $sql = "UPDATE users SET is_active = ? WHERE id = ?";
         $stmt = $this->dbconn->prepare($sql);
         $result = $stmt->execute([$new_status, $id]);
-        
-        // rowCount helps verify if the database actually changed a row
         return ($result && $stmt->rowCount() > 0);
     }
-    // method to get user by id
 
+
+    // method to get user by id
     public function get_user_by_id($id){
         try{
         $sql= "SELECT * FROM users WHERE id =?";
@@ -76,7 +88,27 @@ class Admin extends Db {
             return false;
         }
     }
+    //method for prop dashboard
+    public function get_property_dashboard_totals() {
+        $defaults = [
+            'total_properties' => 0,
+            'active_properties' => 0,
+            'inactive_properties' => 0,
+        ];
 
+        try {
+            $stats = $defaults;
+            $stats['total_properties'] = $this->dbconn->query("SELECT COUNT(property_id) FROM properties")->fetchColumn();
+            $stats['active_properties'] = $this->dbconn->query("SELECT COUNT(property_id) FROM properties WHERE status = 'available' OR status = 'taken'")->fetchColumn();
+            $stats['inactive_properties'] = $this->dbconn->query("SELECT COUNT(property_id) FROM properties WHERE status = 'inactive' OR status = 'deleted'")->fetchColumn();
+            return $stats;
+        } catch (PDOException $e) {
+            // echo $e->getMessage(); die();
+            return $defaults;
+        }
+    }
+
+    //method to get dashboard totals
     public function get_dashboard_totals() {
         $defaults = [
             'total_users' => 0,
@@ -98,6 +130,7 @@ class Admin extends Db {
         }
     }
 
+    //method to search users
      public function search_users($keyword, $filter = 'all') {
         $sql = "SELECT * FROM users WHERE (first_name LIKE ? OR last_name LIKE ? OR email LIKE ? OR p_number LIKE ?)";
         $term = "%$keyword%";
@@ -114,28 +147,52 @@ class Admin extends Db {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function get_todays_activity() {
-    try {
-        $stats = [];
-        
-        // 1. New Users Today
-        $stmt = $this->dbconn->query("SELECT COUNT(id) FROM users WHERE DATE(created_at) = CURDATE()");
-        $stats['new_users'] = $stmt->fetchColumn();
+    // method to search properties
+    public function search_properties($keyword, $filter = 'all') {
+        $sql = "SELECT p.*, s.state_name, l.lga_name, pt.type_name 
+                FROM properties p 
+                JOIN states s ON p.state_id = s.state_id 
+                JOIN lgas l ON p.lga_id = l.lga_id 
+                JOIN property_types pt ON p.property_type_id = pt.type_id 
+                WHERE (`description` LIKE ? OR title LIKE ? OR listing_type LIKE ? OR amount LIKE ? OR `status` LIKE ? OR prop_address LIKE ? OR s.state_name LIKE ? OR l.lga_name LIKE ?)";
+        $term = "%$keyword%";
+        $params = [$term, $term, $term, $term, $term, $term, $term, $term];
 
-        // 2. New Properties Today
-        $stmt = $this->dbconn->query("SELECT COUNT(property_id) FROM properties WHERE DATE(created_at) = CURDATE()");
-        $stats['new_props'] = $stmt->fetchColumn();
+        if ($filter !== 'all') {
+            $sql .= " AND status = ?";
+            $params[] = $filter;
+        }
 
-        // 3. Inspections Scheduled Today
-        $stmt = $this->dbconn->query("SELECT COUNT(inspection_id) FROM inspections WHERE DATE(inspection_date) = CURDATE()");
-        $stats['inspections'] = $stmt->fetchColumn();
-
-        return $stats;
-    } catch (PDOException $e) {
-        return ['new_users' => 0, 'new_props' => 0, 'inspections' => 0];
+        $sql .= " ORDER BY created_at DESC";
+        $stmt = $this->dbconn->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-}
 
+    //method to get today's activity
+    public function get_todays_activity() {
+        try {
+            $stats = [];
+            
+            // 1. New Users Today
+            $stmt = $this->dbconn->query("SELECT COUNT(id) FROM users WHERE DATE(created_at) = CURDATE()");
+            $stats['new_users'] = $stmt->fetchColumn();
+
+            // 2. New Properties Today
+            $stmt = $this->dbconn->query("SELECT COUNT(property_id) FROM properties WHERE DATE(created_at) = CURDATE()");
+            $stats['new_props'] = $stmt->fetchColumn();
+
+            // 3. Inspections Scheduled Today
+            $stmt = $this->dbconn->query("SELECT COUNT(inspection_id) FROM inspections WHERE DATE(inspection_date) = CURDATE()");
+            $stats['inspections'] = $stmt->fetchColumn();
+
+            return $stats;
+        } catch (PDOException $e) {
+            return ['new_users' => 0, 'new_props' => 0, 'inspections' => 0];
+        }
+    }
+
+    //method to get property status stats
     public function get_property_status_stats() {
         try{
         $sql = "SELECT status, COUNT(*) as count FROM properties GROUP BY status";
@@ -150,6 +207,7 @@ class Admin extends Db {
     }
     }
 
+    //method to get user role stats
     public function get_user_role_stats() {
         try{
         $sql = "SELECT role_, COUNT(*) as count FROM users GROUP BY role_";
@@ -186,22 +244,14 @@ class Admin extends Db {
     // method to get user active status by id
     public function get_user_active_status($id = null) {
         try{
-        if ($id !== null) {
             $sql = "SELECT is_active FROM users WHERE id = ?";
             $stmt = $this->dbconn->prepare($sql);
             $stmt->execute([$id]);
             return $stmt->fetchColumn();
-        }
-
-        $sql = "SELECT is_active, COUNT(*) as count FROM users GROUP BY is_active";
-        $stmt = $this->dbconn->prepare($sql);
-        $stmt -> execute();
-        $data =  $stmt->fetchAll(PDO::FETCH_ASSOC);
-        return $data;
         }catch(PDOException $e){
          // echo $e->getMessage;
         // die();
-        return $id !== null ? null : [];
+        return false;
         }
     }
 
@@ -264,6 +314,54 @@ class Admin extends Db {
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
             return [];
+        }
+    }
+
+    public function get_all_properties() {
+        try {
+            $sql = "SELECT p.*, t.type_name, s.state_name, l.lga_name, u.first_name, u.last_name, u.email
+                    FROM properties p 
+                    JOIN property_types t ON p.property_type_id = t.type_id
+                    JOIN states s ON p.state_id = s.state_id
+                    JOIN lgas l ON p.lga_id = l.lga_id
+                    JOIN users u ON p.user_id = u.id
+                    ORDER BY p.created_at DESC";
+            
+            $stmt = $this->dbconn->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
+
+    public function get_property_by_id($id) {
+        try {
+            $sql = "SELECT p.*, t.type_name, s.state_name, l.lga_name, u.first_name, u.last_name, u.email
+                    FROM properties p 
+                    JOIN property_types t ON p.property_type_id = t.type_id
+                    JOIN states s ON p.state_id = s.state_id
+                    JOIN lgas l ON p.lga_id = l.lga_id
+                    JOIN users u ON p.user_id = u.id
+                    WHERE p.property_id = ?";
+            
+            $stmt = $this->dbconn->prepare($sql);
+            $stmt->execute([$id]);
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
+    public function update_property_status($id, $new_status) {
+        try {
+            $sql = "UPDATE properties SET status = ? WHERE property_id = ?";
+            $stmt = $this->dbconn->prepare($sql);
+            $result = $stmt->execute([$new_status, $id]);
+            
+            return ($result && $stmt->rowCount() > 0);
+        } catch (PDOException $e) {
+            return false;
         }
     }
 

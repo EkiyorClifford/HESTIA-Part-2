@@ -3,10 +3,7 @@ session_start();
 require_once '../classes/Admin.php';
 $admin = new Admin;
 $user = $admin->get_user_by_id(1);
-// echo "<pre>";
-// print_r($user);
-// echo "</pre>";
-// die();
+
 ?>
 <!DOCTYPE html>
 <html lang="en">

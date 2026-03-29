@@ -19,15 +19,21 @@ $active_admin_page = $active_admin_page ?? 'dashboard';
                 </a>
             </li>
             <li>
-                <a href="<?= $base_url ?>views/properties.php" class="sidebar-link">
+                <a href="<?= $base_url ?>admin/views/property_management.php" class="sidebar-link">
                     <i class="fas fa-building"></i>
-                    <span>Properties</span>
+                    <span>Property Management</span>
                 </a>
             </li>
             <li>
                 <a href="<?= $base_url ?>admin/views/admin-dashboard.php#recent-applications" class="sidebar-link">
                     <i class="fas fa-file-signature"></i>
                     <span>Applications</span>
+                </a>
+            </li>
+            <li>
+                <a href="<?= $base_url ?>admin/views/update-profile.php" class="sidebar-link">
+                    <i class="fas fa-user-edit"></i>
+                    <span>Edit Profile</span>
                 </a>
             </li>
             <li>

@@ -2,6 +2,8 @@
 session_start();
 require_once '../classes/Property.php';
 require_once '../classes/User.php';
+include_once '../classes/PropertyTracker.php';
+include_once '../classes/Inspection.php';
 
 
 $id = $_GET['property_id'] ?? null; 
@@ -25,6 +27,26 @@ if (!$details) {
 $images = $property->get_images($id);
 // Fix: Get dynamic amenities
 $amenities = $property->get_amenities_by_property($id); 
+
+$Pt1 = new PropertyTracker();
+$user_id = $_SESSION['user_id'] ?? null;
+
+$views = $Pt1->track_view($id, $user_id);
+$tracker = $Pt1->count_stats($id);
+$last_viewed = $Pt1->get_last_viewed($id, $user_id);
+
+// check inspection
+
+$can_request = true;
+$inspection_check = false;
+
+if (isset($_SESSION['user_id'])) {
+    $inspection = new Inspection();
+    $inspection_check = $inspection->check_inspection($id, $_SESSION['user_id']);
+    $can_request = $inspection_check === false && !$inspection->is_landlord_own_property($id, $_SESSION['user_id']);
+} else {
+    $can_request = true;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -41,13 +63,6 @@ $amenities = $property->get_amenities_by_property($id);
     <?php include '../partials/nav.php'; ?>
 
     <main class="container flex-grow-1 py-5">
-        <nav aria-label="breadcrumb" class="mb-4">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="../views/index.php">Home</a></li>
-                <li class="breadcrumb-item"><a href="../views/properties.php">Properties</a></li>
-                <li class="breadcrumb-item active"><?php echo htmlspecialchars($details['title']); ?></li>
-            </ol>
-        </nav>
 
         <div class="row g-4">
             <div class="col-lg-8">
@@ -66,24 +81,24 @@ $amenities = $property->get_amenities_by_property($id);
                     <?php } ?>
                 </div>
 
-                <!-- Dynamic Description -->
+                <!-- Property Description -->
                 <div class="property-details-section mt-5">
                     <h3><i class="fas fa-file-alt text-primary"></i> Description</h3>
                     <p><?php echo nl2br(htmlspecialchars($details['description'])); ?></p>
                 </div>
 
-                <!-- Dynamic Amenities -->
+                <!--  Amenities -->
                 <div class="property-details-section">
                     <h3><i class="fas fa-check-circle text-primary"></i> Amenities</h3>
-                    <?php if(!empty($amenities)): ?>
+                    <?php if(!empty($amenities)){ ?>
                     <ul class="amenities-list d-flex flex-wrap list-unstyled">
-                        <?php foreach($amenities as $amt): ?>
+                        <?php foreach($amenities as $amt){ ?>
                         <li class="me-4 mb-2"><i class="fas fa-check text-success me-2"></i><?php echo htmlspecialchars($amt['amenity_name']); ?></li>
-                        <?php endforeach; ?>
+                        <?php } ?>
                     </ul>
-                    <?php else: ?>
+                    <?php } else { ?>
                         <p class="text-muted small">No specific amenities listed.</p>
-                    <?php endif; ?>
+                    <?php } ?>
                 </div>
 
                 <!-- Location -->
@@ -99,33 +114,127 @@ $amenities = $property->get_amenities_by_property($id);
             <!-- Sidebar Card -->
             <div class="col-lg-4">
                 <div class="property-details-card shadow-lg p-4 bg-white rounded-4">
-                    <div class="mb-3">
-                        <span class="badge bg-<?php echo ($details['listing_type'] == 'sale') ? 'success' : 'primary'; ?> me-2">For <?php echo ucfirst($details['listing_type']); ?></span>
-                        <span class="badge bg-info">Verified</span>
+                    <!-- Badges Row -->
+                    <div class="mb-3 d-flex flex-wrap gap-2">
+                        <span class="badge bg-<?php echo ($details['listing_type'] == 'sale') ? 'success' : 'primary'; ?> px-3 py-2">
+                            For <?php echo ucfirst($details['listing_type']); ?>
+                        </span>
+                        <span class="badge bg-info px-3 py-2">
+                            <i class="fas fa-check-circle me-1"></i> Verified
+                        </span>
+                        
+                        <!-- High Demand Badge -->
+                        <?php if(($details['view_count'] ?? 0) > 100){ ?>
+                            <span class="badge bg-warning text-dark px-3 py-2">
+                                <i class="fas fa-fire me-1"></i> High Demand
+                            </span>
+                        <?php } ?>
                     </div>
                     <h2 class="h4 fw-bold" style="text-transform: capitalize;"><?php echo htmlspecialchars($details['title']); ?></h2>
-                    <div class="price-tag h3 text-danger fw-bold my-3">₦<?php echo number_format($details['amount'], 2); ?></div>
+                    
+                    <!-- Location line -->
+                    <p class="text-secondary small mb-2">
+                        <i class="fas fa-map-marker-alt me-1" style="color: #C44536;"></i>
+                        <?php echo $details['lga_name']; ?>, <?php echo $details['state_name']; ?>
+                    </p>
+                    
+                    <!-- Price -->
+                    <div class="price-tag h3 text-danger fw-bold my-3">
+                        ₦<?php echo number_format($details['amount'], 2); ?>
+                        <?php if($details['listing_type'] == 'rent'){ ?>
+                            <small class="text-muted fw-normal" style="font-size: 0.8rem;">/ year</small>
+                        <?php } ?>
+                    </div>
 
+                    <!-- ENGAGEMENT DASHBOARD -->
+                    <div class="bg-light rounded-4 p-3 mb-4">
+                        <h6 class="text-secondary mb-3">
+                            <i class="fas fa-chart-line me-2" style="color: #C44536;"></i>
+                            Property Engagement
+                        </h6>
+                        
+                        <div class="row g-2 text-center">
+                            <!-- Views -->
+                            <div class="col-4">
+                                <div class="d-flex flex-column align-items-center">
+                                    <i class="fas fa-eye fs-5 mb-1" style="color: #C44536;"></i>
+                                    <span class="fw-bold fs-5"><?php echo number_format($tracker['views_count']); ?></span>
+                                    <span class="small text-secondary">Views</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Inspection Requests -->
+                            <div class="col-4">
+                                <div class="d-flex flex-column align-items-center">
+                                    <i class="fas fa-calendar-check fs-5 mb-1" style="color: #C44536;"></i>
+                                    <span class="fw-bold fs-5"><?php echo number_format($tracker['inspection_count']); ?></span>
+                                    <span class="small text-secondary">Inspections</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Applications -->
+                            <div class="col-4">
+                                <div class="d-flex flex-column align-items-center">
+                                    <i class="fas fa-file-alt fs-5 mb-1" style="color: #C44536;"></i>
+                                    <span class="fw-bold fs-5"><?php echo number_format($tracker['application_count']); ?></span>
+                                    <span class="small text-secondary">Applications</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Urgency Messages -->
+                        <div class="mt-3 pt-2 border-top">
+                            <?php if(($tracker['views_count'] ?? 0) > 100){ ?>
+                                <div class="d-flex align-items-center gap-2 text-warning mb-2">
+                                    <i class="fas fa-fire"></i>
+                                    <small class="fw-semibold">🔥 High demand! Over 100 views this month</small>
+                                </div>
+                            <?php } ?>
+                            
+                            <?php if(($tracker['application_count'] ?? 0) >= 3){ ?>
+                                <div class="d-flex align-items-center gap-2 text-success mb-2">
+                                    <i class="fas fa-users"></i>
+                                    <small class="fw-semibold">📝 <?php echo $tracker['application_count']; ?> people applied this week</small>
+                                </div>
+                            <?php } ?>
+                            
+                            <?php if($last_viewed){ ?>
+                                <?php 
+                                    $last_viewed_time = strtotime($last_viewed['viewed_at']);
+                                    $minutes_ago = floor((time() - $last_viewed_time) / 60);
+                                    if($minutes_ago < 10){
+                                ?>
+                                <div class="d-flex align-items-center gap-2" style="color: #C44536;">
+                                    <i class="fas fa-eye"></i>
+                                    <small>Last viewed <?php echo $minutes_ago; ?> <?php echo $minutes_ago == 1 ? 'minute' : 'minutes'; ?> ago</small>
+                                </div>
+                            <?php } ?>
+                            <?php } ?>
+                        </div>
+                    </div>
+
+                    <!-- Specs -->
                     <div class="specs mt-4">
                         <div class="spec-item">
-                        <div class="spec-icon"><i class="fas fa-bed"></i></div>
-                        <div class="spec-text">
-                            <div class="spec-label">Bedrooms</div>
-                            <div class="spec-value"><?php echo $details['bedroom']; ?></div>
+                            <div class="spec-icon"><i class="fas fa-bed"></i></div>
+                            <div class="spec-text">
+                                <div class="spec-label">Bedrooms</div>
+                                <div class="spec-value"><?php echo $details['bedroom']; ?></div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="spec-item">
-                        <div class="spec-icon"><i class="fas fa-couch"></i></div>
-                        <div class="spec-text">
-                            <div class="spec-label">Furnished</div>
-                            <div class="spec-value"><?php echo $details['furnished']; ?></div>
+                        <div class="spec-item">
+                            <div class="spec-icon"><i class="fas fa-couch"></i></div>
+                            <div class="spec-text">
+                                <div class="spec-label">Furnished</div>
+                                <div class="spec-value"><?php echo $details['furnished']; ?></div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="spec-item">
-                        <div class="spec-icon"><i class="fas fa-home"></i></div>
-                        <div class="spec-text">
-                            <div class="spec-label">Type</div>
-                            <div class="spec-value"><?php echo $details['type_name']; ?></div>
+                        <div class="spec-item">
+                            <div class="spec-icon"><i class="fas fa-home"></i></div>
+                            <div class="spec-text">
+                                <div class="spec-label">Type</div>
+                                <div class="spec-value"><?php echo $details['type_name']; ?></div>
+                            </div>
                         </div>
                     </div>
 
@@ -133,28 +242,81 @@ $amenities = $property->get_amenities_by_property($id);
                     <p style="color: #666; margin-bottom: 20px; margin-left: 20px; text-transform: capitalize; font-weight: 500;"><?php echo $details['status']; ?></p>
 
                     <hr>
-                     <!-- Contact Info -->
+                    
+                    <!-- Listed Date -->
+                    <div class="mb-3">
+                        <small class="text-secondary">
+                            <i class="far fa-calendar-alt me-1"></i>
+                            Listed on <?php echo date('F j, Y', strtotime($details['created_at'])); ?>
+                        </small>
+                    </div>
+                    
+                    <!-- Contact Info -->
                     <div style="background: linear-gradient(135deg, #fce4ec 0%, #f3e5f5 100%); padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #f8bbd0;">
+                        <h6 style="color: #1A0F1E; font-weight: 700; margin-bottom: 12px;">Contact Information</h6>
+                        <!-- Divider -->
+                        <hr style="margin: 12px 0;">
+                        <!-- Name -->
+                        <p style="color: #666; font-size: 0.9rem; margin-bottom: 8px;"><i class="fas fa-user" style="color: #C44536; margin-right: 8px;"></i><?php echo $user_details['first_name'] . ' ' . $user_details['last_name']; ?></p>
+                        <!-- Phone Number -->
                         <p style="color: #666; font-size: 0.9rem; margin-bottom: 8px;"><i class="fas fa-phone" style="color: #C44536; margin-right: 8px;"></i><?php echo $user_details['p_number']; ?></p>
+                        <!-- Email -->
                         <p style="color: #666; font-size: 0.9rem; margin: 0;"><i class="fas fa-envelope" style="color: #C44536; margin-right: 8px;"></i><?php echo $user_details['email']; ?></p>
                     </div>
 
                     <!-- Inspection/Request Action -->
-                    <?php if(isset($_SESSION['user_role']) && $_SESSION['user_role'] == 'tenant'): ?>
+                    <?php if(isset($_SESSION['user_id']) && $can_request) { ?>
+                        <span class="">We recommend booking a viewing before applying.</span>
                         <form action="../process/process_inspection.php" method="POST">
                             <input type="hidden" name="property_id" value="<?php echo $id; ?>">
                             <div class="mb-3">
                                 <label class="small fw-bold">Select Inspection Date</label>
                                 <input type="date" name="inspection_date" class="form-control" required min="<?php echo date('Y-m-d'); ?>">
                             </div>
-                            <button type="submit" name="request_btn" class="btn btn-primary w-100 mb-2"><i class="fas fa-eye me-2"></i> Request Viewing</button>
+                            <button type="submit" name="request_btn" class="btn btn-primary w-100 mb-2" style="background: #C44536; border: none;">
+                                <i class="fas fa-eye me-2"></i> Request Viewing
+                            </button>
                         </form>
-                    <?php else: ?>
-                        <div class="alert alert-warning small">Please login as a tenant to book inspections.</div>
-                    <?php endif; ?>
+                    <?php } elseif(isset($_SESSION['user_id']) && !$can_request) { ?>
+                        <div class="alert alert-warning small">You can't inspect your own property</div>
+                    <?php }else{ ?>
+                        <div class="alert alert-warning small">Please login to book inspections</div>
+                    <?php } ?>
+
+                    <!-- Application Form -->
+                <?php if(isset($_SESSION['user_id']) && $can_request) { ?>
+                    <form action="../process/process_application.php" method="POST">
+                        <input type="hidden" name="property_id" value="<?php echo $id; ?>">
+                        
+                        <div class="mb-3">
+                            <label class="small fw-bold">Application Message</label>
+                            <textarea name="message" class="form-control" rows="3" 
+                                    placeholder="Tell the landlord why you're interested in this property..." 
+                                    maxlength="1000" required></textarea>
+                            <small class="text-muted">Maximum 1000 characters</small>
+                        </div>
+                        
+                        <button type="submit" name="application_btn" class="btn btn-primary w-100 mb-2" 
+                                style="background: #C44536; border: none;">
+                            <i class="fas fa-file-alt me-2"></i>APPLY NOW
+                        </button>
+                    </form>
+                <?php } elseif(isset($_SESSION['user_id']) && !$can_request) { ?>
+                    <div class="alert alert-warning small">You can't apply to your own property</div>
+                <?php } else { ?>
+                    <div class="alert alert-warning small">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Please login to apply for properties.
+                    </div>
+                <?php } ?>
+                    
                     <!-- action buttons -->
-                    <button class="btn btn-outline-primary w-100 mb-2"><i class="fas fa-heart me-2"></i> Save to Wishlist</button>
-                    <button class="btn btn-outline-primary w-100"><i class="fas fa-share-alt me-2"></i> Share Property</button>
+                    <button class="btn btn-outline-primary w-100 mb-2" style="border-color: #C44536; color: #C44536;">
+                        <i class="fas fa-heart me-2"></i> Save to Wishlist
+                    </button>
+                    <button class="btn btn-outline-primary w-100 mb-2" style="border-color: #C44536; color: #C44536;">
+                        <i class="fas fa-share-alt me-2"></i> Share Property
+                    </button>
                 </div>
             </div>
         </div>

@@ -4,9 +4,7 @@ require_once "../userguard.php";
 require_once "../classes/Common.php";
 require_once "../classes/Property.php";
 
-// echo "<pre>";
-// print_r($_POST['add_property']);
-// echo "</pre>";
+
 
 
 if(!isset($_POST['add_property'])){

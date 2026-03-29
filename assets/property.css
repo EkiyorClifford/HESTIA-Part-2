@@ -178,3 +178,44 @@
             font-size: 1rem;
             margin-bottom: 15px;
         }
+        /*view count section */
+        .property-card-footer {
+            margin-top: 0.5rem;
+            padding-top: 0.75rem;
+        }
+
+        /* View count text */
+        .view-count {
+            font-size: 1.1rem;
+            color: #000;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .view-count i {
+            font-size: 1.1rem;
+            color: #C44536;
+            opacity: 0.7;
+        }
+
+        /* Listing date*/
+        .listing-date {
+            font-size: 1.1rem;
+            color: #adb5bd;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .listing-date i {
+            font-size: 1.075rem;
+        }
+
+        .property-card-footer .view-count:hover {
+            color: #C44536;
+        }
+
+        .property-card-footer .view-count:hover i {
+            opacity: 1;
+        }
