@@ -1,0 +1,31 @@
+Added
+- Bootstrap toast flash-message display on `views/property-details.php` for success and error feedback.
+- Session flash handling in `views/property-details.php` to show application and inspection results without leaving the page.
+- Bootstrap JS include and toast auto-show script in `views/property-details.php`.
+- `redirect_to_property_details()` helper in `process/process_application.php`.
+- `redirect_to_property_details()` helper in `process/process_inspection.php`.
+- User-friendly application error messages in `process/process_application.php`.
+- Same-page redirect behavior after submitting an application.
+- Same-page redirect behavior after requesting an inspection.
+- Transaction rollback before early returns in `classes/Applications.php` when the property is unavailable or the user already applied.
+- Landlord dashboard inspection review section with approve and reject buttons.
+- Landlord dashboard application approve and reject buttons.
+- Landlord-side status update handlers for applications and inspections in `process/process_property_action.php`.
+- `update_application_status_for_landlord()` in `classes/Applications.php`.
+- `update_inspection_status_for_landlord()` in `classes/Inspection.php`.
+- `get_landlord_inspections(..., $limit)` support in `classes/Inspection.php`.
+- Inspection totals in landlord dashboard stats in `classes/Property.php`.
+- Inspection count increment helper in `classes/PropertyTracker.php`.
+- Mobile-friendly property details gallery behavior, touch-friendly spacing, and button sizing updates.
+- Optimized image loading on `views/property-details.php` with eager/lazy loading hints.
+- Safer property stat fallbacks so missing `property_stats` rows display `0`.
+- Duplicate application protection for both `pending` and `approved` application statuses.
+
+Removed
+- Automatic call to `$application->apply($id, $_SESSION['user_id'], '')` from `views/property-details.php`.
+- Empty application insert behavior caused by page load in `views/property-details.php`.
+- Debug `error_log()` statements for application message contents in `classes/Applications.php`.
+- Redirects using the wrong query key `id` for property details in the application and inspection processes.
+- Redirect to tenant profile after a successful inspection request.
+- Old landlord inspection join using `p.id` instead of `p.property_id`.
+- Unreachable inspection-count update code placed after `return` in `classes/Inspection.php`.

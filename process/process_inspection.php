@@ -4,6 +4,15 @@ require_once '../classes/Inspection.php';
 //require userguard
 require_once '../userguard.php';
 
+function redirect_to_property_details($propertyId) {
+    $location = '../views/property-details.php';
+    if ($propertyId > 0) {
+        $location .= '?property_id=' . $propertyId;
+    }
+    header('Location: ' . $location);
+    exit();
+}
+
 
 $insp = new Inspection();
 
@@ -19,25 +28,30 @@ if (isset($_POST['request_btn'])) {
     // Check if user is trying to inspect their own property(thieves)
     if ($insp->is_landlord_own_property($prop_id, $user_id)) {
         $_SESSION['error'] = "You cannot request an inspection for your own property.";
-        header("Location: ../views/property-details.php?id=$prop_id");
-        exit();
+        redirect_to_property_details($prop_id);
     }
 
     if (empty($date)) {
         $_SESSION['error'] = "Please select a valid date.";
-        header("Location: ../views/property-details.php?id=$prop_id");
-        exit();
+        redirect_to_property_details($prop_id);
+    }
+
+    // Check if user has already requested inspection for this property
+    if ($insp->check_inspection($prop_id, $user_id) !== false) {
+        $_SESSION['error'] = "You have already requested an inspection for this property.";
+        redirect_to_property_details($prop_id);
     }
 
     $result = $insp->request_inspection($prop_id, $user_id, $date);
 
-    if ($result) {
+    if ($result === "error:own_property") {
+        $_SESSION['error'] = "You cannot request an inspection for your own property.";
+    } elseif ($result) {
         $_SESSION['feedback'] = "Inspection request sent successfully!";
     } else {
         $_SESSION['error'] = "Failed to send request. Try again.";
     }
-    header("Location: ../tenant/tenant-profile.php#inspections");
-    exit();
+    redirect_to_property_details($prop_id);
 }
 
 // --- ACTION 2: CANCEL (GET) ---
@@ -45,8 +59,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'cancel') {
     $insp_id = $_GET['id'];
     
     // Safety check: Ensure the inspection belongs to this user before deleting/updating
-    // (You can add a check inside the method)
-    $result = $insp->update_inspection_status($insp_id, 'rejected'); // We use 'rejected' or add 'cancelled' to ENUM
+    $result = $insp->update_inspection_status($insp_id, 'rejected'); //
 
     if ($result) {
         $_SESSION['feedback'] = "Inspection cancelled.";
@@ -77,3 +90,4 @@ if (isset($_POST['action']) && $_POST['action'] == 'reschedule') {
 // If no valid action is found
 header("Location: ../tenant/tenant-profile.php");
 exit();
+?>

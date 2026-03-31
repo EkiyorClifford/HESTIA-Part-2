@@ -1,7 +1,6 @@
 <?php
 session_start();
 require_once '../userguard.php';
-require_once '../classes/State.php';
 require_once '../classes/Property.php';
 
 if (($_SESSION['user_role'] ?? '') !== 'landlord') {
@@ -11,7 +10,6 @@ if (($_SESSION['user_role'] ?? '') !== 'landlord') {
 
 $property_id = (int) ($_GET['id'] ?? 0);
 $propertyObj = new Property();
-$stateObj = new State();
 
 $property = $propertyObj->get_property_by_id($property_id);
 if (!$property || (int) $property['user_id'] !== (int) $_SESSION['user_id']) {
@@ -20,9 +18,7 @@ if (!$property || (int) $property['user_id'] !== (int) $_SESSION['user_id']) {
     exit();
 }
 
-$states = $stateObj->get_active_states();
-$lgas = $stateObj->get_active_lgas_by_state_id($property['state_id']);
-$ptypes = $stateObj->get_property_types();
+$ptypes = $propertyObj->get_property_types();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -45,6 +41,17 @@ $ptypes = $stateObj->get_property_types();
             <?php include '../partials/messages.php'; ?>
             <h2>Edit property</h2>
             <div class="form-subtitle">Update your listing details</div>
+
+            <?php if (($property['approval_status'] ?? '') === 'rejected') { ?>
+                <div class="alert alert-warning">
+                    <strong>This property was rejected.</strong><br>
+                    <?= !empty($property['rejection_reason']) ? nl2br(htmlspecialchars($property['rejection_reason'])) : 'Please update the listing and resubmit it for review.' ?>
+                </div>
+            <?php } elseif (($property['approval_status'] ?? '') === 'pending') { ?>
+                <div class="alert alert-info">
+                    This property is currently pending admin review. Saving changes will keep it in the review queue.
+                </div>
+            <?php } ?>
 
             <form action="../process/process_edit_property.php" method="POST">
                 <input type="hidden" name="property_id" value="<?= (int) $property['property_id'] ?>">
@@ -89,25 +96,13 @@ $ptypes = $stateObj->get_property_types();
                 <div class="section-title">Location</div>
                 <div class="row">
                     <div class="col-md-6 mb-4">
-                        <label for="state_id" class="form-label required">State</label>
-                        <select class="form-select" id="state_id" name="state_id" required>
-                            <?php foreach ($states as $state) { ?>
-                                <option value="<?= (int) $state['state_id'] ?>" <?= (int) $property['state_id'] === (int) $state['state_id'] ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($state['state_name']) ?>
-                                </option>
-                            <?php } ?>
-                        </select>
+                        <label class="form-label">State</label>
+                        <input type="text" class="form-control" value="<?= htmlspecialchars($property['state_name']) ?>" readonly>
                     </div>
 
                     <div class="col-md-6 mb-4">
-                        <label for="lga_id" class="form-label required">Local Government</label>
-                        <select class="form-select" id="lga_id" name="lga_id" required>
-                            <?php foreach ($lgas as $lga) { ?>
-                                <option value="<?= (int) $lga['lga_id'] ?>" <?= (int) $property['lga_id'] === (int) $lga['lga_id'] ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($lga['lga_name']) ?>
-                                </option>
-                            <?php } ?>
-                        </select>
+                        <label class="form-label">Local Government</label>
+                        <input type="text" class="form-control" value="<?= htmlspecialchars($property['lga_name']) ?>" readonly>
                     </div>
                 </div>
 
@@ -137,35 +132,15 @@ $ptypes = $stateObj->get_property_types();
                             <option value="available" <?= $property['status'] === 'available' ? 'selected' : '' ?>>Available</option>
                             <option value="taken" <?= $property['status'] === 'taken' ? 'selected' : '' ?>>Taken</option>
                             <option value="inactive" <?= $property['status'] === 'inactive' ? 'selected' : '' ?>>Inactive</option>
+                            <option value="deleted" <?= $property['status'] === 'deleted' ? 'selected' : '' ?>>Deleted</option>
                         </select>
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-primary w-100" name="updatebtn">Update property</button>
+                <button type="submit" class="btn btn-primary w-100" name="updatebtn"><?= ($property['approval_status'] ?? '') === 'rejected' ? 'Update and resubmit for review' : 'Update property' ?></button>
             </form>
         </div>
     </main>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        $(document).ready(function(){
-            $("#state_id").change(function(){
-                const selectedState = $(this).val();
-                if (!selectedState) {
-                    return;
-                }
-
-                $.ajax({
-                    url: "../process/process_lga.php",
-                    type: "POST",
-                    data: { state_id: selectedState },
-                    success: function(response) {
-                        $("#lga_id").html(response);
-                    }
-                });
-            });
-        });
-    </script>
 </body>
 </html>

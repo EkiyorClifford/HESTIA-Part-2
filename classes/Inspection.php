@@ -1,5 +1,6 @@
 <?php
-require_once 'Db.php';
+require_once "Db.php";
+require_once "PropertyTracker.php";
 class Inspection extends Db {
     private $dbconn;
     
@@ -24,7 +25,11 @@ class Inspection extends Db {
         $sql = "SELECT * FROM properties WHERE property_id = ? AND user_id = ?";
         $stmt = $this->dbconn->prepare($sql);
         $stmt->execute([$prop_id, $landlord_id]);
-        return $stmt->rowCount() > 0;
+        $result =  $stmt->rowCount() > 0;
+        if($result) {
+            return true;
+        }
+        return false;
     }
 
         // Get applications for the Tenant Dashboard
@@ -36,13 +41,13 @@ class Inspection extends Db {
     }
 
     // Fetch inspections for a Landlord (to approve/reject)
-    public function get_landlord_inspections($landlord_id) {
+    public function get_landlord_inspections($landlord_id, $limit = null) {
         $sql = "SELECT i.*, p.title, u.first_name, u.last_name, u.p_number 
                 FROM inspections i 
-                JOIN properties p ON i.property_id = p.id 
+                JOIN properties p ON i.property_id = p.property_id 
                 JOIN users u ON i.user_id = u.id 
                 WHERE p.user_id = ? ORDER BY i.created_at DESC";
-        $stmt = $this->dbconn->prepare($sql);
+        $stmt = $this->dbconn->prepare($sql . ($limit !== null ? " LIMIT " . (int) $limit : ""));
         $stmt->execute([$landlord_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -54,6 +59,13 @@ class Inspection extends Db {
             if ($this->is_landlord_own_property($prop_id, $user_id)) {
                 return "error:own_property";
             }
+        $property_stmt = $this->dbconn->prepare("SELECT status, approval_status FROM properties WHERE property_id = ?");
+        $property_stmt->execute([$prop_id]);
+        $property = $property_stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$property || ($property['status'] ?? '') !== 'available' || ($property['approval_status'] ?? '') !== 'approved') {
+            return false;
+        }
         // Check if a pending request already exists for this property by this user
         $check = "SELECT * FROM inspections WHERE property_id = ? AND user_id = ? AND status = 'pending'";
         $stmt = $this->dbconn->prepare($check);
@@ -67,9 +79,13 @@ class Inspection extends Db {
         $stmt= $this->dbconn->prepare($sql);
         $data= $stmt->execute([$prop_id, $user_id, $date]);
         if(!$data) {
-            error_log("Failed to insert. PDO Error: " . print_r($stmt->errorInfo(), true));
+            error_log("Failed to insert. PDO Error: " . print_r($stmt->errorInfo(), true));//was having issues so i had to use this debug erro message to find out why
+        } else {
+            $tracker = new PropertyTracker();
+            $tracker->increment_inspection_count($prop_id);
         }
         return $data;
+
         } catch (PDOException $e) {
             error_log("Exception in request_inspection: " . $e->getMessage());
             return false;
@@ -82,6 +98,15 @@ class Inspection extends Db {
         $stmt= $this->dbconn->prepare($sql);
         $data= $stmt->execute([$status, $inspection_id]);
         return $data;
+    }
+
+    public function update_inspection_status_for_landlord($inspection_id, $landlord_id, $status) {
+        $sql = "UPDATE inspections i
+                JOIN properties p ON i.property_id = p.property_id
+                SET i.status = ?
+                WHERE i.inspection_id = ? AND p.user_id = ?";
+        $stmt = $this->dbconn->prepare($sql);
+        return $stmt->execute([$status, $inspection_id, $landlord_id]);
     }
 
     // Update inspection date (For Rescheduling)

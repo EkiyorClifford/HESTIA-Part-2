@@ -1,0 +1,112 @@
+Date: March 31, 2026
+
+Diagnostics scope:
+- Reviewed code files only (`.php`, `.js`, `.css`), excluding `.txt` files.
+- No formal automated test suite was found in the repository (no `composer.json`, no `phpunit`, no `package.json` test runner).
+- Executed repeatable automated checks by running `php -l` across all PHP files 10 times, split by directory to avoid timeout.
+- Result: all PHP files passed syntax checks in all 10 runs.
+
+Important note:
+- Passing syntax checks does NOT mean the app is bug-free. The findings below are logic, security, and behavior issues found during static review.
+
+Findings
+
+1. High: invalid property IDs can trigger notices before redirect on the property details page
+- File: `views/property-details.php`
+- Lines: 17-24
+- Problem:
+  - `$details = $property->get_property_by_id($id);`
+  - `$user_details = $user->get_user_by('id', $details['user_id']);`
+  - The code reads `$details['user_id']` before checking `if (!$details)`.
+- Impact:
+  - An invalid or missing property record can raise warnings/notices before the redirect happens.
+  - In stricter environments this can break headers or produce noisy output.
+
+2. High: inspection cancel and reschedule still lack ownership checks
+- Files: `process/process_inspection.php`, `classes/Inspection.php`
+- Lines:
+  - `process/process_inspection.php`: 57-87
+  - `classes/Inspection.php`: 89-109
+- Problem:
+  - Cancel uses `$_GET['id']` and directly calls `update_inspection_status($insp_id, 'rejected')`.
+  - Reschedule directly calls `reschedule_inspection($insp_id, $new_date)`.
+  - Neither action verifies that the inspection belongs to the logged-in tenant.
+- Impact:
+  - A crafted request could cancel or reschedule another tenant’s inspection if IDs are guessed.
+  - This is still a real authorization/security bug.
+
+3. High: landlord approve/reject actions can report success even when nothing was updated
+- Files: `process/process_property_action.php`, `classes/Applications.php`, `classes/Inspection.php`
+- Lines:
+  - `process/process_property_action.php`: 43-73
+  - `classes/Applications.php`: 58-65
+  - `classes/Inspection.php`: 96-102
+- Problem:
+  - The process layer treats `execute()` returning `true` as success.
+  - But `execute()` also returns `true` when zero rows were affected.
+  - If the record does not exist or does not belong to that landlord, the user can still get a success flash.
+- Impact:
+  - False-positive success messages.
+  - Harder debugging and misleading landlord actions.
+
+4. Medium: wishlist flow ignores the page the user came from and has no `prop_id` validation
+- File: `process/process_wishlist.php`
+- Lines: 10, 23
+- Problem:
+  - `$prop_id = $_GET['prop_id'];` assumes the query param exists.
+  - After toggling wishlist, it always redirects to `../views/properties.php`.
+- Impact:
+  - Missing `prop_id` can trigger notices.
+  - Users get bounced away from `property-details.php` or any other origin page.
+  - This is inconsistent with the improved same-page behavior used elsewhere.
+
+5. Medium: tenant application badge logic is inconsistent with the actual status values now being used
+- File: `tenant/tenant-profile.php`
+- Line: 178
+- Problem:
+  - The color logic checks for `accepted`, but the newer landlord approval flow writes `approved`.
+- Impact:
+  - Approved applications will likely render with the wrong badge color/state in the tenant dashboard.
+  - UI becomes misleading even if database updates are correct.
+
+6. Medium: `email_exists()` builds SQL with interpolated `$exclude_id`
+- File: `classes/User.php`
+- Lines: 112-120
+- Problem:
+  - `AND id != $exclude_id` is concatenated directly into the query string.
+  - Current caller likely passes a session-derived integer, so immediate exploitability is limited, but the method itself is unsafe.
+- Impact:
+  - Avoidable SQL injection risk if the method is ever reused with untrusted input.
+  - Also weaker than the rest of the codebase’s prepared-statement style.
+
+7. Low: some workflow/status naming is still mixed across the app
+- Files:
+  - `tenant/tenant-profile.php`
+  - `landlord/landlord-profile.php`
+  - `admin/views/admin-dashboard.php`
+- Lines:
+  - `tenant/tenant-profile.php`: 178
+  - `landlord/landlord-profile.php`: 63
+  - `admin/views/admin-dashboard.php`: 72
+- Problem:
+  - The codebase still mixes `accepted/declined` and `approved/rejected`.
+- Impact:
+  - Easy source of display bugs, filtering mismatches, and reporting inconsistencies.
+  - Not always broken today, but it is fragile and likely to break later.
+
+What passed
+- PHP syntax checks passed across all PHP files in 10 repeated runs.
+- Recent changes for application duplicate blocking, landlord approve/reject UI, and property-details toast flow do parse correctly.
+
+What was NOT fully testable here
+- No browser automation or HTTP integration test suite exists in the repo.
+- CSS and JS behavior were reviewed statically, not through live UI automation.
+- Database-side behavior could not be fully integration-tested from this environment without a dedicated test harness and fixture data.
+
+Recommended next fixes
+1. Move the `$details` existence check before any access to `$details['user_id']` in `views/property-details.php`.
+2. Add tenant ownership validation methods for inspection cancel/reschedule, and stop using raw GET-based cancel actions.
+3. Treat zero affected rows as failure for landlord approve/reject actions.
+4. Fix `process/process_wishlist.php` to validate `prop_id` and redirect back safely to the origin page.
+5. Standardize application statuses everywhere to one set: preferably `pending`, `approved`, `rejected`.
+6. Parameterize `$exclude_id` in `User::email_exists()`.

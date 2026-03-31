@@ -20,10 +20,10 @@ if(!empty($keyword)){
 
 $total= $admin->get_dashboard_totals();
 $role_stats = $admin->get_user_role_stats();
-$active_stats = $admin->get_user_active_status();
+$active_stats = $admin->get_user_active_stats();
 
 $role_count_map = ['landlord' => 0, 'tenant' => 0];
-foreach ($role_stats as $row) {
+foreach (($role_stats ?: []) as $row) {
     $role_key = strtolower(trim($row['role_'] ?? ''));
     if (array_key_exists($role_key, $role_count_map)) {
         $role_count_map[$role_key] = (int) ($row['count'] ?? 0);
@@ -31,7 +31,7 @@ foreach ($role_stats as $row) {
 }
 
 $active_count_map = ['yes' => 0, 'no' => 0];
-foreach ($active_stats as $row) {
+foreach (($active_stats ?: []) as $row) {
     $status_key = strtolower(trim($row['is_active'] ?? ''));
     if (array_key_exists($status_key, $active_count_map)) {
         $active_count_map[$status_key] = (int) ($row['count'] ?? 0);

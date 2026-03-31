@@ -2,328 +2,285 @@
 session_start();
 require_once '../userguard.php';
 require_once '../classes/User.php';
-require_once '../classes/Property.php';
 require_once '../classes/Wishlist.php';
 require_once '../classes/Inspection.php';
 
 $user = new User();
-$property = new Property();
 $wishlistObj = new Wishlist();
 $inspectionObj = new Inspection();
 
-$usr_id = $_SESSION['user_id'];
+$usr_id = (int) ($_SESSION['user_id'] ?? 0);
 $usr = $user->get_user_by('id', $usr_id);
+$tenant_user = $usr;
 
-// Fetch Data for Tabs & Stats
 $my_wishlist = $wishlistObj->get_user_wishlist($usr_id);
 $my_inspections = $inspectionObj->get_tenant_inspections($usr_id);
 $my_applications = $inspectionObj->get_tenant_applications($usr_id);
 
-// Dynamic Stats Count
 $count_saved = count($my_wishlist);
 $count_apps = count($my_applications);
 $count_inspections = count($my_inspections);
+$count_pending_apps = count(array_filter($my_applications, static function ($app) {
+    return strtolower((string) ($app['status'] ?? '')) === 'pending';
+}));
+
+$active_tenant_page = 'dashboard';
+
+function tenant_status_badge(string $status): string
+{
+    $status = strtolower(trim($status));
+
+    if ($status === 'approved' || $status === 'accepted') {
+        return 'badge-available';
+    }
+
+    if ($status === 'pending') {
+        return 'badge-rented';
+    }
+
+    return 'badge-inactive';
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tenant Profile - HESTIA Property Rentals</title>
+    <title>Tenant Dashboard | Hestia</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../assets/landlord-profile.css">
     <link rel="stylesheet" href="../assets/tenant-profile.css">
     <link rel="stylesheet" href="../assets/global.css">
 </head>
-<body>
-    <!-- Navigation Bar -->
+<body class="tenant-dashboard-page">
     <?php include '../partials/nav.php'; ?>
-    <!-- Main Content -->
-    <main class="container">
-        <!-- this is for feedback messages -->
-        <?php if(isset($_SESSION['feedback'])){ ?>
-        <div class="alert alert-success alert-dismissible fade show mt-3">
-            <?php echo $_SESSION['feedback']; unset($_SESSION['feedback']); ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div> 
-    <?php }; ?>
 
-    <!-- this is for error messages -->
-    <?php if(isset($_SESSION['error'])){ ?>
-        <div class="alert alert-danger alert-dismissible fade show mt-3">
-            <?php echo $_SESSION['error']; unset($_SESSION['error']); ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <button class="btn btn-primary mobile-menu-btn d-lg-none position-fixed bottom-0 end-0 m-3 rounded-pill shadow" type="button" data-bs-toggle="offcanvas" data-bs-target="#tenantSidebar" style="z-index: 1040;">
+        <i class="fas fa-bars"></i> Menu
+    </button>
+
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="tenantSidebar">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title">Hestia<span>.</span></h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
         </div>
-    <?php }; ?>
-        <h1 class="page-title"><i class="fas fa-user"></i> <?php echo $usr['first_name'] . ' ' . $usr['last_name']; ?>'s Profile</h1>
+        <?php $sidebar_mode = 'mobile'; include 'partials/sidebar.php'; ?>
+    </div>
 
-        <!-- Profile Header Section -->
-        <div class="card">
-            <div class="card-body">
-                <div class="profile-header">
-                    <div class="profile-avatar">
-                        <i class="fas fa-user"></i>
+    <div class="dashboard-container tenant-dashboard">
+        <?php $sidebar_mode = 'desktop'; include 'partials/sidebar.php'; ?>
+
+        <main class="main-content">
+            <?php include '../partials/messages.php'; ?>
+
+            <section class="welcome-section tenant-hero">
+                <div class="welcome-copy">
+                    <p class="eyebrow">Tenant Dashboard</p>
+                    <h1>Welcome back, <?= htmlspecialchars($usr['first_name'] ?? 'Tenant') ?></h1>
+                    <p>Track saved homes, keep an eye on applications, and stay on top of upcoming inspections from one calm workspace.</p>
+                </div>
+                <div class="summary-panel">
+                    <div class="summary-item">
+                        <span class="summary-label">Saved Homes</span>
+                        <span class="summary-value"><?= number_format($count_saved) ?></span>
                     </div>
-                    <div class="profile-info">
-                        <h3><?php echo $usr['first_name'] . ' ' . $usr['last_name']; ?></h3>
-                        <p><i class="fas fa-envelope"></i> <?php echo $usr['email']; ?></p>
-                        <p><i class="fas fa-phone"></i> <?php echo $usr['p_number']; ?></p>
-                        <p><i class="fas fa-map-marker-alt"></i>No 24,Circular Road. Ikoyi, Lagos </p>
-                        <div class="profile-meta">
-                            <span class="meta-item"><i class="fas fa-calendar-alt"></i> Member since <?php echo date('Y', strtotime($usr['created_at'])); ?></span>
-                            <span class="meta-item"><i class="fas fa-star"></i> 4.8/5 Rating</span>
+                    <div class="summary-item">
+                        <span class="summary-label">Applications</span>
+                        <span class="summary-value"><?= number_format($count_apps) ?></span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Inspections</span>
+                        <span class="summary-value"><?= number_format($count_inspections) ?></span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Pending</span>
+                        <span class="summary-value"><?= number_format($count_pending_apps) ?></span>
+                    </div>
+                </div>
+            </section>
+
+            <div class="row g-4 stats-grid">
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card h-100 dashboard-card">
+                        <div class="stat-number"><?= number_format($count_saved) ?></div>
+                        <div class="text-secondary">Saved Properties</div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card h-100 dashboard-card">
+                        <div class="stat-number"><?= number_format($count_apps) ?></div>
+                        <div class="text-secondary">Applications</div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card h-100 dashboard-card">
+                        <div class="stat-number"><?= number_format($count_inspections) ?></div>
+                        <div class="text-secondary">Inspections</div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card h-100 dashboard-card">
+                        <div class="stat-number"><?= number_format($count_pending_apps) ?></div>
+                        <div class="text-secondary">Pending Updates</div>
+                    </div>
+                </div>
+            </div>
+
+            <section class="section-block">
+                <div class="section-header">
+                    <h2 class="section-title">Quick Actions</h2>
+                </div>
+                <div class="quick-actions-grid">
+                    <a href="../views/properties.php" class="quick-action-btn"><i class="fas fa-search"></i><span>Browse Properties</span></a>
+                    <a href="#saved-section" class="quick-action-btn"><i class="fas fa-heart"></i><span>Saved Homes</span></a>
+                    <a href="#applications-section" class="quick-action-btn"><i class="fas fa-file-alt"></i><span>Applications</span></a>
+                    <a href="#inspections-section" class="quick-action-btn"><i class="fas fa-calendar-check"></i><span>Inspections</span></a>
+                    <a href="../tenant/wishlist.php" class="quick-action-btn"><i class="fas fa-bookmark"></i><span>Wishlist Page</span></a>
+                </div>
+            </section>
+
+            <div class="row g-4 align-items-start">
+                <div class="col-xl-8">
+                    <section class="card section-card" id="saved-section">
+                        <div class="section-header">
+                            <h2 class="section-title">Saved Properties</h2>
+                            <a href="../views/properties.php" class="section-link">Browse more</a>
                         </div>
-                    </div>
+
+                        <?php if (!empty($my_wishlist)) { ?>
+                            <div class="tenant-saved-grid">
+                                <?php foreach ($my_wishlist as $w) { ?>
+                                    <article class="saved-card">
+                                        <div class="saved-card-media">
+                                            <img src="../upload/properties/<?= htmlspecialchars($w['thumbnail'] ?? 'default.png') ?>" alt="<?= htmlspecialchars($w['title'] ?? 'Saved property') ?>">
+                                            <a href="../process/process_wishlist.php?prop_id=<?= (int) $w['property_id'] ?>" class="saved-remove-btn" aria-label="Remove from saved properties">
+                                                <i class="fas fa-times"></i>
+                                            </a>
+                                        </div>
+                                        <div class="saved-card-body">
+                                            <div class="saved-card-top">
+                                                <div>
+                                                    <h3><?= htmlspecialchars($w['title'] ?? 'Untitled property') ?></h3>
+                                                    <p><?= htmlspecialchars(($w['lga_name'] ?? 'Unknown area') . ', ' . ($w['state_name'] ?? 'Unknown state')) ?></p>
+                                                </div>
+                                                <span class="saved-card-tag"><?= htmlspecialchars(ucfirst($w['listing_type'] ?? 'rent')) ?></span>
+                                            </div>
+                                            <div class="saved-card-price">&#8358;<?= number_format((float) ($w['amount'] ?? 0)) ?></div>
+                                            <div class="saved-card-actions">
+                                                <a href="../views/property-details.php?property_id=<?= (int) $w['property_id'] ?>" class="action-btn edit">View Property</a>
+                                                <a href="../tenant/wishlist.php" class="action-btn view">Wishlist</a>
+                                            </div>
+                                        </div>
+                                    </article>
+                                <?php } ?>
+                            </div>
+                        <?php } else { ?>
+                            <div class="empty-state">
+                                <i class="fas fa-heart"></i>
+                                <h3>No saved properties yet</h3>
+                                <p>Save homes you like so they stay close while you compare options.</p>
+                                <a href="../views/properties.php" class="btn btn-primary">Explore properties</a>
+                            </div>
+                        <?php } ?>
+                    </section>
+
+                    <section class="card section-card mt-4" id="inspections-section">
+                        <div class="section-header">
+                            <h2 class="section-title">Inspection Schedule</h2>
+                        </div>
+
+                        <?php if (!empty($my_inspections)) { ?>
+                            <div class="applications-list">
+                                <?php foreach ($my_inspections as $insp) { ?>
+                                    <article class="application-card inspection-card">
+                                        <div class="application-top">
+                                            <div>
+                                                <h3><?= htmlspecialchars($insp['title'] ?? 'Unknown property') ?></h3>
+                                                <p><?= htmlspecialchars($insp['lga_name'] ?? 'Unknown area') ?></p>
+                                            </div>
+                                            <span class="badge-status <?= tenant_status_badge((string) ($insp['status'] ?? 'pending')) ?>"><?= htmlspecialchars(ucfirst($insp['status'] ?? 'pending')) ?></span>
+                                        </div>
+                                        <div class="application-meta">
+                                            Scheduled for <?= !empty($insp['inspection_date']) ? htmlspecialchars(date('M j, Y', strtotime($insp['inspection_date']))) : 'N/A' ?>
+                                        </div>
+                                        <div class="saved-card-actions mt-3">
+                                            <a href="../views/property-details.php?property_id=<?= (int) $insp['property_id'] ?>" class="action-btn view">View Property</a>
+                                        </div>
+                                    </article>
+                                <?php } ?>
+                            </div>
+                        <?php } else { ?>
+                            <div class="empty-state empty-state-compact">
+                                <i class="fas fa-calendar-check"></i>
+                                <h3>No inspections booked</h3>
+                                <p>Your upcoming property visits will appear here.</p>
+                            </div>
+                        <?php } ?>
+                    </section>
                 </div>
-                <div class="row btn-group-custom">
-                    <button class="col-md-6 btn btn-primary"><i class="fas fa-edit"></i> Edit Profile</button>
-                    <button class="col-md-6 btn btn-secondary"><i class="fas fa-camera"></i> Change Photo</button>
-                </div>
-            </div>
-        </div>
 
-        <!-- Statistics -->
-        <div class="stats-grid">
-            <a href="wishlist.php">
-            <div class="stat-card">
-                <div class="stat-value"><?php echo $count_saved; ?></div>
-                <div class="stat-label">Saved Properties</div>
-            </div>
-            </a>
-            <div class="stat-card">
-                <div class="stat-value"><?php echo $count_apps; ?></div>
-                <div class="stat-label">Active Applications</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value"><?php echo $count_inspections; ?></div>
-                <div class="stat-label">Booked Inspections</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value">0</div>
-                <div class="stat-label">Reviews Given</div>
-            </div>
-        </div>
+                <div class="col-xl-4">
+                    <section class="card section-card" id="applications-section">
+                        <div class="section-header">
+                            <h2 class="section-title">Applications</h2>
+                        </div>
 
-        <!-- Tab Navigation -->
-        <ul class="nav nav-tabs" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="saved-tab" data-bs-toggle="tab" data-bs-target="#saved" type="button" role="tab">
-                    <i class="fas fa-heart"></i> Saved Properties
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="applications-tab" data-bs-toggle="tab" data-bs-target="#applications" type="button" role="tab">
-                    <i class="fas fa-file-alt"></i> Applications
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="inspections-tab" data-bs-toggle="tab" data-bs-target="#inspections" type="button" role="tab">
-                    <i class="fas fa-eye"></i> Inspections
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab">
-                    <i class="fas fa-comments"></i> My Reviews
-                </button>
-            </li>
-            <!-- <li class="nav-item" role="presentation">
-                <button class="nav-link" id="verification-tab" data-bs-toggle="tab" data-bs-target="#verification" type="button" role="tab">
-                    <i class="fas fa-check-circle"></i> Verification
-                </button>
-            </li> -->
-        </ul>
+                        <?php if (!empty($my_applications)) { ?>
+                            <div class="applications-list">
+                                <?php foreach ($my_applications as $app) { ?>
+                                    <article class="application-card">
+                                        <div class="application-top">
+                                            <div>
+                                                <h3><?= htmlspecialchars($app['title'] ?? 'Unknown property') ?></h3>
+                                                <p><?= htmlspecialchars(ucfirst($app['listing_type'] ?? 'rent')) ?></p>
+                                            </div>
+                                            <span class="badge-status <?= tenant_status_badge((string) ($app['status'] ?? 'pending')) ?>"><?= htmlspecialchars(ucfirst($app['status'] ?? 'pending')) ?></span>
+                                        </div>
+                                        <div class="application-meta">Applied on <?= !empty($app['created_at']) ? htmlspecialchars(date('M j, Y', strtotime($app['created_at']))) : 'N/A' ?></div>
+                                        <p class="tenant-amount">&#8358;<?= number_format((float) ($app['amount'] ?? 0), 2) ?></p>
+                                    </article>
+                                <?php } ?>
+                            </div>
+                        <?php } else { ?>
+                            <div class="empty-state empty-state-compact">
+                                <i class="fas fa-file-alt"></i>
+                                <h3>No applications yet</h3>
+                                <p>Once you apply for a property, status updates will show here.</p>
+                            </div>
+                        <?php } ?>
+                    </section>
 
-        <!-- Tab Content -->
-        <div class="tab-content" style="margin-top: 30px;">
-            <!-- Inside Saved Properties Tab -->
-        <div class="tab-pane fade show active" id="saved" role="tabpanel">
-            <div class="row">
-                <?php if(!empty($my_wishlist)){ ?>
-                <?php foreach($my_wishlist as $w){ ?>
-                        <div class="col-md-6 col-lg-4 mb-4">
-                            <div class="card property-card h-100">
-                                <div class="position-relative">
-                                    <img src="../upload/properties/<?php echo $w['thumbnail'] ?? 'default.png'; ?>" class="card-img-top" style="height:180px; width:100%; object-fit:cover;">
-                                </div>
-                                <div class="card-body">
-                                    <div class="card-title fw-bold text-truncate mb-2 h5" style="text-transform: capitalize;" title="<?php echo htmlspecialchars($w['title']); ?>"><?php echo htmlspecialchars($w['title']); ?></div>
-                                    <div class="small text-muted mb-2"><i class="fas fa-map-marker-alt me-1 text-danger"></i> <?php echo $w['lga_name']; ?></div>
-                                    <div class="text-danger fw-bold mb-3 h5">₦<?php echo number_format($w['amount']); ?></div>
-                                    
-                                    <div class="property-actions d-flex gap-2">
-                                        <a href="../views/property-details.php?property_id=<?php echo $w['property_id']; ?>" class="btn btn-sm btn-primary w-100">View</a>
-                                        <a href="../process/process_wishlist.php?prop_id=<?php echo $w['property_id']; ?>" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 rounded-circle" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
-                                            <i class="fas fa-times"></i>
-                                        </a>
-                                    </div>
-                                </div>
+                    <section class="card section-card mt-4">
+                        <div class="section-header">
+                            <h2 class="section-title">Reviews</h2>
+                        </div>
+                        <div class="tenant-reviews-card">
+                            <div class="tenant-reviews-icon"><i class="fas fa-pen-fancy"></i></div>
+                            <h3>Reviews Coming Soon</h3>
+                            <p>When post-visit reviews land, this panel will become your place for notes, ratings, and follow-up reflections.</p>
+                            <div class="tenant-review-pill">
+                                <i class="far fa-bell"></i>
+                                Feature in progress
                             </div>
                         </div>
-                    <?php } ?>
-                <?php } else { ?>
-                    <div class="col-12 text-center py-5">
-                        <p class="text-muted">You haven't saved any properties yet.</p>
-                        <a href="properties.php" class="btn btn-primary btn-sm">Browse Properties</a>
-                    </div>
-                <?php } ?>
-            </div>
-        </div>
-
-            <!-- Applications Tab -->
-        <div class="tab-pane fade" id="applications" role="tabpanel">
-            <?php 
-            $apps = $inspectionObj->get_tenant_applications($usr_id);
-            if(!empty($apps)){
-                foreach($apps as $app){ 
-                    $appColor = ($app['status'] == 'accepted') ? 'success' : (($app['status'] == 'pending') ? 'info' : 'danger');
-            ?>
-                <div class="application-item mb-3 p-3 border rounded shadow-sm">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h5 class="mb-1 fw-bold"><?php echo htmlspecialchars($app['title']); ?></h5>
-                            <p class="small text-muted mb-0">Rent: ₦<?php echo number_format($app['amount'], 2); ?></p>
-                        </div>
-                        <span class="badge bg-<?php echo $appColor; ?>">
-                            <i class="fas fa-file-contract me-1"></i> <?php echo ucfirst($app['status']); ?>
-                        </span>
-                    </div>
-                    <div class="mt-3 small text-secondary">
-                        Applied on: <?php echo date('M d, Y', strtotime($app['created_at'])); ?>
-                    </div>
-                </div>
-            <?php 
-                }
-            }else{
-            ?>
-                <p class="text-center py-5">You haven't applied for any properties yet.</p>
-            <?php }
-            ?>
-        </div>
-
-            <!-- Inspections Tab -->
-        <div class="tab-pane fade" id="inspections" role="tabpanel">
-            <?php if(!empty($my_inspections)){ ?>
-                <?php foreach($my_inspections as $insp){
-                    $status = $insp['status'];
-                    $insp_date = date('M d, Y', strtotime($insp['inspection_date']));
-                    $statusColor = ($status == 'approved') ? 'success' : (($status == 'rejected') ? 'danger' : 'warning');
-                ?>
-                    <div class="inspection-item">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <div class="inspection-header">
-                            <h5 class="mb-1 fw-bold">
-                                <strong><i class="fas fa-home me-1"></i><?php echo htmlspecialchars($insp['title']); ?></strong>
-                            </h5>
-                        </div>
-                        <div class="mt-1">
-                            <p class="small text-muted mb-0">
-                                <i class="fas fa-map-marker-alt me-1"></i> <?php echo $insp['lga_name']; ?>
-                            </p>
-                        </div>
-                    </div>
-                    <div class="col-md-4 text-md-end mt-2 mt-md-0">
-                        <span class="badge bg-<?php echo $statusColor; ?> p-2">
-                            <?php echo ucfirst($status); ?>
-                        </span>
-                    </div>
-                </div>
-                <div class="mt-3 small text-secondary">
-                    <i class="fas fa-calendar-alt me-2"></i> Scheduled Date: 
-                    <span class="text-dark fw-bold"><?php echo $insp_date; ?></span>
-                </div>
-
-                <div class="mt-3 d-flex gap-2">
-                    <a href="../views/property-details.php?property_id=<?php echo $insp['property_id']; ?>" class="btn btn-sm btn-outline-primary">
-                        View Property
-                    </a>
+                    </section>
                 </div>
             </div>
-                <?php } ?>
-            <?php } else { ?>
-                <p class="text-center py-5 text-muted">No inspection requests found.</p>
-            <?php } ?>
-        </div>
-            <!-- Reviews Tab -->
-        <div class="tab-pane fade" id="reviews" role="tabpanel">
-            <div class="coming-soon-container">
-                <div class="coming-soon-icon">
-                    <i class="fas fa-pen-fancy"></i>
-                </div>
-                <h3 class="coming-soon-title">Reviews Coming Soon</h3>
-                <p class="coming-soon-text">
-                    We're collecting tenant experiences for this property. 
-                    Check back in the coming weeks for authentic reviews.
-                </p>
-                <div class="coming-soon-progress">
-                    <div class="progress-bar"></div>
-                </div>
-                <p class="coming-soon-note">
-                    <i class="far fa-bell"></i> 
-                    Be the first to leave a review when you book this property
-                </p>
-                <button class="btn-notify">
-                    <i class="far fa-bell"></i> Notify Me When Reviews Arrive
-                </button>
-            </div>
-        </div>
-            
-            <!-- Verification Tab -->
-            <!-- <div class="tab-pane fade" id="verification" role="tabpanel">
-                <ul class="verification-list">
-                    <li class="verification-item">
-                        <div class="verification-icon verified">
-                            <i class="fas fa-check"></i>
-                        </div>
-                        <div class="verification-content">
-                            <h5>Email Address</h5>
-                            <p>Verified on Dec 15, 2023</p>
-                        </div>
-                        <span class="verification-badge badge-verified"><i class="fas fa-check"></i> Verified</span>
-                    </li>
-                    <li class="verification-item">
-                        <div class="verification-icon verified">
-                            <i class="fas fa-check"></i>
-                        </div>
-                        <div class="verification-content">
-                            <h5>Phone Number</h5>
-                            <p>Verified on Dec 20, 2023</p>
-                        </div>
-                        <span class="verification-badge badge-verified"><i class="fas fa-check"></i> Verified</span>
-                    </li>
-                    <li class="verification-item">
-                        <div class="verification-icon verified">
-                            <i class="fas fa-check"></i>
-                        </div>
-                        <div class="verification-content">
-                            <h5>Government ID</h5>
-                            <p>Verified on Jan 5, 2024</p>
-                        </div>
-                        <span class="verification-badge badge-verified"><i class="fas fa-check"></i> Verified</span>
-                    </li>
-                    <li class="verification-item">
-                        <div class="verification-icon pending">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                        <div class="verification-content">
-                            <h5>Background Check</h5>
-                            <p>Pending review - Usually completes within 2-3 business days</p>
-                        </div>
-                        <span class="verification-badge badge-pending"><i class="fas fa-hourglass-half"></i> Pending</span>
-                    </li>
-                </ul>
-            </div> -->
-        </div>
-    </main>
+        </main>
+    </div>
 
-    <!-- Footer -->
-    <footer class="footer text-center">
-        <div class="container">
-            <p>&copy; 2024 HESTIA Property Rentals. All rights reserved.</p>
-        </div>
-    </footer>
-
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.querySelectorAll('.offcanvas .nav-link').forEach((link) => {
+            link.addEventListener('click', () => {
+                const offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('tenantSidebar'));
+                if (offcanvas) {
+                    offcanvas.hide();
+                }
+            });
+        });
+    </script>
 </body>
 </html>

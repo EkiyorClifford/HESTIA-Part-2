@@ -1,12 +1,21 @@
 <?php
 $sidebar_mode = $sidebar_mode ?? 'desktop';
 $sidebar_container_class = $sidebar_mode === 'mobile' ? 'offcanvas-body' : 'sidebar-desktop';
+$active_landlord_page = $active_landlord_page ?? 'dashboard';
+$landlord_nav_items = [
+    ['href' => '../landlord/landlord-profile.php', 'label' => 'Dashboard', 'icon' => 'fas fa-home', 'key' => 'dashboard'],
+    ['href' => '../landlord/my-properties.php', 'label' => 'My Properties', 'icon' => 'fas fa-building', 'key' => 'properties'],
+    ['href' => '../landlord/add-property.php', 'label' => 'Add Property', 'icon' => 'fas fa-plus-circle', 'key' => 'add-property'],
+    ['href' => '../landlord/landlord-profile.php#applications-section', 'label' => 'Applications', 'icon' => 'fas fa-file-alt', 'key' => 'applications'],
+    ['href' => '../landlord/landlord-profile.php#inspections-section', 'label' => 'Inspections', 'icon' => 'fas fa-calendar-check', 'key' => 'inspections'],
+    ['href' => '../views/index.php', 'label' => 'View Site', 'icon' => 'fas fa-external-link-alt', 'key' => 'view-site'],
+];
 ?>
 <div class="<?= htmlspecialchars($sidebar_container_class) ?>">
     <ul class="nav flex-column">
         <?php foreach ($landlord_nav_items as $item) { ?>
             <li class="nav-item">
-                <a href="<?= htmlspecialchars($item['href']) ?>" class="nav-link <?= !empty($item['active']) ? 'active' : '' ?>">
+                <a href="<?= htmlspecialchars($item['href']) ?>" class="nav-link <?= $active_landlord_page === ($item['key'] ?? '') ? 'active' : '' ?>">
                     <i class="<?= htmlspecialchars($item['icon']) ?>"></i>
                     <span><?= htmlspecialchars($item['label']) ?></span>
                 </a>

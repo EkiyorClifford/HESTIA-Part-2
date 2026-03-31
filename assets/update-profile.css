@@ -94,6 +94,53 @@ h1, h2 {
     color: #fff;
 }
 
+.tenant-profile-editor-page {
+    background:
+        radial-gradient(circle at top left, rgba(75, 179, 193, 0.12), transparent 24%),
+        linear-gradient(180deg, #fcfaf8 0%, #f5f8fb 100%);
+}
+
+.tenant-profile-editor-page .navbar {
+    background:
+        linear-gradient(90deg, rgba(251, 247, 243, 0.96) 0%, rgba(244, 233, 227, 0.94) 48%, rgba(236, 224, 231, 0.94) 100%) !important;
+    border-bottom: 1px solid rgba(75, 37, 69, 0.08);
+    box-shadow: 0 10px 30px rgba(75, 37, 69, 0.08);
+}
+
+.tenant-profile-editor-page .navbar-brand,
+.tenant-profile-editor-page .navbar-nav .nav-link,
+.tenant-profile-editor-page .navbar-dark .navbar-nav .nav-link,
+.tenant-profile-editor-page .navbar-dark .navbar-brand {
+    color: #4b2545 !important;
+}
+
+.tenant-profile-editor-page .navbar-nav .nav-link::after {
+    background: #c44536;
+}
+
+.tenant-profile-editor-page .navbar-toggler {
+    border-color: rgba(75, 37, 69, 0.18);
+}
+
+.tenant-profile-editor-page .navbar-toggler-icon {
+    filter: invert(17%) sepia(18%) saturate(1273%) hue-rotate(267deg) brightness(90%) contrast(86%);
+}
+
+.tenant-profile-editor-page .dropdown-menu {
+    border-color: rgba(75, 37, 69, 0.08);
+    box-shadow: 0 16px 40px rgba(75, 37, 69, 0.12);
+}
+
+.tenant-profile-editor-page .profile-intro-card {
+    background:
+        radial-gradient(circle at top right, rgba(255, 255, 255, 0.14), transparent 24%),
+        linear-gradient(160deg, #0f2f42 0%, #1f6177 52%, #63bfd0 100%);
+}
+
+.tenant-profile-editor-page .identity-chip {
+    background: rgba(255, 255, 255, 0.16);
+}
+
 .profile-intro-card p {
     color: rgba(255, 255, 255, 0.82);
 }

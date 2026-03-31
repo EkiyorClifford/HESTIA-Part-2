@@ -27,8 +27,6 @@ $lga_id = Common::cleandata($_POST['lga_id']);
 $prop_address = Common::cleandata($_POST['prop_address']);
 $bedroom = Common::cleandata($_POST['bedroom']);
 $furnished = Common::cleandata($_POST['furnished']);
-$status = isset($_POST['status']) ? Common::cleandata($_POST['status']) : 'available';
-
 $user_id = $_SESSION['user_id'] ?? null;
 
 // 3. Validation Logic
@@ -89,7 +87,10 @@ $data = [
     'amount' => $amount,
     'title' => $title,
     'description' => $description,
-    'prop_address' => $prop_address
+    'prop_address' => $prop_address,
+    'status' => 'inactive',
+    'approval_status' => 'pending',
+    'rejection_reason' => null
 ];
 try {
     $property_id = $property->save_property($data);
@@ -107,7 +108,7 @@ try {
 
         // SUCCESS: but i have to clear form data
         unset($_SESSION['form_data']); 
-        $_SESSION['feedback'] = "Property listed successfully!";
+        $_SESSION['feedback'] = "Property submitted successfully and is now awaiting admin review.";
         header("Location: ../landlord/landlord-profile.php");
         exit();
     } else {

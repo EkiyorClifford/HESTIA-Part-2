@@ -1,0 +1,46 @@
+Property editing updates
+- Landlords can now edit their property details without being able to change the property's state or LGA.
+- The edit form now shows state and LGA as read-only fields.
+- Property status options on the landlord edit form now include available, taken, inactive, and deleted.
+- The edit processor now preserves the original state_id and lga_id on the server side, so those values cannot be changed by form tampering.
+- Added validation for furnished values and allowed property statuses.
+
+Admin property management fixes
+- Fixed the search page so it correctly reads the search keyword and filter from the query string.
+- Removed the extra reassignment that was replacing search results with the full property list.
+- Corrected the clear-search link to use property_management.php.
+- Updated the placeholder text so the supported property search fields are clearer.
+
+Admin dashboard warning fixes
+- Fetched property status statistics before using them on the dashboard.
+- Made the property status loop safely handle empty results to prevent warnings when no data is returned.
+
+Property moderation system
+- Added a moderation migration file at property_moderation_migration.sql for the new properties table columns:
+  approval_status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending'
+  rejection_reason TEXT NULL
+- Updated the shared property save logic so every new property insert sets approval_status to pending, clears rejection_reason, and starts with status inactive until approved.
+- Updated landlord property edits so rejected or still-pending submissions go back into the pending review queue and clear any old rejection reason.
+- Added approval gates to the public property listing query so only approval_status = approved and status = available are shown on the marketplace.
+- Added visibility checks to the public property details page so pending or rejected properties cannot be viewed by the public through a direct URL.
+- Added backend checks in applications and inspections so pending, rejected, or unavailable properties cannot be applied for or booked by hitting form endpoints directly.
+
+Admin moderation workflow
+- Added Pending Properties to the top of the admin dashboard Recent Properties area.
+- Pending Properties only shows properties where approval_status = pending.
+- Recent Properties now only shows approved properties.
+- Added a new admin review page at /admin/property-review.php?id={property_id}.
+- The review page shows property details, uploaded images, amenities, landlord name, email, and phone number.
+- Added approve and reject actions with a rejection reason field.
+- Approving a property now sets approval_status = approved, status = available, and rejection_reason = NULL.
+- Rejecting a property now sets approval_status = rejected, stores the rejection reason, and keeps the property off the public marketplace.
+- Updated the admin property management table to display approval state and send pending listings straight to the review page.
+
+Landlord dashboard moderation feedback
+- The landlord dashboard now shows approval_status for each property.
+- Rejected properties now display their rejection_reason directly in the property table.
+- Rejected properties now show an Edit & Resubmit action label so landlords can fix issues and submit again.
+- The landlord edit page now clearly warns when a property is pending review or was rejected, and shows the rejection reason when available.
+
+Verification
+- Ran php -l successfully on all touched moderation-related PHP files.

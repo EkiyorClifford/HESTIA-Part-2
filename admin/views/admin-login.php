@@ -275,7 +275,7 @@ session_start();
 </head>
 <body>
     <!-- Back Button -->
-    <a href="javascript:history.back()" class="back-link">
+    <a href="/Hestia-PHP/views/index.php" class="back-link">
         <i class="fas fa-arrow-left"></i> Back to Site
     </a>
     

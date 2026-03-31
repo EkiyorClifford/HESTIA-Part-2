@@ -42,3 +42,82 @@ Tomorrow's to-do list:
 6. Clean up any remaining redirect/url path issues in `partials/nav.php` and admin page links.
 7. Confirm all deleted prototype files are safe to remove and not referenced anywhere.
 8. Add any missing unit test or manual test notes to `documentation.txt` or a new task list file.
+
+Additional Feature Recommendations:
+============================
+
+🚀 **Enhanced Property Features:**
+- Property comparison tool (shortlist 2-3 properties) (1 week)
+  - Comparison table UI, side-by-side feature comparison, export to PDF
+- Virtual tour integration for properties (1-2 weeks)
+  - 360° photo upload, video tour support, virtual tour viewer
+- Document upload for applications (rental history, employment proof) (1 week)
+  - File upload interface, document validation, secure storage
+- Advanced search filters (price range, amenities, availability date) (3-5 days)
+  - Filter UI components, AJAX search results, filter persistence
+- Property recommendation engine based on user viewing history (2 weeks)
+  - Machine learning algorithm, user preference tracking, recommendation UI
+
+📊 **Analytics & Reporting:**
+- Landlord dashboard with application conversion rates (1 week)
+  - Conversion funnel charts, application sources, performance metrics
+- Property performance metrics (views vs. applications ratio) (3-5 days)
+  - Performance graphs, trending properties, market comparison
+- Tenant application tracking dashboard (2-3 days)
+  - Application status timeline, document management, communication log
+- Monthly/quarterly market trend reports (1 week)
+  - Automated report generation, email delivery, historical data
+- Automated email notifications for status changes (2-3 days)
+  - Email template system, notification preferences, delivery tracking
+
+🔐 **Security & Performance:**
+- Two-factor authentication for admin accounts (3-5 days)
+  - TOTP integration, backup codes, secure login flow
+- API rate limiting for application submissions (2-3 days)
+  - Rate limiting middleware, IP-based limits, user-based quotas
+- Image optimization and CDN integration (1 week)
+  - Image compression, CDN setup, lazy loading
+- Database query optimization for large datasets (3-5 days)
+  - Query analysis, indexing strategy, caching implementation
+- Session timeout and security hardening (2-3 days)
+  - Session configuration, security headers, timeout handling
+
+📱 **User Experience:**
+- Mobile-responsive property viewing enhancements (2-3 days)
+  - Add responsive grid layouts, touch-friendly navigation, optimized image loading
+- Saved search alerts (notify when matching properties listed) (1 week)
+  - Database table for saved searches, cron job for notifications, email/SMS alerts
+- Application status tracking with timeline (3-5 days)
+  - Add status history table, timeline UI component, status change notifications
+- In-app messaging between landlords and tenants (1-2 weeks)
+  - Real-time chat, message history, file attachments, read receipts
+- Property viewing history for users (2-3 days)
+  - Add view history table, recently viewed widget, clear history option
+
+💼 **Business Features:**
+- Premium property listings (featured placement)
+- Subscription tiers for landlords (basic/pro/premium)
+- Automated reference checking integration
+- Document verification service
+- Payment processing integration for deposits
+
+🔧 **Technical Improvements:**
+- REST API for mobile app development
+- Caching layer for frequently accessed data
+- Background job processing for notifications
+- Health monitoring and uptime tracking
+- Automated backup and recovery system
+
+🎯 **Priority Implementation Order:**
+1. Security features (CSRF, rate limiting)
+2. Mobile responsiveness improvements
+3. Analytics dashboard for landlords
+4. Application status tracking
+5. Property comparison tool
+6. Document upload system
+7. Advanced search filters
+8. Notification system
+9. Payment integration
+10. Mobile app API
+
+9. My application/inspection login is faulty. have to fix that

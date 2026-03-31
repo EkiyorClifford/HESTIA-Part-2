@@ -13,7 +13,10 @@ class PropertyTracker extends Db {
     public function track_view($property_id, $user_id= null){
         try{
             // check if user is logged in, if yes use user_id, if not use ip address
-            $ip_address = $_SERVER['REMOTE_ADDR'];
+            $ip_address = $_SERVER['REMOTE_ADDR'];//for the view count
+            if ($ip_address === null) {
+                $ip_address = 'unknown';
+            }
             if ($user_id) {
                 $check_sql = "SELECT * FROM property_views WHERE property_id = ? AND user_id = ? AND viewed_at > DATE_SUB(NOW(), INTERVAL 10 MINUTE)";
                 $check_stmt = $this->dbconn->prepare($check_sql);
@@ -68,6 +71,17 @@ class PropertyTracker extends Db {
         }
     }
 
+    public function increment_inspection_count($property_id) {
+        try {
+            $upsert_sql = "INSERT INTO property_stats(property_id, inspection_count) VALUES (?, 1) ON DUPLICATE KEY UPDATE inspection_count = inspection_count + 1";
+            $upsert_stmt = $this->dbconn->prepare($upsert_sql);
+            $upsert_stmt->execute([$property_id]);
+            return true;
+        } catch(PDOException $e) {
+            return false;
+        }
+    }
+
     // method to track application
     public function track_application($property_id) {
         try {
@@ -90,7 +104,11 @@ class PropertyTracker extends Db {
             $sql = "SELECT views_count, application_count, inspection_count FROM property_stats WHERE property_id = ?";
             $stmt = $this->dbconn->prepare($sql);
             $stmt->execute([$property_id]);
-            return $stmt->fetch(PDO::FETCH_ASSOC);
+            return $stmt->fetch(PDO::FETCH_ASSOC) ?: [
+                'views_count' => 0,
+                'application_count' => 0,
+                'inspection_count' => 0,
+            ];
         } catch(PDOException $e) {
             // $e->getMessage(); die();
             return false;

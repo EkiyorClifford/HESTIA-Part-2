@@ -9,9 +9,10 @@ if (!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true || empty($_S
 
 require_once '../classes/Admin.php';
 
+$active_admin_page = 'properties';
 $admin = new Admin();
-
-
+$keyword = trim($_GET['search'] ?? '');
+$filter = trim($_GET['filter'] ?? 'all');
 
 if(!empty($keyword)){
     $all_properties = $admin->search_properties($keyword, $filter);
@@ -20,7 +21,9 @@ if(!empty($keyword)){
 }
 
 $dashboard = $admin->get_property_dashboard_totals();
-$all_properties = $admin->get_all_properties();
+$toast_message = $_SESSION['feedback'] ?? $_SESSION['error'] ?? null;
+$toast_type = isset($_SESSION['error']) ? 'danger' : 'success';
+unset($_SESSION['feedback'], $_SESSION['error']);
 
 ?>
 
@@ -132,9 +135,9 @@ $all_properties = $admin->get_all_properties();
                         <span class="input-group-text bg-white border-end-0">
                             <i class="fas fa-search text-warning"></i>
                         </span>
-                        <input type="text" name="search" class="form-control border-start-0" placeholder="Search by name, LGA, or state..." value="<?= htmlspecialchars($keyword) ?>">
+                        <input type="text" name="search" class="form-control border-start-0" placeholder="Search by name, LGA, state, status, or address..." value="<?= htmlspecialchars($keyword) ?>">
                     </div>
-                    <input type="hidden" name="filter" value="<?= $filter ?>">
+                    <input type="hidden" name="filter" value="<?= htmlspecialchars($filter) ?>">
                 </div>
                 <div class="col-md-2">
                     <button type="submit" class="btn btn-warning w-100 py-2 fw-semibold">
@@ -143,7 +146,7 @@ $all_properties = $admin->get_all_properties();
                 </div>
                 <div class="col-md-2">
                     <?php if(!empty($_GET['search'])): ?>
-                        <a href="property-management.php?filter=<?= $filter ?>&search=" class="btn btn-outline-secondary py-2">
+                        <a href="property_management.php?filter=<?= urlencode($filter) ?>&search=" class="btn btn-outline-secondary py-2">
                             Clear Search
                         </a>
                     <?php endif; ?>
@@ -161,6 +164,7 @@ $all_properties = $admin->get_all_properties();
                                             <tr>
                                                 <th>Property</th>
                                                 <th>Location</th>
+                                                <th>Approval</th>
                                                 <th>Price</th>
                                                 <th>Status</th>
                                                 <th>Action</th>
@@ -171,11 +175,19 @@ $all_properties = $admin->get_all_properties();
                                                 <?php foreach ($all_properties as $property) { ?>
                                                     <?php
                                                     $status = strtolower(trim($property['status'] ?? 'inactive'));
+                                                    $approval_status = strtolower(trim($property['approval_status'] ?? 'pending'));
                                                     $badge_class = 'badge-inactive';
                                                     if ($status === 'available' || $status === 'active') {
                                                         $badge_class = 'badge-active';
                                                     } elseif ($status === 'taken' || $status === 'pending') {
                                                         $badge_class = 'badge-pending';
+                                                    }
+
+                                                    $approval_badge = 'badge-pending';
+                                                    if ($approval_status === 'approved') {
+                                                        $approval_badge = 'badge-active';
+                                                    } elseif ($approval_status === 'rejected') {
+                                                        $approval_badge = 'badge-inactive';
                                                     }
                                                     ?>
                                                     <tr>
@@ -185,14 +197,23 @@ $all_properties = $admin->get_all_properties();
                                                         <td style="text-transform: capitalize;">
                                                             <?= htmlspecialchars(($property['lga_name'] ?? 'Unknown area') . ', ' . ($property['state_name'] ?? 'Unknown state')) ?>
                                                         </td>
+                                                        <td>
+                                                            <span class="badge <?= $approval_badge ?>"><?= htmlspecialchars(ucfirst($approval_status)) ?></span>
+                                                        </td>
                                                         <td>&#8358;<?= number_format((float) ($property['amount'] ?? 0)) ?></td>
                                                         <td id="property-status-container-<?= $property['property_id'] ?>">
                                                             <span class="badge <?= $badge_class ?>"><?= htmlspecialchars(ucfirst($status)) ?></span>
                                                         </td>
                                                         <td>
-                                                            <button class="view-link border-0 bg-transparent btn-property" data-id="<?= $property['property_id'] ?>">
-                                                                <i class="fas fa-eye me-1"></i> View
-                                                            </button>
+                                                            <?php if ($approval_status === 'pending') { ?>
+                                                                <a href="/Hestia-PHP/admin/property-review.php?id=<?= (int) $property['property_id'] ?>" class="view-link">
+                                                                    <i class="fas fa-eye me-1"></i> Review
+                                                                </a>
+                                                            <?php } else { ?>
+                                                                <button class="view-link border-0 bg-transparent btn-property" data-id="<?= $property['property_id'] ?>">
+                                                                    <i class="fas fa-eye me-1"></i> View
+                                                                </button>
+                                                            <?php } ?>
                                                             
                                                             <button class="btn-toggle border-0 bg-transparent ms-3" 
                                                                     data-id="<?= $property['property_id'] ?>" 
@@ -205,7 +226,7 @@ $all_properties = $admin->get_all_properties();
                                                 <?php } ?>
                                             <?php } else { ?>
                                                 <tr>
-                                                    <td colspan="5" class="text-center">
+                                                    <td colspan="6" class="text-center">
                                                         <div class="empty-state">
                                                             <i class="fas fa-building"></i>
                                                             <h6>No properties found</h6>
@@ -356,6 +377,12 @@ $all_properties = $admin->get_all_properties();
                 })
             });
         });
+
+        <?php if ($toast_message): ?>
+        document.addEventListener('DOMContentLoaded', function () {
+            showToast(<?= json_encode($toast_message) ?>, <?= json_encode($toast_type) ?>);
+        });
+        <?php endif; ?>
     </script>
     <!-- Toast Container -->
     <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100">

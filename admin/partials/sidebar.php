@@ -19,7 +19,7 @@ $active_admin_page = $active_admin_page ?? 'dashboard';
                 </a>
             </li>
             <li>
-                <a href="<?= $base_url ?>admin/views/property_management.php" class="sidebar-link">
+                <a href="<?= $base_url ?>admin/views/property_management.php" class="sidebar-link <?= $active_admin_page === 'properties' ? 'active' : '' ?>">
                     <i class="fas fa-building"></i>
                     <span>Property Management</span>
                 </a>

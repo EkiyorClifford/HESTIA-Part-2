@@ -4,9 +4,9 @@ require_once '../classes/Property.php';
 require_once '../classes/User.php';
 include_once '../classes/PropertyTracker.php';
 include_once '../classes/Inspection.php';
+include_once '../classes/Applications.php';
 
-
-$id = $_GET['property_id'] ?? null; 
+$id = (int) ($_GET['property_id'] ?? 0);
 if (!$id) {
     header("Location: ../views/properties.php");
     exit();
@@ -15,21 +15,31 @@ if (!$id) {
 $property = new Property();
 $details = $property->get_property_by_id($id);
 
-$user = new User();
-$user_details = $user->get_user_by('id', $details['user_id']);
-
 // Redirect if property doesn't exist
 if (!$details) {
     header("Location: ../views/properties.php");
     exit();
 }
 
+$user_id = (int) ($_SESSION['user_id'] ?? 0);
+$is_owner = $user_id > 0 && (int) $details['user_id'] === $user_id;
+$is_admin_viewer = !empty($_SESSION['is_admin']) && $_SESSION['is_admin'] === true;
+$is_publicly_visible = ($details['approval_status'] ?? '') === 'approved' && ($details['status'] ?? '') === 'available';
+
+if (!$is_publicly_visible && !$is_owner && !$is_admin_viewer) {
+    $_SESSION['error'] = 'That property is not currently available to the public.';
+    header("Location: ../views/properties.php");
+    exit();
+}
+
+$user = new User();
+$user_details = $user->get_user_by('id', $details['user_id']);
+
 $images = $property->get_images($id);
 // Fix: Get dynamic amenities
 $amenities = $property->get_amenities_by_property($id); 
 
 $Pt1 = new PropertyTracker();
-$user_id = $_SESSION['user_id'] ?? null;
 
 $views = $Pt1->track_view($id, $user_id);
 $tracker = $Pt1->count_stats($id);
@@ -40,13 +50,24 @@ $last_viewed = $Pt1->get_last_viewed($id, $user_id);
 $can_request = true;
 $inspection_check = false;
 
-if (isset($_SESSION['user_id'])) {
-    $inspection = new Inspection();
-    $inspection_check = $inspection->check_inspection($id, $_SESSION['user_id']);
-    $can_request = $inspection_check === false && !$inspection->is_landlord_own_property($id, $_SESSION['user_id']);
-} else {
-    $can_request = true;
+$inspect = new Inspection();
+$can = false;
+if ($user_id !== null) {
+    $can = $inspect->is_landlord_own_property($id, $user_id);
+    if($can) {
+        $can_request = false;
+    }
+    $check_inspection = $inspect->check_inspection($id, $user_id);
+    if($check_inspection) {
+        $inspection_check = true;
+    }
 }
+//application
+
+//toast
+$toastMessage = $_SESSION['success'] ?? $_SESSION['feedback'] ?? $_SESSION['error'] ?? null;
+$toastType = isset($_SESSION['error']) ? 'danger' : 'success';
+unset($_SESSION['success'], $_SESSION['feedback'], $_SESSION['error']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -63,19 +84,41 @@ if (isset($_SESSION['user_id'])) {
     <?php include '../partials/nav.php'; ?>
 
     <main class="container flex-grow-1 py-5">
+        <?php if ($toastMessage) { ?>
+        <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100">
+            <div id="statusToast" class="toast align-items-center text-white bg-<?php echo $toastType; ?> border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <?php echo htmlspecialchars($toastMessage); ?>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+        <?php } ?>
+
+        <?php if (!$is_publicly_visible && ($is_owner || $is_admin_viewer)) { ?>
+            <div class="alert alert-warning">
+                <strong>Private listing:</strong>
+                This property is currently <?= htmlspecialchars($details['approval_status'] ?? 'pending') ?> with status <?= htmlspecialchars($details['status'] ?? 'inactive') ?>, so it is not visible on the public marketplace.
+                <?php if (($details['approval_status'] ?? '') === 'rejected' && !empty($details['rejection_reason'])) { ?>
+                    <br><strong>Rejection reason:</strong> <?= nl2br(htmlspecialchars($details['rejection_reason'])) ?>
+                <?php } ?>
+            </div>
+        <?php } ?>
 
         <div class="row g-4">
             <div class="col-lg-8">
                 <!-- Main Image -->
                 <?php $main_img = (!empty($images)) ? $images[0]['image_path'] : 'default.png'; ?>
-                <img src="../upload/properties/<?php echo $main_img; ?>" alt="Property Main Image" class="property-image mb-4 w-100 rounded-3 shadow-sm" style="height: 450px; object-fit: cover;">
+                <img src="../upload/properties/<?php echo $main_img; ?>" alt="Property Main Image" class="property-image mb-4 w-100 rounded-3 shadow-sm" style="height: 450px; object-fit: cover;" loading="eager" fetchpriority="high" decoding="async">
 
                 <!-- Dynamic Gallery -->
-                <div class="gallery row g-2">
-                    <?php foreach($images as $key => $img){ if($key == 0) continue; // Skip main image ?>
-                    <div class="col-md-4">
+                <div class="gallery row g-2 g-md-3">
+                    <?php foreach($images as $key => $img){ if($key == 0) continue;?>
+                    <div class="col-6 col-md-4">
                         <div class="gallery-item">
-                            <img src="../upload/properties/<?php echo $img['image_path']; ?>" class="img-fluid rounded-2" style="height: 150px; width: 100%; object-fit: cover;">
+                            <img src="../upload/properties/<?php echo $img['image_path']; ?>" class="img-fluid rounded-2" style="height: 150px; width: 100%; object-fit: cover;" loading="lazy" decoding="async">
                         </div>
                     </div>
                     <?php } ?>
@@ -158,7 +201,7 @@ if (isset($_SESSION['user_id'])) {
                             <div class="col-4">
                                 <div class="d-flex flex-column align-items-center">
                                     <i class="fas fa-eye fs-5 mb-1" style="color: #C44536;"></i>
-                                    <span class="fw-bold fs-5"><?php echo number_format($tracker['views_count']); ?></span>
+                                    <span class="fw-bold fs-5"><?php echo number_format((int) ($tracker['views_count'] ?? 0)); ?></span>
                                     <span class="small text-secondary">Views</span>
                                 </div>
                             </div>
@@ -167,7 +210,7 @@ if (isset($_SESSION['user_id'])) {
                             <div class="col-4">
                                 <div class="d-flex flex-column align-items-center">
                                     <i class="fas fa-calendar-check fs-5 mb-1" style="color: #C44536;"></i>
-                                    <span class="fw-bold fs-5"><?php echo number_format($tracker['inspection_count']); ?></span>
+                                    <span class="fw-bold fs-5"><?php echo number_format((int) ($tracker['inspection_count'] ?? 0)); ?></span>
                                     <span class="small text-secondary">Inspections</span>
                                 </div>
                             </div>
@@ -176,7 +219,7 @@ if (isset($_SESSION['user_id'])) {
                             <div class="col-4">
                                 <div class="d-flex flex-column align-items-center">
                                     <i class="fas fa-file-alt fs-5 mb-1" style="color: #C44536;"></i>
-                                    <span class="fw-bold fs-5"><?php echo number_format($tracker['application_count']); ?></span>
+                                    <span class="fw-bold fs-5"><?php echo number_format((int) ($tracker['application_count'] ?? 0)); ?></span>
                                     <span class="small text-secondary">Applications</span>
                                 </div>
                             </div>
@@ -265,7 +308,9 @@ if (isset($_SESSION['user_id'])) {
                     </div>
 
                     <!-- Inspection/Request Action -->
-                    <?php if(isset($_SESSION['user_id']) && $can_request) { ?>
+                    <?php if(!$is_publicly_visible) { ?>
+                        <div class="alert alert-warning small">This property cannot receive inspection requests until it is approved and available.</div>
+                    <?php } elseif(isset($_SESSION['user_id']) && $can_request === true && $inspection_check === false) { ?>
                         <span class="">We recommend booking a viewing before applying.</span>
                         <form action="../process/process_inspection.php" method="POST">
                             <input type="hidden" name="property_id" value="<?php echo $id; ?>">
@@ -277,14 +322,21 @@ if (isset($_SESSION['user_id'])) {
                                 <i class="fas fa-eye me-2"></i> Request Viewing
                             </button>
                         </form>
-                    <?php } elseif(isset($_SESSION['user_id']) && !$can_request) { ?>
+                    <?php } elseif(!isset($_SESSION['user_id']) || $can_request === false) { ?>
                         <div class="alert alert-warning small">You can't inspect your own property</div>
-                    <?php }else{ ?>
+                    <?php } elseif($inspection_check === true) { ?>
+                        <div class="alert alert-warning small">You have already requested an inspection for this property</div>
+                    <?php } else { ?>
                         <div class="alert alert-warning small">Please login to book inspections</div>
                     <?php } ?>
 
                     <!-- Application Form -->
-                <?php if(isset($_SESSION['user_id']) && $can_request) { ?>
+                    <?php if(!$is_publicly_visible) { ?>
+                        <div class="alert alert-warning small">
+                            <i class="fas fa-info-circle me-2"></i>
+                            This property is not accepting applications until it is approved and available.
+                        </div>
+                    <?php } elseif(isset($_SESSION['user_id']) && $can_request === true) { ?>
                     <form action="../process/process_application.php" method="POST">
                         <input type="hidden" name="property_id" value="<?php echo $id; ?>">
                         
@@ -301,7 +353,7 @@ if (isset($_SESSION['user_id'])) {
                             <i class="fas fa-file-alt me-2"></i>APPLY NOW
                         </button>
                     </form>
-                <?php } elseif(isset($_SESSION['user_id']) && !$can_request) { ?>
+                <?php } elseif(!isset($_SESSION['user_id']) || $can_request === false) { ?>
                     <div class="alert alert-warning small">You can't apply to your own property</div>
                 <?php } else { ?>
                     <div class="alert alert-warning small">
@@ -323,5 +375,17 @@ if (isset($_SESSION['user_id'])) {
     </main>
 
     <?php include '../partials/footer.php'; ?>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <?php if ($toastMessage) { ?>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toastEl = document.getElementById('statusToast');
+            if (toastEl) {
+                const toast = new bootstrap.Toast(toastEl, { delay: 3500 });
+                toast.show();
+            }
+        });
+    </script>
+    <?php } ?>
 </body>
 </html>

@@ -99,8 +99,8 @@ class Admin extends Db {
         try {
             $stats = $defaults;
             $stats['total_properties'] = $this->dbconn->query("SELECT COUNT(property_id) FROM properties")->fetchColumn();
-            $stats['active_properties'] = $this->dbconn->query("SELECT COUNT(property_id) FROM properties WHERE status = 'available' OR status = 'taken'")->fetchColumn();
-            $stats['inactive_properties'] = $this->dbconn->query("SELECT COUNT(property_id) FROM properties WHERE status = 'inactive' OR status = 'deleted'")->fetchColumn();
+            $stats['active_properties'] = $this->dbconn->query("SELECT COUNT(property_id) FROM properties WHERE approval_status = 'approved' AND (status = 'available' OR status = 'taken')")->fetchColumn();
+            $stats['inactive_properties'] = $this->dbconn->query("SELECT COUNT(property_id) FROM properties WHERE approval_status <> 'approved' OR status = 'inactive' OR status = 'deleted'")->fetchColumn();
             return $stats;
         } catch (PDOException $e) {
             // echo $e->getMessage(); die();
@@ -154,9 +154,9 @@ class Admin extends Db {
                 JOIN states s ON p.state_id = s.state_id 
                 JOIN lgas l ON p.lga_id = l.lga_id 
                 JOIN property_types pt ON p.property_type_id = pt.type_id 
-                WHERE (`description` LIKE ? OR title LIKE ? OR listing_type LIKE ? OR amount LIKE ? OR `status` LIKE ? OR prop_address LIKE ? OR s.state_name LIKE ? OR l.lga_name LIKE ?)";
+                WHERE (`description` LIKE ? OR title LIKE ? OR listing_type LIKE ? OR amount LIKE ? OR `status` LIKE ? OR approval_status LIKE ? OR prop_address LIKE ? OR s.state_name LIKE ? OR l.lga_name LIKE ?)";
         $term = "%$keyword%";
-        $params = [$term, $term, $term, $term, $term, $term, $term, $term];
+        $params = [$term, $term, $term, $term, $term, $term, $term, $term, $term];
 
         if ($filter !== 'all') {
             $sql .= " AND status = ?";
@@ -222,6 +222,38 @@ class Admin extends Db {
         }
     }
 
+    public function get_user_active_stats() {
+        try {
+            $sql = "SELECT is_active, COUNT(*) as count FROM users GROUP BY is_active";
+            $stmt = $this->dbconn->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
+
+    public function get_pending_properties($limit = 5) {
+        try {
+            $sql = "SELECT p.*, t.type_name, s.state_name, l.lga_name, u.first_name, u.last_name, u.email
+                    FROM properties p
+                    JOIN property_types t ON p.property_type_id = t.type_id
+                    JOIN states s ON p.state_id = s.state_id
+                    JOIN lgas l ON p.lga_id = l.lga_id
+                    JOIN users u ON p.user_id = u.id
+                    WHERE p.approval_status = 'pending'
+                    ORDER BY p.created_at DESC
+                    LIMIT :limit";
+
+            $stmt = $this->dbconn->prepare($sql);
+            $stmt->bindValue(':limit', (int) $limit, PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
+
     // method to get landlord details and properties 
     public function get_landlord_details($id) {
        try{
@@ -284,7 +316,8 @@ class Admin extends Db {
                 JOIN property_types t ON p.property_type_id = t.type_id
                 JOIN states s ON p.state_id = s.state_id
                 JOIN lgas l ON p.lga_id = l.lga_id
-                ORDER BY p.created_at DESC LIMIT :limit"; // Use a named placeholder
+                WHERE p.approval_status = 'approved'
+                ORDER BY p.created_at DESC LIMIT :limit";
             
             $stmt = $this->dbconn->prepare($sql);
             
@@ -319,7 +352,7 @@ class Admin extends Db {
 
     public function get_all_properties() {
         try {
-            $sql = "SELECT p.*, t.type_name, s.state_name, l.lga_name, u.first_name, u.last_name, u.email
+            $sql = "SELECT p.*, t.type_name, s.state_name, l.lga_name, u.first_name, u.last_name, u.email, u.p_number
                     FROM properties p 
                     JOIN property_types t ON p.property_type_id = t.type_id
                     JOIN states s ON p.state_id = s.state_id
@@ -337,7 +370,7 @@ class Admin extends Db {
 
     public function get_property_by_id($id) {
         try {
-            $sql = "SELECT p.*, t.type_name, s.state_name, l.lga_name, u.first_name, u.last_name, u.email
+            $sql = "SELECT p.*, t.type_name, s.state_name, l.lga_name, u.first_name, u.last_name, u.email, u.p_number
                     FROM properties p 
                     JOIN property_types t ON p.property_type_id = t.type_id
                     JOIN states s ON p.state_id = s.state_id
@@ -360,6 +393,81 @@ class Admin extends Db {
             $result = $stmt->execute([$new_status, $id]);
             
             return ($result && $stmt->rowCount() > 0);
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
+    public function update_admin_profile($id, $data) {
+        try {
+            $sql = "UPDATE admins SET first_name = ?, last_name = ?";
+            $params = [$data['first_name'], $data['last_name']];
+
+            if (!empty($data['password'])) {
+                $sql .= ", adm_password = ?";
+                $params[] = password_hash($data['password'], PASSWORD_DEFAULT);
+            }
+
+            $sql .= " WHERE admin_id = ?";
+            $params[] = $id;
+
+            $stmt = $this->dbconn->prepare($sql);
+            return $stmt->execute($params);
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
+    public function get_property_images($property_id) {
+        try {
+            $sql = "SELECT * FROM property_images WHERE property_id = ? ORDER BY is_primary DESC, image_id ASC";
+            $stmt = $this->dbconn->prepare($sql);
+            $stmt->execute([$property_id]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
+
+    public function get_property_amenities($property_id) {
+        try {
+            $sql = "SELECT a.amenity_name
+                    FROM property_amenities pa
+                    JOIN amenities a ON pa.amenity_id = a.amenity_id
+                    WHERE pa.property_id = ?";
+            $stmt = $this->dbconn->prepare($sql);
+            $stmt->execute([$property_id]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
+
+    public function review_property($id, $action, $rejection_reason = null) {
+        try {
+            if ($action === 'approve') {
+                $sql = "UPDATE properties
+                        SET approval_status = 'approved',
+                            status = 'available',
+                            rejection_reason = NULL,
+                            updated_at = NOW()
+                        WHERE property_id = ?";
+                $stmt = $this->dbconn->prepare($sql);
+                return $stmt->execute([$id]);
+            }
+
+            if ($action === 'reject') {
+                $sql = "UPDATE properties
+                        SET approval_status = 'rejected',
+                            status = CASE WHEN status = 'deleted' THEN 'deleted' ELSE 'inactive' END,
+                            rejection_reason = ?,
+                            updated_at = NOW()
+                        WHERE property_id = ?";
+                $stmt = $this->dbconn->prepare($sql);
+                return $stmt->execute([$rejection_reason, $id]);
+            }
+
+            return false;
         } catch (PDOException $e) {
             return false;
         }

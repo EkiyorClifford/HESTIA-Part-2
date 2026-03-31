@@ -12,14 +12,13 @@ $admin = new Admin();
 
 // fetch data
 $dashboard_totals = $admin->get_dashboard_totals();
+$property_stats = $admin->get_property_status_stats();
 $user_roles = $admin->get_user_role_stats();
 $top_locations = $admin->get_top_locations();
+$pending_properties = $admin->get_pending_properties();
 $recent_properties = $admin->get_recent_properties();
 $recent_applications = $admin->get_recent_applications();
 $today = $admin->get_todays_activity();
-
-// fetch all properties for management table
-$all_properties = $admin->get_all_properties();
 
 // process data
 $stats = array_merge([
@@ -35,7 +34,7 @@ $property_counts = [
     'inactive' => 0,
 ];
 
-foreach ($property_stats as $row) {
+foreach (($property_stats ?: []) as $row) {
     $status_key = strtolower(trim($row['status'] ?? ''));
     if (array_key_exists($status_key, $property_counts)) {
         $property_counts[$status_key] = (int) ($row['count'] ?? 0);
@@ -105,7 +104,7 @@ function application_status_badge($status){
                     <div class="welcome-card">
                         <div>
                             <h3>Welcome back, <?= htmlspecialchars($_SESSION['first_name'] ?? 'Administrator') ?>!</h3>
-                            <p class="lead">Live platform data only. No placeholder metrics.</p>
+                            <p class="lead">Everything you need to run Hestia — clean, live, and in one place.</p>
                         </div>
                         <div class="date-badge">
                             <i class="far fa-calendar-alt me-2"></i> <?= date('F j, Y') ?>
@@ -162,6 +161,50 @@ function application_status_badge($status){
 
                     <div class="row g-4">
                         <div class="col-lg-8">
+                            <div class="section-card">
+                                <div class="section-title">
+                                    <i class="fas fa-hourglass-half"></i> PENDING PROPERTIES
+                                </div>
+                                <?php if (!empty($pending_properties)) { ?>
+                                    <div class="table-responsive">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Property</th>
+                                                    <th>Landlord</th>
+                                                    <th>Submitted</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php foreach ($pending_properties as $property) { ?>
+                                                    <tr>
+                                                        <td style="text-transform: capitalize;">
+                                                            <?= htmlspecialchars($property['title'] ?? 'Untitled property') ?>
+                                                        </td>
+                                                        <td style="text-transform: capitalize;">
+                                                            <?= htmlspecialchars(trim(($property['first_name'] ?? '') . ' ' . ($property['last_name'] ?? ''))) ?>
+                                                        </td>
+                                                        <td><?= !empty($property['created_at']) ? htmlspecialchars(date('M j, Y', strtotime($property['created_at']))) : 'N/A' ?></td>
+                                                        <td>
+                                                            <a href="/Hestia-PHP/admin/property-review.php?id=<?= (int) $property['property_id'] ?>" class="view-link">
+                                                                <i class="fas fa-eye me-1"></i> Review
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                <?php } ?>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                <?php } else { ?>
+                                    <div class="empty-state">
+                                        <i class="fas fa-check-circle"></i>
+                                        <h6>No pending properties</h6>
+                                        <p class="small mb-0">New landlord submissions will appear here for review.</p>
+                                    </div>
+                                <?php } ?>
+                            </div>
+
                             <div class="section-card">
                                 <div class="section-title">
                                     <i class="fas fa-building"></i> RECENT PROPERTIES

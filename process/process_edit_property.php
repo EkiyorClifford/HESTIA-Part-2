@@ -12,8 +12,7 @@ if (!$user_id) {
 }
 
 if (isset($_POST['updatebtn'])) {
-    
-    $prop_id = $_POST['property_id'];
+    $prop_id = (int) ($_POST['property_id'] ?? 0);
 
     // 1. check if the user owns the property
     $existing = $property->get_property_by_id($prop_id);
@@ -26,15 +25,15 @@ if (isset($_POST['updatebtn'])) {
     // 2. Sanitize Inputs
     $title = Common::cleandata($_POST['title']);
     $description = Common::cleandata($_POST['description']);
-    $type_id = $_POST['property_type_id'];
-    $lga_id = $_POST['lga_id'];
-    $state_id = $_POST['state_id'];
-    $listing_type = $_POST['listing_type'];
-    $amount = $_POST['amount'];
-    $bedroom = $_POST['bedroom'];
-    $furnished = $_POST['furnished'];
+    $type_id =  $_POST['property_type_id'] ?? 0;
+    $lga_id =  $existing['lga_id'] ?? 0;
+    $state_id =  $existing['state_id'] ?? 0;
+    $listing_type = $_POST['listing_type'] ?? '';
+    $amount = $_POST['amount'] ?? '';
+    $bedroom = $_POST['bedroom'] ?? '';
+    $furnished = $_POST['furnished'] ?? '';
     $address = Common::cleandata($_POST['prop_address']);
-    $status = $_POST['status'] ?? 'available';
+    $status = strtolower(trim($_POST['status'] ?? 'available'));
 
     // 3. Validation
     $errors = [];
@@ -43,12 +42,20 @@ if (isset($_POST['updatebtn'])) {
         $errors[] = "All required fields must be filled.";
     }
 
-    if (!is_numeric($amount) || !is_numeric($bedroom) || !is_numeric($type_id)) {
+    if (!is_numeric($amount) || !is_numeric($bedroom) || $type_id <= 0) {
         $errors[] = "Invalid numeric data provided.";
     }
 
     if (!in_array($listing_type, ['rent', 'sale'])) {
         $errors[] = "Invalid listing type.";
+    }
+
+    if (!in_array($furnished, ['Furnished', 'Unfurnished'], true)) {
+        $errors[] = "Invalid furnished option.";
+    }
+
+    if (!in_array($status, ['available', 'taken', 'inactive', 'deleted'], true)) {
+        $errors[] = "Invalid property status.";
     }
 
     if (strlen($title) > 255) {
@@ -77,10 +84,22 @@ if (isset($_POST['updatebtn'])) {
         'address'      => $address,
         'status'       => $status
     ];
+
+    $current_approval_status = strtolower((string) ($existing['approval_status'] ?? ''));
+    $was_rejected = $current_approval_status === 'rejected';
+
+    if (in_array($current_approval_status, ['pending', 'rejected'], true)) {
+        $data['approval_status'] = 'pending';
+        $data['rejection_reason'] = null;
+        $data['status'] = 'inactive';
+    }
+
     $result = $property->save_property($data, $prop_id);
 
     if ($result) {
-        $_SESSION['feedback'] = "Property updated successfully!";
+        $_SESSION['feedback'] = $was_rejected
+            ? "Property updated and resubmitted for admin review."
+            : "Property updated successfully!";
         header('Location: ../landlord/landlord-profile.php');
     } else {
         $_SESSION['error'] = "Failed to update property. Please try again.";

@@ -134,13 +134,11 @@ $saved_data = $_SESSION['form_data'] ?? [];
                         </select>
                     </div>
                     
-                    <!-- Status (from DB: status - default 'available') -->
+                    <!-- Moderation status -->
                     <div class="col-md-4 mb-4">
-                        <label for="status" class="form-label">Status</label>
-                        <select class="form-select" id="status" name="status">
-                            <option value="available" selected>Available</option>
-                        </select>
-                        <small class="text-muted">Default: available</small>
+                        <label class="form-label">Moderation</label>
+                        <input type="text" class="form-control" value="Submitted for admin review" readonly>
+                        <small class="text-muted">New properties stay pending until an admin approves them.</small>
                     </div>
                 </div>
                 
@@ -185,10 +183,10 @@ $saved_data = $_SESSION['form_data'] ?? [];
                 </div>
                 
                 <!-- Submit Button -->
-                <button type="submit" class="btn btn-primary w-100" name="add_property">List property →</button>
+                <button type="submit" class="btn btn-primary w-100" name="add_property">Submit property for review</button>
                 
                 <div class="text-center mt-4">
-                    <span class="status-badge"><i class="far fa-clock me-1"></i> Listing will be reviewed</span>
+                    <span class="status-badge"><i class="far fa-clock me-1"></i> Listing will be reviewed before it appears publicly</span>
                 </div>
             </form>
         </div>

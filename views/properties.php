@@ -12,12 +12,8 @@ $trackerObj = new PropertyTracker();
 $states = $stateObj->get_active_states();
 $ptypes = $propObj->get_property_types();
 
-// 2. Fetch properties based on filters (Passing the entire $_GET array)
-// We set a default status filter to 'available' if not specified
+// 2. Fetch publicly visible properties based on filters
 $filters = $_GET;
-if(!isset($filters['status'])) {
-    $filters['status'] = 'available';
-}
 $all_props = $propObj->get_properties($filters);
 // $view_counts = [];
 // foreach($all_props as $prop) {

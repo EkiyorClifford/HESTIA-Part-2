@@ -100,6 +100,7 @@
             cursor: pointer;
             transition: all 0.3s ease;
             height: 150px;
+            touch-action: pan-y;
         }
         .gallery-item img {
             width: 100%;
@@ -302,12 +303,70 @@
             margin: 0;
         }
         @media (max-width: 768px) {
+            .container.py-5 {
+                padding-top: 1.5rem !important;
+                padding-bottom: 1.5rem !important;
+            }
             .property-details-card {
                 position: static;
                 margin-bottom: 30px;
+                padding: 22px;
             }
             .property-image {
                 height: 300px;
+            }
+            .gallery {
+                margin-top: 18px;
+            }
+            .gallery-item {
+                height: 130px;
+            }
+            .property-details-section {
+                padding: 22px;
+                margin-bottom: 20px;
+            }
+            .property-details-section h3 {
+                font-size: 1.2rem;
+            }
+            .spec-item {
+                padding: 10px 0;
+            }
+            .btn-primary,
+            .btn-outline-primary {
+                min-height: 48px;
+            }
+            .map-container {
+                height: 260px;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .property-image {
+                height: 240px;
+                border-radius: 12px;
+            }
+            .gallery {
+                display: flex;
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                gap: 12px;
+                padding-bottom: 6px;
+                scroll-snap-type: x proximity;
+            }
+            .gallery > div {
+                min-width: 160px;
+                flex: 0 0 auto;
+            }
+            .gallery-item {
+                height: 120px;
+                scroll-snap-align: start;
+            }
+            .badge {
+                font-size: 0.78rem;
+                padding: 7px 12px;
+            }
+            .price-tag {
+                font-size: 1.45rem;
             }
         }
     

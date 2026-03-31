@@ -16,6 +16,7 @@ if (!$user) {
 $dashboard_link = ($_SESSION['user_role'] ?? '') === 'landlord'
     ? '../landlord/landlord-profile.php'
     : '../tenant/tenant-profile.php';
+$is_tenant_profile = ($_SESSION['user_role'] ?? '') === 'tenant';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -31,7 +32,7 @@ $dashboard_link = ($_SESSION['user_role'] ?? '') === 'landlord'
     <link rel="stylesheet" href="../assets/update-profile.css">
     <link rel="stylesheet" href="../assets/global.css">
 </head>
-<body>
+<body class="<?= $is_tenant_profile ? 'tenant-dashboard-page tenant-profile-editor-page' : '' ?>">
     <?php include '../partials/nav.php'; ?>
 
     <main class="profile-editor-page">

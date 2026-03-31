@@ -661,13 +661,13 @@ Add appropriate error messages:
 
 **PRIORITY:** High - This affects user experience and business logic
 
-🔄 UPDATED INSPECTION LOGIC - NEW REQUIREMENTS:
+UPDATED INSPECTION LOGIC - NEW REQUIREMENTS:
 ===============================================
 
 **REVISED BUSINESS LOGIC:**
-- ✅ ANY logged-in user (tenant OR landlord) can request inspections
-- ❌ Users cannot inspect their own properties
-- ✅ Users can apply to any property except their own
+- ANY logged-in user (tenant OR landlord) can request inspections
+- Users cannot inspect their own properties
+- Users can apply to any property except their own
 
 **CURRENT IMPLEMENTATION ANALYSIS:**
 

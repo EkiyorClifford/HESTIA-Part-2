@@ -13,20 +13,34 @@ class Property extends Db {
         try {
             if ($id) {
                 $sql = "UPDATE properties SET property_type_id=?, bedroom=?, furnished=?, lga_id=?, state_id=?, 
-                        listing_type=?, amount=?, title=?, `description`=?, prop_address=?, status=? 
-                        WHERE property_id=? AND user_id=?";
+                        listing_type=?, amount=?, title=?, `description`=?, prop_address=?, status=?";
                 $params = [
                     $data['property_type_id'], $data['bedroom'], $data['furnished'], $data['lga_id'], $data['state_id'],
                     $data['listing_type'], $data['amount'], $data['title'], $data['description'], $data['address'], 
-                    $data['status'], $id, $data['user_id']
+                    $data['status']
                 ];
+
+                if (array_key_exists('approval_status', $data)) {
+                    $sql .= ", approval_status=?";
+                    $params[] = $data['approval_status'];
+                }
+
+                if (array_key_exists('rejection_reason', $data)) {
+                    $sql .= ", rejection_reason=?";
+                    $params[] = $data['rejection_reason'];
+                }
+
+                $sql .= " WHERE property_id=? AND user_id=?";
+                $params[] = $id;
+                $params[] = $data['user_id'];
             } else {
                 $sql = "INSERT INTO properties (user_id, property_type_id, bedroom, furnished, lga_id, state_id, 
-                        listing_type, amount, title, `description`, prop_address) VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+                        listing_type, amount, title, `description`, prop_address, status, approval_status, rejection_reason) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                 $params = [
                     $data['user_id'], $data['property_type_id'], $data['bedroom'], $data['furnished'], $data['lga_id'], 
-                    $data['state_id'], $data['listing_type'], $data['amount'], $data['title'], $data['description'], $data['prop_address']
-                ];//i used params here to group it for easier execution
+                    $data['state_id'], $data['listing_type'], $data['amount'], $data['title'], $data['description'],
+                    $data['prop_address'], $data['status'] ?? 'inactive', $data['approval_status'] ?? 'pending', $data['rejection_reason'] ?? null
+                ];
             }
             $stmt = $this->dbconn->prepare($sql);
             $stmt->execute($params);
@@ -34,6 +48,22 @@ class Property extends Db {
         } catch (PDOException $e) {
             // echo "Database Error: " . $e->getMessage();
             // exit();
+            return false;
+        }
+    }
+
+    public function is_property_live($property_id) {
+        try {
+            $sql = "SELECT 1
+                    FROM properties
+                    WHERE property_id = ?
+                    AND approval_status = 'approved'
+                    AND status = 'available'
+                    LIMIT 1";
+            $stmt = $this->dbconn->prepare($sql);
+            $stmt->execute([$property_id]);
+            return (bool) $stmt->fetchColumn();
+        } catch (PDOException $e) {
             return false;
         }
     }
@@ -70,9 +100,9 @@ class Property extends Db {
                 JOIN states s ON p.state_id = s.state_id
                 JOIN lgas l ON p.lga_id = l.lga_id 
                 JOIN property_types pt ON p.property_type_id = pt.type_id
-                WHERE p.status = ?";
+                WHERE p.approval_status = 'approved' AND p.status = 'available'";
         
-        $params = [$filters['status'] ?? 'available'];
+        $params = [];
 
         // Property Type Filter
         if (!empty($filters['type'])) {
@@ -116,15 +146,21 @@ class Property extends Db {
     }
 
     // Get property by id
-    public function get_property_by_id($id) {
-        $sql = "SELECT p.*, pt.type_name, s.state_name, l.lga_name, u.first_name, u.last_name, u.p_number 
+    public function get_property_by_id($id, $options = []) {
+        $sql = "SELECT p.*, pt.type_name, s.state_name, l.lga_name, u.first_name, u.last_name, u.p_number, u.email 
                 FROM properties p 
                 JOIN property_types pt ON p.property_type_id = pt.type_id 
                 JOIN states s ON p.state_id = s.state_id 
                 JOIN lgas l ON p.lga_id = l.lga_id 
                 JOIN users u ON p.user_id = u.id WHERE p.property_id = ?";
+        $params = [$id];
+
+        if (!empty($options['public_only'])) {
+            $sql .= " AND p.approval_status = 'approved' AND p.status = 'available'";
+        }
+
         $stmt = $this->dbconn->prepare($sql);
-        $stmt->execute([$id]);
+        $stmt->execute($params);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
@@ -165,6 +201,7 @@ class Property extends Db {
             'taken' => 0,
             'inactive' => 0,
             'applications' => 0,
+            'inspections' => 0,
         ];
 
         try {
@@ -196,13 +233,34 @@ class Property extends Db {
             $stmt->execute([$user_id]);
             $stats['applications'] = (int) $stmt->fetchColumn();
 
+            $sql = "SELECT COUNT(*)
+                    FROM inspections i
+                    JOIN properties p ON i.property_id = p.property_id
+                    WHERE p.user_id = ? AND (p.deleted_at IS NULL AND p.status <> 'deleted')";
+            $stmt = $this->dbconn->prepare($sql);
+            $stmt->execute([$user_id]);
+            $stats['inspections'] = (int) $stmt->fetchColumn();
+
             return $stats;
         } catch (PDOException $e) {
             return $defaults;
         }
     }
 
-    public function get_landlord_properties($user_id, $limit = null) {
+    public function get_landlord_property_count($user_id) {
+        try {
+            $sql = "SELECT COUNT(*)
+                    FROM properties
+                    WHERE user_id = ? AND (deleted_at IS NULL AND status <> 'deleted')";
+            $stmt = $this->dbconn->prepare($sql);
+            $stmt->execute([$user_id]);
+            return (int) $stmt->fetchColumn();
+        } catch (PDOException $e) {
+            return 0;
+        }
+    }
+
+    public function get_landlord_properties($user_id, $limit = null, $offset = 0) {
         try {
             $sql = "SELECT p.*, s.state_name, l.lga_name, pt.type_name,
                     (SELECT image_path
@@ -214,9 +272,13 @@ class Property extends Db {
                     JOIN lgas l ON p.lga_id = l.lga_id
                     JOIN property_types pt ON p.property_type_id = pt.type_id
                     WHERE p.user_id = ? AND (p.deleted_at IS NULL AND p.status <> 'deleted')
-                    ORDER BY p.created_at DESC";
+                    ORDER BY COALESCE(p.updated_at, p.created_at) DESC, p.created_at DESC";
 
-            $stmt = $this->dbconn->prepare($sql . ($limit !== null ? " LIMIT " . (int) $limit : ""));
+            if ($limit !== null) {
+                $sql .= " LIMIT " . (int) $limit . " OFFSET " . (int) $offset;
+            }
+
+            $stmt = $this->dbconn->prepare($sql);
             $stmt->execute([$user_id]);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
