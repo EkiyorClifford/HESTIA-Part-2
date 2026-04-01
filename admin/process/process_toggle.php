@@ -1,7 +1,11 @@
 <?php
 session_start();
 require_once "../classes/Admin.php";
+require_once "../../classes/Property.php";
+require_once "../../classes/User.php";
 $admin = new Admin;
+$propertyObj = new Property;
+$userObj = new User;
 header('Content-Type: application/json');
 
 // 1. Check if the user is even logged in
@@ -29,7 +33,7 @@ if(isset($_POST['id']) && isset($_POST['type'])){
     
     if ($type === 'property') {
         // Handle property toggle
-        $property = $admin->get_property_by_id($id);
+        $property = $propertyObj->get_property_by_id($id);
         
         if (!$property) {
             echo json_encode(['success' => false, 'error' => 'Property not found']);
@@ -59,16 +63,17 @@ if(isset($_POST['id']) && isset($_POST['type'])){
             exit;
         }
         
-        $current = $admin->get_user_active_status($id);
+        $user = $userObj->get_user_by('id', $id);
 
-        if ($current === null) {
+        if (!$user) {
             echo json_encode(['success' => false, 'error' => 'User not found']);
             exit;
         }
 
+        $current = $user['is_active'] ?? null;
         $target_status = ($current === "yes") ? 'no' : 'yes';
         
-        if($admin->update_user_status($id, $target_status)){
+        if($userObj->set_status($id, $target_status)){
             echo json_encode([
                 'success' => true, 
                 'new_status' => $target_status

@@ -7,6 +7,7 @@ if (!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true || empty($_S
 }
 
 require_once "../classes/Admin.php";
+require_once "../classes/Common.php";
 
 $admin = new Admin();
 
@@ -37,7 +38,7 @@ $property_counts = [
 foreach (($property_stats ?: []) as $row) {
     $status_key = strtolower(trim($row['status'] ?? ''));
     if (array_key_exists($status_key, $property_counts)) {
-        $property_counts[$status_key] = (int) ($row['count'] ?? 0);
+        $property_counts[$status_key] = $row['count'] ?? 0;
     }
 }
 
@@ -50,7 +51,7 @@ $user_counts = [
 foreach ($user_roles as $row) {
     $role_key = strtolower(trim($row['role_'] ?? ''));
     if (array_key_exists($role_key, $user_counts)) {
-        $user_counts[$role_key] = (int) ($row['count'] ?? 0);
+        $user_counts[$role_key] = $row['count'] ?? 0;
     }
 }
 
@@ -60,24 +61,11 @@ $today = array_merge([
     'inspections' => 0,
 ], $today);
 // progress bar calculations
-$total_properties = max(1, (int) $stats['total_properties']);
+$total_properties = max(1, $stats['total_properties']);
 $available_width = min(100, ($property_counts['available'] / $total_properties) * 100);
 $taken_width = min(100, ($property_counts['taken'] / $total_properties) * 100);
 $inactive_width = min(100, ($property_counts['inactive'] / $total_properties) * 100);
 
-function application_status_badge($status){
-    $status = strtolower(trim($status));
-
-    if ($status === 'approved' || $status === 'accepted') {
-        return 'badge-active';
-    }
-
-    if ($status === 'rejected' || $status === 'declined') {
-        return 'badge-inactive';
-    }
-
-    return 'badge-pending';
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -140,21 +128,21 @@ function application_status_badge($status){
                             <div class="stat-card">
                                 <div class="stat-icon"><i class="fas fa-users"></i></div>
                                 <div class="stat-label">TOTAL USERS</div>
-                                <div class="stat-number"><?= number_format((int) $stats['total_users']) ?></div>
+                                <div class="stat-number"><?= number_format($stats['total_users']) ?></div>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="stat-card">
                                 <div class="stat-icon"><i class="fas fa-building"></i></div>
                                 <div class="stat-label">PROPERTIES</div>
-                                <div class="stat-number"><?= number_format((int) $stats['total_properties']) ?></div>
+                                <div class="stat-number"><?= number_format($stats['total_properties']) ?></div>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="stat-card">
                                 <div class="stat-icon"><i class="fas fa-file-signature"></i></div>
                                 <div class="stat-label">APPLICATIONS</div>
-                                <div class="stat-number"><?= number_format((int) $stats['total_applications']) ?></div>
+                                <div class="stat-number"><?= number_format($stats['total_applications']) ?></div>
                             </div>
                         </div>
                     </div>
@@ -187,7 +175,7 @@ function application_status_badge($status){
                                                         </td>
                                                         <td><?= !empty($property['created_at']) ? htmlspecialchars(date('M j, Y', strtotime($property['created_at']))) : 'N/A' ?></td>
                                                         <td>
-                                                            <a href="/Hestia-PHP/admin/property-review.php?id=<?= (int) $property['property_id'] ?>" class="view-link">
+                                                            <a href="/Hestia-PHP/admin/property-review.php?id=<?= $property['property_id'] ?>" class="view-link">
                                                                 <i class="fas fa-eye me-1"></i> Review
                                                             </a>
                                                         </td>
@@ -238,10 +226,10 @@ function application_status_badge($status){
                                                         <td>
                                                             <span class="badge <?= $badge_class ?>"><?= htmlspecialchars(ucfirst($status)) ?></span>
                                                         </td>
-                                                        <td>&#8358;<?= number_format((float) ($property['amount'] ?? 0)) ?></td>
+                                                        <td>&#8358;<?= number_format($property['amount'] ?? 0) ?></td>
                                                         <td>
                                                             <div class="table-actions">
-                                                                <a href="/Hestia-PHP/views/property-details.php?property_id=<?= (int) $property['property_id'] ?>" class="view-link">
+                                                                <a href="/Hestia-PHP/views/property-details.php?property_id=<?= $property['property_id'] ?>" class="view-link">
                                                                     <i class="fas fa-eye me-1"></i> View
                                                                 </a>
                                                             </div>
@@ -284,12 +272,12 @@ function application_status_badge($status){
                                                         </td>
                                                         <td style="text-transform: capitalize;"><?= htmlspecialchars($application['title'] ?? 'Unknown property') ?></td>
                                                         <td>
-                                                            <span class="badge <?= application_status_badge($app_status) ?>">
+                                                            <span class="badge <?= Common::application_status_badge($app_status) ?>">
                                                                 <?= htmlspecialchars(ucfirst($app_status)) ?>
                                                             </span>
                                                         </td>
                                                         <td>
-                                                            <a href="/Hestia-PHP/views/property-details.php?property_id=<?= (int) $application['property_id'] ?>" class="view-link">
+                                                            <a href="/Hestia-PHP/views/property-details.php?property_id=<?= $application['property_id'] ?>" class="view-link">
                                                                 <i class="fas fa-eye me-1"></i> View Property
                                                             </a>
                                                         </td>
@@ -372,7 +360,7 @@ function application_status_badge($status){
                                     <?php foreach ($top_locations as $location) { ?>
                                         <div class="location-item">
                                             <span class="name"><?= htmlspecialchars($location['state_name']) ?></span>
-                                            <span class="count"><?= number_format((int) $location['count']) ?> properties</span>
+                                            <span class="count"><?= number_format($location['count']) ?> properties</span>
                                         </div>
                                     <?php } ?>
                                 <?php } else { ?>
@@ -391,15 +379,15 @@ function application_status_badge($status){
                                 <div class="today-grid">
                                     <div class="today-item text-center">
                                         <div class="today-label" style="text-transform: uppercase; font-weight: 500;">New Users</div>
-                                        <div class="today-number"><?= number_format((int) $today['new_users']) ?></div>
+                                        <div class="today-number"><?= number_format($today['new_users']) ?></div>
                                     </div>
                                     <div class="today-item text-center">
                                         <div class="today-label" style="text-transform: uppercase; font-weight: 500;">New Properties</div>
-                                        <div class="today-number"><?= number_format((int) $today['new_props']) ?></div>
+                                        <div class="today-number"><?= number_format($today['new_props']) ?></div>
                                     </div>
                                     <div class="today-item full-width text-center muted">
                                         <div class="today-label" style="text-transform: uppercase; font-weight: 500;">Scheduled Inspections</div>
-                                        <div class="today-number"><?= number_format((int) $today['inspections']) ?></div>
+                                        <div class="today-number"><?= number_format($today['inspections']) ?></div>
                                     </div>
                                 </div>
                             </div>

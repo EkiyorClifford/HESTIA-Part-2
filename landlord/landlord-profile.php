@@ -13,12 +13,12 @@ if (($_SESSION['user_role'] ?? '') !== 'landlord') {
 $propObj = new Property();
 $userObj = new User();
 $inspectionObj = new Inspection();
-$user_id = (int) $_SESSION['user_id'];
+$user_id = $_SESSION['user_id'] ?? 0;
 $active_landlord_page = 'dashboard';
 $properties_per_page = 5;
-$property_page = max(1, (int) ($_GET['property_page'] ?? 1));
+$property_page = max(1, ($_GET['property_page'] ?? 1));
 $property_total = $propObj->get_landlord_property_count($user_id);
-$property_pages = max(1, (int) ceil($property_total / $properties_per_page));
+$property_pages = max(1, ceil($property_total / $properties_per_page));
 $property_page = min($property_page, $property_pages);
 $property_offset = ($property_page - 1) * $properties_per_page;
 
@@ -126,15 +126,15 @@ function approval_badge($status)
                 <div class="summary-panel">
                     <div class="summary-item">
                         <span class="summary-label">Listed Properties</span>
-                        <span class="summary-value"><?= number_format((int) $stats['total_properties']) ?></span>
+                        <span class="summary-value"><?= number_format($stats['total_properties']) ?></span>
                     </div>
                 <div class="summary-item">
                     <span class="summary-label">Applications</span>
-                    <span class="summary-value"><?= number_format((int) $stats['applications']) ?></span>
+                    <span class="summary-value"><?= number_format($stats['applications']) ?></span>
                 </div>
                 <div class="summary-item">
                     <span class="summary-label">Inspections</span>
-                    <span class="summary-value"><?= number_format((int) $stats['inspections']) ?></span>
+                    <span class="summary-value"><?= number_format( $stats['inspections']) ?></span>
                 </div>
             </div>
         </section>
@@ -142,31 +142,31 @@ function approval_badge($status)
             <div class="row g-4 stats-grid">
                 <div class="col-sm-6 col-xl-3">
                     <div class="card h-100 dashboard-card">
-                        <div class="stat-number"><?= number_format((int) $stats['total_properties']) ?></div>
+                        <div class="stat-number"><?= number_format($stats['total_properties']) ?></div>
                         <div class="text-secondary">Total Properties</div>
                     </div>
                 </div>
                 <div class="col-sm-6 col-xl-3">
                     <div class="card h-100 dashboard-card">
-                        <div class="stat-number"><?= number_format((int) $stats['available']) ?></div>
+                        <div class="stat-number"><?= number_format( $stats['available']) ?></div>
                         <div class="text-secondary">Available</div>
                     </div>
                 </div>
                 <div class="col-sm-6 col-xl-3">
                     <div class="card h-100 dashboard-card">
-                        <div class="stat-number"><?= number_format((int) $stats['taken']) ?></div>
+                        <div class="stat-number"><?= number_format( $stats['taken']) ?></div>
                         <div class="text-secondary">Taken</div>
                     </div>
                 </div>
                 <div class="col-sm-6 col-xl-3">
                     <div class="card h-100 dashboard-card">
-                        <div class="stat-number"><?= number_format((int) $stats['applications']) ?></div>
+                        <div class="stat-number"><?= number_format( $stats['applications']) ?></div>
                         <div class="text-secondary">Applications</div>
                     </div>
                 </div>
                 <div class="col-sm-6 col-xl-3">
                     <div class="card h-100 dashboard-card">
-                        <div class="stat-number"><?= number_format((int) $stats['inspections']) ?></div>
+                        <div class="stat-number"><?= number_format( $stats['inspections']) ?></div>
                         <div class="text-secondary">Inspections</div>
                     </div>
                 </div>
@@ -229,17 +229,17 @@ function approval_badge($status)
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td><span class="badge-status <?= approval_badge((string) ($property['approval_status'] ?? 'pending')) ?>"><?= htmlspecialchars(ucfirst($property['approval_status'] ?? 'pending')) ?></span></td>
-                                                <td><span class="badge-status <?= landlord_status_badge((string) ($property['status'] ?? 'inactive')) ?>"><?= htmlspecialchars(ucfirst($property['status'] ?? 'inactive')) ?></span></td>
-                                                <td>&#8358;<?= number_format((float) ($property['amount'] ?? 0)) ?></td>
+                                                <td><span class="badge-status <?= approval_badge($property['approval_status'] ?? 'pending') ?>"><?= htmlspecialchars(ucfirst($property['approval_status'] ?? 'pending')) ?></span></td>
+                                                <td><span class="badge-status <?= landlord_status_badge($property['status'] ?? 'inactive') ?>"><?= htmlspecialchars(ucfirst($property['status'] ?? 'inactive')) ?></span></td>
+                                                <td>&#8358;<?= number_format(($property['amount'] ?? 0)) ?></td>
                                                 <td>
                                                     <div class="action-btns">
-                                                        <a href="../views/property-details.php?property_id=<?= (int) $property['property_id'] ?>" class="action-btn view">View</a>
-                                                        <a href="../landlord/edit-property.php?id=<?= (int) $property['property_id'] ?>" class="action-btn edit"><?= ($property['approval_status'] ?? '') === 'rejected' ? 'Edit & Resubmit' : 'Edit' ?></a>
+                                                        <a href="../views/property-details.php?property_id=<?=  $property['property_id'] ?>" class="action-btn view">View</a>
+                                                        <a href="../landlord/edit-property.php?id=<?=  $property['property_id'] ?>" class="action-btn edit"><?= ($property['approval_status'] ?? '') === 'rejected' ? 'Edit & Resubmit' : 'Edit' ?></a>
                                                         <form method="post" action="../process/process_property_action.php" onsubmit="return confirm('Delete this property?');">
                                                             <input type="hidden" name="action" value="delete">
-                                                            <input type="hidden" name="property_id" value="<?= (int) $property['property_id'] ?>">
-                                                            <input type="hidden" name="redirect_to" value="../landlord/landlord-profile.php?property_page=<?= (int) $property_page ?>#properties-section">
+                                                            <input type="hidden" name="property_id" value="<?=  $property['property_id'] ?>">
+                                                            <input type="hidden" name="redirect_to" value="../landlord/landlord-profile.php?property_page=<?=  $property_page ?>#properties-section">
                                                             <button type="submit" class="action-btn delete">Delete</button>
                                                         </form>
                                                     </div>
@@ -287,13 +287,13 @@ function approval_badge($status)
                                                 <h3><?= htmlspecialchars(trim(($application['first_name'] ?? '') . ' ' . ($application['last_name'] ?? ''))) ?></h3>
                                                 <p><?= htmlspecialchars($application['title'] ?? 'Unknown property') ?></p>
                                             </div>
-                                            <span class="badge-status <?= application_badge((string) ($application['status'] ?? 'pending')) ?>"><?= htmlspecialchars(ucfirst($application['status'] ?? 'pending')) ?></span>
+                                            <span class="badge-status <?= application_badge($application['status'] ?? 'pending') ?>"><?= htmlspecialchars(ucfirst($application['status'] ?? 'pending')) ?></span>
                                         </div>
                                         <div class="application-meta"><?= htmlspecialchars($application['email'] ?? '') ?></div>
                                         <?php if (!empty($application['message'])) { ?>
                                             <p class="application-message"><?= htmlspecialchars($application['message']) ?></p>
                                         <?php } ?>
-                                        <?php if (strtolower((string) ($application['status'] ?? 'pending')) === 'pending') { ?>
+                                        <?php if (strtolower(($application['status'] ?? 'pending')) === 'pending') { ?>
                                             <div class="decision-actions">
                                                 <form method="post" action="../process/process_property_action.php">
                                                     <input type="hidden" name="action" value="application_status">
@@ -341,7 +341,7 @@ function approval_badge($status)
                                                 <h3><?= htmlspecialchars(trim(($inspection['first_name'] ?? '') . ' ' . ($inspection['last_name'] ?? ''))) ?></h3>
                                                 <p><?= htmlspecialchars($inspection['title'] ?? 'Unknown property') ?></p>
                                             </div>
-                                            <span class="badge-status <?= application_badge((string) ($inspection['status'] ?? 'pending')) ?>"><?= htmlspecialchars(ucfirst($inspection['status'] ?? 'pending')) ?></span>
+                                            <span class="badge-status <?= application_badge($inspection['status'] ?? 'pending') ?>"><?= htmlspecialchars(ucfirst($inspection['status'] ?? 'pending')) ?></span>
                                         </div>
                                         <div class="application-meta">
                                             <?= htmlspecialchars($inspection['p_number'] ?? '') ?>
@@ -349,11 +349,11 @@ function approval_badge($status)
                                                 · <?= htmlspecialchars(date('M d, Y', strtotime($inspection['inspection_date']))) ?>
                                             <?php } ?>
                                         </div>
-                                        <?php if (strtolower((string) ($inspection['status'] ?? 'pending')) === 'pending') { ?>
+                                        <?php if (strtolower(($inspection['status'] ?? 'pending')) === 'pending') { ?>
                                             <div class="decision-actions">
                                                 <form method="post" action="../process/process_property_action.php">
                                                     <input type="hidden" name="action" value="inspection_status">
-                                                    <input type="hidden" name="inspection_id" value="<?= (int) $inspection['inspection_id'] ?>">
+                                                    <input type="hidden" name="inspection_id" value="<?= $inspection['inspection_id'] ?>">
                                                     <input type="hidden" name="status" value="approved">
                                                     <button type="submit" class="decision-btn approve" aria-label="Approve inspection">
                                                         <i class="fas fa-check"></i>
@@ -361,7 +361,7 @@ function approval_badge($status)
                                                 </form>
                                                 <form method="post" action="../process/process_property_action.php">
                                                     <input type="hidden" name="action" value="inspection_status">
-                                                    <input type="hidden" name="inspection_id" value="<?= (int) $inspection['inspection_id'] ?>">
+                                                    <input type="hidden" name="inspection_id" value="<?= $inspection['inspection_id'] ?>">
                                                     <input type="hidden" name="status" value="rejected">
                                                     <button type="submit" class="decision-btn reject" aria-label="Reject inspection">
                                                         <i class="fas fa-times"></i>
@@ -369,7 +369,7 @@ function approval_badge($status)
                                                 </form>
                                             </div>
                                         <?php } ?>
-                                        <a href="../views/property-details.php?property_id=<?= (int) $inspection['property_id'] ?>" class="section-link">View property</a>
+                                        <a href="../views/property-details.php?property_id=<?= $inspection['property_id'] ?>" class="section-link">View property</a>
                                     </article>
                                 <?php } ?>
                             </div>

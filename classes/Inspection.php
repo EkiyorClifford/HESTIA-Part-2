@@ -47,7 +47,7 @@ class Inspection extends Db {
                 JOIN properties p ON i.property_id = p.property_id 
                 JOIN users u ON i.user_id = u.id 
                 WHERE p.user_id = ? ORDER BY i.created_at DESC";
-        $stmt = $this->dbconn->prepare($sql . ($limit !== null ? " LIMIT " . (int) $limit : ""));
+        $stmt = $this->dbconn->prepare($sql . ($limit !== null ? " LIMIT " . $limit : ""));
         $stmt->execute([$landlord_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -59,7 +59,7 @@ class Inspection extends Db {
             if ($this->is_landlord_own_property($prop_id, $user_id)) {
                 return "error:own_property";
             }
-        $property_stmt = $this->dbconn->prepare("SELECT status, approval_status FROM properties WHERE property_id = ?");
+        $property_stmt = $this->dbconn->prepare("SELECT status, approval_status FROM properties WHERE property_id = ?");//instead of $sql
         $property_stmt->execute([$prop_id]);
         $property = $property_stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -101,20 +101,27 @@ class Inspection extends Db {
     }
 
     public function update_inspection_status_for_landlord($inspection_id, $landlord_id, $status) {
-        $sql = "UPDATE inspections i
-                JOIN properties p ON i.property_id = p.property_id
-                SET i.status = ?
-                WHERE i.inspection_id = ? AND p.user_id = ?";
+        try {
+        $sql = "UPDATE inspections i JOIN properties p ON i.property_id = p.property_id SET i.status = ? WHERE i.inspection_id = ? AND p.user_id = ?";
         $stmt = $this->dbconn->prepare($sql);
         return $stmt->execute([$status, $inspection_id, $landlord_id]);
+        } catch (PDOException $e) {
+            // error_log("Exception in update_inspection_status_for_landlord: " . $e->getMessage());
+            return false;
+        }
     }
 
     // Update inspection date (For Rescheduling)
     public function reschedule_inspection($inspection_id, $new_date) {
+        try {
         $sql = "UPDATE inspections SET inspection_date = ?, status = 'pending' WHERE inspection_id = ?";
         $stmt = $this->dbconn->prepare($sql);
         $data = $stmt->execute([$new_date, $inspection_id]);
         return $data;
+        } catch (PDOException $e) {
+            // error_log("Exception in reschedule_inspection: " . $e->getMessage());
+            return false;
+        }
     }
 
     //method that checks if a user has applied to inspect a property
@@ -134,4 +141,3 @@ class Inspection extends Db {
         }
     }
 }
-

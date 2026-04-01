@@ -37,7 +37,7 @@ foreach (($active_stats ?: []) as $row) {
         $active_count_map[$status_key] = (int) ($row['count'] ?? 0);
     }
 }
-
+//sidebarz
 $active_admin_page = 'users';
 $page_heading = 'User Management';
 $page_subheading = 'Search, review, and moderate landlord and tenant accounts.';

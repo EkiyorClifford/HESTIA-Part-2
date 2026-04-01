@@ -3,14 +3,22 @@ session_start();
 require_once '../classes/Property.php';
 require_once "../classes/State.php";
 require_once "../classes/PropertyTracker.php";
+require_once "../classes/Wishlist.php";
 
 $propObj = new Property();
 $stateObj = new State();
 $trackerObj = new PropertyTracker();
+$wishlistObj = new Wishlist();
 
 // 1. Fetch data for dropdowns
 $states = $stateObj->get_active_states();
-$ptypes = $propObj->get_property_types();
+$ptypes = $stateObj->get_property_types();
+$saved_ids = [];
+
+if (isset($_SESSION['user_id'])) {
+    $wishlist = $wishlistObj->get_user_wishlist($_SESSION['user_id']);
+    $saved_ids = array_map('intval', array_column($wishlist, 'property_id'));
+}
 
 // 2. Fetch publicly visible properties based on filters
 $filters = $_GET;
@@ -121,7 +129,7 @@ $all_props = $propObj->get_properties($filters);
                             <div class="position-absolute top-0 end-0 p-2" style="z-index: 10;">
                                 <?php if (isset($_SESSION['user_id'])): ?>
                                     <?php 
-                                        $is_saved = $propObj->is_saved($_SESSION['user_id'], $p['property_id']); 
+                                        $is_saved = in_array((int) $p['property_id'], $saved_ids, true);
                                     ?>
                                     <a href="../process/process_wishlist.php?prop_id=<?php echo $p['property_id']; ?>" 
                                     class="btn btn-white btn-sm rounded-circle shadow-sm bg-white" 

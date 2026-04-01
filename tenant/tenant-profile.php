@@ -9,7 +9,7 @@ $user = new User();
 $wishlistObj = new Wishlist();
 $inspectionObj = new Inspection();
 
-$usr_id = (int) ($_SESSION['user_id'] ?? 0);
+$usr_id = $_SESSION['user_id'] ?? 0;
 $usr = $user->get_user_by('id', $usr_id);
 $tenant_user = $usr;
 
@@ -20,13 +20,16 @@ $my_applications = $inspectionObj->get_tenant_applications($usr_id);
 $count_saved = count($my_wishlist);
 $count_apps = count($my_applications);
 $count_inspections = count($my_inspections);
-$count_pending_apps = count(array_filter($my_applications, static function ($app) {
-    return strtolower((string) ($app['status'] ?? '')) === 'pending';
-}));
+$count_pending_apps = 0;
+foreach ($my_applications as $app) {
+    if (strtolower($app['status'] ?? '') === 'pending') {
+        $count_pending_apps++;
+    }
+}
 
 $active_tenant_page = 'dashboard';
 
-function tenant_status_badge(string $status): string
+function tenant_status_badge($status)
 {
     $status = strtolower(trim($status));
 
@@ -155,7 +158,7 @@ function tenant_status_badge(string $status): string
                                     <article class="saved-card">
                                         <div class="saved-card-media">
                                             <img src="../upload/properties/<?= htmlspecialchars($w['thumbnail'] ?? 'default.png') ?>" alt="<?= htmlspecialchars($w['title'] ?? 'Saved property') ?>">
-                                            <a href="../process/process_wishlist.php?prop_id=<?= (int) $w['property_id'] ?>" class="saved-remove-btn" aria-label="Remove from saved properties">
+                                            <a href="../process/process_wishlist.php?prop_id=<?= $w['property_id'] ?>" class="saved-remove-btn" aria-label="Remove from saved properties">
                                                 <i class="fas fa-times"></i>
                                             </a>
                                         </div>
@@ -167,9 +170,9 @@ function tenant_status_badge(string $status): string
                                                 </div>
                                                 <span class="saved-card-tag"><?= htmlspecialchars(ucfirst($w['listing_type'] ?? 'rent')) ?></span>
                                             </div>
-                                            <div class="saved-card-price">&#8358;<?= number_format((float) ($w['amount'] ?? 0)) ?></div>
+                                            <div class="saved-card-price">&#8358;<?= number_format($w['amount'] ?? 0) ?></div>
                                             <div class="saved-card-actions">
-                                                <a href="../views/property-details.php?property_id=<?= (int) $w['property_id'] ?>" class="action-btn edit">View Property</a>
+                                                <a href="../views/property-details.php?property_id=<?= $w['property_id'] ?>" class="action-btn edit">View Property</a>
                                                 <a href="../tenant/wishlist.php" class="action-btn view">Wishlist</a>
                                             </div>
                                         </div>
@@ -200,13 +203,13 @@ function tenant_status_badge(string $status): string
                                                 <h3><?= htmlspecialchars($insp['title'] ?? 'Unknown property') ?></h3>
                                                 <p><?= htmlspecialchars($insp['lga_name'] ?? 'Unknown area') ?></p>
                                             </div>
-                                            <span class="badge-status <?= tenant_status_badge((string) ($insp['status'] ?? 'pending')) ?>"><?= htmlspecialchars(ucfirst($insp['status'] ?? 'pending')) ?></span>
+                                            <span class="badge-status <?= tenant_status_badge(($insp['status'] ?? 'pending')) ?>"><?= htmlspecialchars(ucfirst($insp['status'] ?? 'pending')) ?></span>
                                         </div>
                                         <div class="application-meta">
                                             Scheduled for <?= !empty($insp['inspection_date']) ? htmlspecialchars(date('M j, Y', strtotime($insp['inspection_date']))) : 'N/A' ?>
                                         </div>
                                         <div class="saved-card-actions mt-3">
-                                            <a href="../views/property-details.php?property_id=<?= (int) $insp['property_id'] ?>" class="action-btn view">View Property</a>
+                                            <a href="../views/property-details.php?property_id=<? $insp['property_id'] ?>" class="action-btn view">View Property</a>
                                         </div>
                                     </article>
                                 <?php } ?>
@@ -236,10 +239,10 @@ function tenant_status_badge(string $status): string
                                                 <h3><?= htmlspecialchars($app['title'] ?? 'Unknown property') ?></h3>
                                                 <p><?= htmlspecialchars(ucfirst($app['listing_type'] ?? 'rent')) ?></p>
                                             </div>
-                                            <span class="badge-status <?= tenant_status_badge((string) ($app['status'] ?? 'pending')) ?>"><?= htmlspecialchars(ucfirst($app['status'] ?? 'pending')) ?></span>
+                                            <span class="badge-status <?= tenant_status_badge(($app['status'] ?? 'pending')) ?>"><?= htmlspecialchars(ucfirst($app['status'] ?? 'pending')) ?></span>
                                         </div>
                                         <div class="application-meta">Applied on <?= !empty($app['created_at']) ? htmlspecialchars(date('M j, Y', strtotime($app['created_at']))) : 'N/A' ?></div>
-                                        <p class="tenant-amount">&#8358;<?= number_format((float) ($app['amount'] ?? 0), 2) ?></p>
+                                        <p class="tenant-amount">&#8358;<?= number_format(($app['amount'] ?? 0), 2) ?></p>
                                     </article>
                                 <?php } ?>
                             </div>

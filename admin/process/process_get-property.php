@@ -7,13 +7,13 @@ if (!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true || empty($_S
     exit();
 }
 
-require_once "../classes/Admin.php";
+require_once "../../classes/Property.php";
 
-$admin = new Admin();
+$propertyObj = new Property();
 
 if (isset($_GET['id']) && is_numeric($_GET['id'])) {
-    $property_id = (int)$_GET['id'];
-    $property = $admin->get_property_by_id($property_id);
+    $property_id = $_GET['id'];
+    $property = $propertyObj->get_property_by_id($property_id);
     
     if ($property) {
         header('Content-Type: application/json');

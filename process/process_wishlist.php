@@ -7,8 +7,8 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-$prop_id = (int) ($_GET['prop_id'] ?? 0);
-$user_id = (int) $_SESSION['user_id'];
+$prop_id = $_GET['prop_id'] ?? 0;
+$user_id = $_SESSION['user_id'];
 
 if ($prop_id <= 0) {
     $_SESSION['error'] = 'Invalid property selected.';

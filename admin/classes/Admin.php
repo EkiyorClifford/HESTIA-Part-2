@@ -8,6 +8,7 @@ class Admin extends Db {
         $this->dbconn = $this->connect();
     }
 
+    // Authenticate admin login
     public function admin_login($email, $password) {
         try {
             $sql = "SELECT * FROM admins WHERE email = ?";
@@ -28,7 +29,7 @@ class Admin extends Db {
             return false;
         }
     }
-    // geet admin details
+    // Get admin details by ID
     public function get_admin_details($id){
         try{
             $sql = "SELECT * FROM admins WHERE admin_id = ?";
@@ -43,7 +44,7 @@ class Admin extends Db {
         }
     }
 
-    //method to fetch all users
+    // Fetch all users with optional role filter
     public function get_users($filter = 'all'){
         try{
             $sql = "SELECT * FROM users";
@@ -66,29 +67,7 @@ class Admin extends Db {
         }
     }
 
-    // method to update new user status
-    public function update_user_status($id, $new_status) {
-        $sql = "UPDATE users SET is_active = ? WHERE id = ?";
-        $stmt = $this->dbconn->prepare($sql);
-        $result = $stmt->execute([$new_status, $id]);
-        return ($result && $stmt->rowCount() > 0);
-    }
-
-
-    // method to get user by id
-    public function get_user_by_id($id){
-        try{
-        $sql= "SELECT * FROM users WHERE id =?";
-        $stmt= $this->dbconn->prepare($sql);
-        $stmt->execute([$id]);
-        $res = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $res;
-        }catch(PDOException $e){
-            // echo $e->getMessage(); die();
-            return false;
-        }
-    }
-    //method for prop dashboard
+    // Get property dashboard statistics
     public function get_property_dashboard_totals() {
         $defaults = [
             'total_properties' => 0,
@@ -108,7 +87,7 @@ class Admin extends Db {
         }
     }
 
-    //method to get dashboard totals
+    // Get main dashboard totals
     public function get_dashboard_totals() {
         $defaults = [
             'total_users' => 0,
@@ -130,7 +109,7 @@ class Admin extends Db {
         }
     }
 
-    //method to search users
+    // Search users by keyword with optional role filter
      public function search_users($keyword, $filter = 'all') {
         $sql = "SELECT * FROM users WHERE (first_name LIKE ? OR last_name LIKE ? OR email LIKE ? OR p_number LIKE ?)";
         $term = "%$keyword%";
@@ -147,7 +126,7 @@ class Admin extends Db {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // method to search properties
+    // Search properties by keyword with optional status filter
     public function search_properties($keyword, $filter = 'all') {
         $sql = "SELECT p.*, s.state_name, l.lga_name, pt.type_name 
                 FROM properties p 
@@ -169,7 +148,7 @@ class Admin extends Db {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    //method to get today's activity
+    // Get today's activity statistics
     public function get_todays_activity() {
         try {
             $stats = [];
@@ -192,7 +171,7 @@ class Admin extends Db {
         }
     }
 
-    //method to get property status stats
+    // Get property status statistics
     public function get_property_status_stats() {
         try{
         $sql = "SELECT status, COUNT(*) as count FROM properties GROUP BY status";
@@ -207,7 +186,7 @@ class Admin extends Db {
     }
     }
 
-    //method to get user role stats
+    // Get user role statistics
     public function get_user_role_stats() {
         try{
         $sql = "SELECT role_, COUNT(*) as count FROM users GROUP BY role_";
@@ -222,6 +201,7 @@ class Admin extends Db {
         }
     }
 
+    // Get user active/inactive statistics
     public function get_user_active_stats() {
         try {
             $sql = "SELECT is_active, COUNT(*) as count FROM users GROUP BY is_active";
@@ -233,6 +213,7 @@ class Admin extends Db {
         }
     }
 
+    // Get pending properties for admin review
     public function get_pending_properties($limit = 5) {
         try {
             $sql = "SELECT p.*, t.type_name, s.state_name, l.lga_name, u.first_name, u.last_name, u.email
@@ -254,40 +235,7 @@ class Admin extends Db {
         }
     }
 
-    // method to get landlord details and properties 
-    public function get_landlord_details($id) {
-       try{
-        $sql = "SELECT u.*, p.property_id, p.title, p.status, p.address, p.bedroom, p.created_at, s.state_name
-                FROM users u 
-                LEFT JOIN properties p ON u.id = p.user_id 
-                JOIN states s ON p.state_id = s.state_id
-                WHERE u.id = ?";
-        $stmt = $this->dbconn->prepare($sql);
-        $stmt->execute([$id]);
-        $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        return $data;
-       }catch(PDOException $e){
-        // echo $e->getMessage;
-        // die();
-        return false;
-       }
-    }
-
-    // method to get user active status by id
-    public function get_user_active_status($id = null) {
-        try{
-            $sql = "SELECT is_active FROM users WHERE id = ?";
-            $stmt = $this->dbconn->prepare($sql);
-            $stmt->execute([$id]);
-            return $stmt->fetchColumn();
-        }catch(PDOException $e){
-         // echo $e->getMessage;
-        // die();
-        return false;
-        }
-    }
-
-
+    // Get top property locations by state
     public function get_top_locations() {
         try{
         $sql = "SELECT s.state_name, COUNT(p.property_id) as count 
@@ -306,9 +254,7 @@ class Admin extends Db {
         }
     }
 
-    /**
-     * Get Recent Properties for the Table
-     */
+    // Get recent approved properties for dashboard table
     public function get_recent_properties($limit = 5) {
         try {
             $sql = "SELECT p.*, t.type_name, s.state_name, l.lga_name 
@@ -332,6 +278,7 @@ class Admin extends Db {
         }
     }
 
+    // Get recent property applications
     public function get_recent_applications($limit = 5) {
         try {
             $sql = "SELECT a.*, p.property_id, p.title, u.first_name, u.last_name
@@ -350,6 +297,7 @@ class Admin extends Db {
         }
     }
 
+    // Get all properties with full details
     public function get_all_properties() {
         try {
             $sql = "SELECT p.*, t.type_name, s.state_name, l.lga_name, u.first_name, u.last_name, u.email, u.p_number
@@ -368,24 +316,7 @@ class Admin extends Db {
         }
     }
 
-    public function get_property_by_id($id) {
-        try {
-            $sql = "SELECT p.*, t.type_name, s.state_name, l.lga_name, u.first_name, u.last_name, u.email, u.p_number
-                    FROM properties p 
-                    JOIN property_types t ON p.property_type_id = t.type_id
-                    JOIN states s ON p.state_id = s.state_id
-                    JOIN lgas l ON p.lga_id = l.lga_id
-                    JOIN users u ON p.user_id = u.id
-                    WHERE p.property_id = ?";
-            
-            $stmt = $this->dbconn->prepare($sql);
-            $stmt->execute([$id]);
-            return $stmt->fetch(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            return false;
-        }
-    }
-
+    // Update property status
     public function update_property_status($id, $new_status) {
         try {
             $sql = "UPDATE properties SET status = ? WHERE property_id = ?";
@@ -398,6 +329,7 @@ class Admin extends Db {
         }
     }
 
+    // Update admin profile information
     public function update_admin_profile($id, $data) {
         try {
             $sql = "UPDATE admins SET first_name = ?, last_name = ?";
@@ -418,31 +350,7 @@ class Admin extends Db {
         }
     }
 
-    public function get_property_images($property_id) {
-        try {
-            $sql = "SELECT * FROM property_images WHERE property_id = ? ORDER BY is_primary DESC, image_id ASC";
-            $stmt = $this->dbconn->prepare($sql);
-            $stmt->execute([$property_id]);
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            return [];
-        }
-    }
-
-    public function get_property_amenities($property_id) {
-        try {
-            $sql = "SELECT a.amenity_name
-                    FROM property_amenities pa
-                    JOIN amenities a ON pa.amenity_id = a.amenity_id
-                    WHERE pa.property_id = ?";
-            $stmt = $this->dbconn->prepare($sql);
-            $stmt->execute([$property_id]);
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            return [];
-        }
-    }
-
+    // Review and approve/reject property
     public function review_property($id, $action, $rejection_reason = null) {
         try {
             if ($action === 'approve') {
@@ -483,19 +391,7 @@ class Admin extends Db {
 
     // }
 
-    //method to toggle status(users)
-    public function toggle_status($id, $currentstatus){
-        try{
-            $sql= "UPDATE users SET is_active = ? WHERE id = ?";
-            $stmt= $this->dbconn->prepare($sql);
-            $move= $stmt->execute([$id, $currentstatus]);
-            return ($move && $stmt->rowCount() > 0);
-        }catch(PDOException $e){
-            // echo $e->getMessage(); exit();
-            return false;
-        }
-    }
-
+    // Destroy admin session
     public function admin_logout() {
         session_destroy();
     }

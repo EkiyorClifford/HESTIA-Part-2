@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $admin = new Admin();
-$admin_id = (int) $_SESSION['admin_id'];
+$admin_id = $_SESSION['admin_id'];
 $current_admin = $admin->get_admin_details($admin_id);
 
 if (!$current_admin) {

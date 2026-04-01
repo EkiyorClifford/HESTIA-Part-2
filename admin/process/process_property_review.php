@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit();
 }
 
-$property_id = (int) ($_POST['property_id'] ?? 0);
+$property_id = $_POST['property_id'] ?? 0;
 $action = strtolower(trim($_POST['action'] ?? ''));
 $rejection_reason = trim($_POST['rejection_reason'] ?? '');
 
@@ -40,5 +40,5 @@ if ($result) {
     $_SESSION['error'] = 'Unable to update this property review.';
 }
 
-header('Location: ../views/property_management.php');
+header('Location: ../views/admin-dashboard.php');
 exit();

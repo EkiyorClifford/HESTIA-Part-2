@@ -4,7 +4,7 @@ require_once '../userguard.php';
 require_once '../classes/User.php';
 
 $userObj = new User();
-$user_id = (int) ($_SESSION['user_id'] ?? 0);
+$user_id = $_SESSION['user_id'] ?? 0;
 $user = $userObj->get_user_by('id', $user_id);
 
 if (!$user) {

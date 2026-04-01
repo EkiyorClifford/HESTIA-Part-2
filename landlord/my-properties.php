@@ -11,14 +11,14 @@ if (($_SESSION['user_role'] ?? '') !== 'landlord') {
 
 $propObj = new Property();
 $userObj = new User();
-$user_id = (int) ($_SESSION['user_id'] ?? 0);
+$user_id = $_SESSION['user_id'] ?? 0;
 $userdeets = $userObj->get_user_by('id', $user_id);
 $active_landlord_page = 'properties';
 
 $properties_per_page = 10;
-$property_page = max(1, (int) ($_GET['page'] ?? 1));
+$property_page = max(1, ($_GET['page'] ?? 1));
 $property_total = $propObj->get_landlord_property_count($user_id);
-$property_pages = max(1, (int) ceil($property_total / $properties_per_page));
+$property_pages = max(1, ceil($property_total / $properties_per_page));
 $property_page = min($property_page, $property_pages);
 $property_offset = ($property_page - 1) * $properties_per_page;
 $my_properties = $propObj->get_landlord_properties($user_id, $properties_per_page, $property_offset);
@@ -151,17 +151,17 @@ function landlord_property_approval_badge(string $status): string
                                                 </div>
                                             </div>
                                         </td>
-                                        <td><span class="badge-status <?= landlord_property_approval_badge((string) ($property['approval_status'] ?? 'pending')) ?>"><?= htmlspecialchars(ucfirst($property['approval_status'] ?? 'pending')) ?></span></td>
-                                        <td><span class="badge-status <?= landlord_property_status_badge((string) ($property['status'] ?? 'inactive')) ?>"><?= htmlspecialchars(ucfirst($property['status'] ?? 'inactive')) ?></span></td>
-                                        <td>&#8358;<?= number_format((float) ($property['amount'] ?? 0)) ?></td>
+                                        <td><span class="badge-status <?= landlord_property_approval_badge($property['approval_status'] ?? 'pending') ?>"><?= htmlspecialchars(ucfirst($property['approval_status'] ?? 'pending')) ?></span></td>
+                                        <td><span class="badge-status <?= landlord_property_status_badge($property['status'] ?? 'inactive') ?>"><?= htmlspecialchars(ucfirst($property['status'] ?? 'inactive')) ?></span></td>
+                                        <td>&#8358;<?= number_format(($property['amount'] ?? 0)) ?></td>
                                         <td><?= !empty($activity_stamp) ? htmlspecialchars(date('M d, Y', strtotime($activity_stamp))) : 'N/A' ?></td>
                                         <td>
                                             <div class="action-btns">
-                                                <a href="../views/property-details.php?property_id=<?= (int) $property['property_id'] ?>" class="action-btn view">View</a>
-                                                <a href="../landlord/edit-property.php?id=<?= (int) $property['property_id'] ?>" class="action-btn edit"><?= ($property['approval_status'] ?? '') === 'rejected' ? 'Edit & Resubmit' : 'Edit' ?></a>
+                                                <a href="../views/property-details.php?property_id=<?= $property['property_id'] ?>" class="action-btn view">View</a>
+                                                <a href="../landlord/edit-property.php?id=<?= $property['property_id'] ?>" class="action-btn edit"><?= ($property['approval_status'] ?? '') === 'rejected' ? 'Edit & Resubmit' : 'Edit' ?></a>
                                                 <form method="post" action="../process/process_property_action.php" onsubmit="return confirm('Delete this property?');">
                                                     <input type="hidden" name="action" value="delete">
-                                                    <input type="hidden" name="property_id" value="<?= (int) $property['property_id'] ?>">
+                                                    <input type="hidden" name="property_id" value="<?= $property['property_id'] ?>">
                                                     <input type="hidden" name="redirect_to" value="../landlord/my-properties.php">
                                                     <button type="submit" class="action-btn delete">Delete</button>
                                                 </form>

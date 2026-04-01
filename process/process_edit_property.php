@@ -12,7 +12,7 @@ if (!$user_id) {
 }
 
 if (isset($_POST['updatebtn'])) {
-    $prop_id = (int) ($_POST['property_id'] ?? 0);
+    $prop_id = $_POST['property_id'] ?? 0;
 
     // 1. check if the user owns the property
     $existing = $property->get_property_by_id($prop_id);
@@ -33,7 +33,7 @@ if (isset($_POST['updatebtn'])) {
     $bedroom = $_POST['bedroom'] ?? '';
     $furnished = $_POST['furnished'] ?? '';
     $address = Common::cleandata($_POST['prop_address']);
-    $status = strtolower(trim($_POST['status'] ?? 'available'));
+    $status = $_POST['status'] ?? 'available';
 
     // 3. Validation
     $errors = [];
@@ -85,7 +85,7 @@ if (isset($_POST['updatebtn'])) {
         'status'       => $status
     ];
 
-    $current_approval_status = strtolower((string) ($existing['approval_status'] ?? ''));
+    $current_approval_status = strtolower(($existing['approval_status'] ?? ''));
     $was_rejected = $current_approval_status === 'rejected';
 
     if (in_array($current_approval_status, ['pending', 'rejected'], true)) {

@@ -1,0 +1,184 @@
+# REDUNDANT/RELOCATABLE METHODS ANALYSIS - Property.php
+
+## ✅ DELETED REDUNDANT METHODS from Property.php:
+- `is_saved()` - Moved to Wishlist domain
+- `get_landlord_prop()` - Duplicated Admin functionality
+- `get_landlord_dashboard_stats()` - Identical to Admin method
+- `get_landlord_property_count()` - Covered by dashboard stats
+- `get_landlord_applications()` - Admin handles applications
+- `get_amenities_by_property()` - Admin has `get_property_amenities()`
+- `get_images()` - Admin has `get_property_images()`
+- `get_stats()` - Basic, other methods are better
+
+## ADMIN.PHP DUPLICATE ANALYSIS:
+
+### DUPLICATE METHODS in Admin.php:
+
+#### 1. `get_property_by_id()` (Lines 446-463) - DUPLICATE
+**Location**: Admin class
+**Issue**: Property class has identical method `get_property_by_id()` (lines 149-165)
+**Should be**: Keep in Property class, delete from Admin class
+**Reason**: Property class is the domain for property operations
+
+#### 2. `get_property_images()` (Lines 500-509) - DUPLICATE  
+**Location**: Admin class
+**Issue**: Property class had similar method (deleted)
+**Should be**: Move to Property class, delete from Admin class
+**Reason**: Property images belong in Property domain
+
+#### 3. `get_property_amenities()` (Lines 512-524) - DUPLICATE
+**Location**: Admin class
+**Issue**: Property class had similar method (deleted)
+**Should be**: Move to Property class, delete from Admin class
+**Reason**: Property amenities belong in Property domain
+
+#### 4. `update_property_status()` (Lines 466-476) - DUPLICATE
+**Location**: Admin class
+**Issue**: Property class has `update_status()` method
+**Should be**: Keep in Property class, delete from Admin class
+**Reason**: Property status updates belong in Property domain
+
+#### 5. `toggle_status()` (Lines 568-578) - DUPLICATE
+**Location**: Admin class
+**Issue**: Admin class has `update_user_status()` method (lines 71-76)
+**Should be**: Delete `toggle_status()`, keep `update_user_status()`
+**Reason**: `update_user_status()` is more descriptive and consistent
+
+### MISPLACED METHODS in Admin.php:
+
+#### 1. `get_landlord_properties()` (Lines 280-296) - MISPLACED
+**Location**: Admin class
+**Issue**: This is landlord-specific functionality
+**Should be**: Move to Property class or create Landlord class
+**Reason**: Landlord property management is not admin-specific
+
+#### 2. `get_landlord_dashboard_stats()` (Lines 299-348) - MISPLACED
+**Location**: Admin class
+**Issue**: This is landlord-specific functionality
+**Should be**: Move to Property class or create Landlord class
+**Reason**: Landlord dashboard is not admin-specific
+
+#### 3. `get_landlord_details()` (Lines 261-277) - MISPLACED
+**Location**: Admin class
+**Issue**: User details should be in User class
+**Should be**: Move to User class
+**Reason**: User operations belong in User domain
+
+## USER.PHP ANALYSIS:
+
+### MISPLACED METHODS in User.php:
+
+#### 1. `get_property_stats_by_user()` (Lines 10-19) - MISPLACED
+**Location**: User class
+**Issue**: Property stats should be in Property class
+**Should be**: Move to Property class
+**Reason**: Property statistics belong in Property domain
+
+### REDUNDANT METHODS in User.php:
+
+#### 1. `set_status()` (Lines 95-103) - DUPLICATE
+**Location**: User class
+**Issue**: Admin class has `update_user_status()` method
+**Should be**: Delete from User class, keep in Admin class
+**Reason**: User status updates are admin operations
+
+## APPLICATIONS.PHP ANALYSIS:
+
+### MISPLACED METHODS in Applications.php:
+
+#### 1. `get_tenant_applications()` (Lines 36-41) - MISPLACED
+**Location**: Inspection class
+**Issue**: Applications should be in Applications class, not Inspection class
+**Should be**: Move to Applications class
+**Reason**: Application retrieval belongs in Applications domain
+
+## INSPECTION.PHP ANALYSIS:
+
+### MISPLACED METHODS in Inspection.php:
+
+#### 1. `get_tenant_applications()` (Lines 36-41) - MISPLACED
+**Location**: Inspection class
+**Issue**: Applications should be in Applications class, not Inspection class
+**Should be**: Move to Applications class
+**Reason**: Application retrieval belongs in Applications domain
+
+#### 2. `is_landlord_own_property()` (Lines 24-33) - MISPLACED
+**Location**: Inspection class
+**Issue**: Property ownership check should be in Property class
+**Should be**: Move to Property class
+**Reason**: Property validation belongs in Property domain
+
+## PROPERTYTRACKER.PHP ANALYSIS:
+
+### ✅ WELL-STRUCTURED - No issues found:
+- All methods are properly focused on tracking functionality
+- No cross-domain responsibilities
+- Clean separation of concerns
+
+## CROSS-CLASS REDUNDANCY SUMMARY:
+
+### Property ↔ Admin:
+- `get_property_by_id()` - Keep in Property, delete from Admin
+- `get_property_images()` - Move to Property, delete from Admin  
+- `get_property_amenities()` - Move to Property, delete from Admin
+- `update_property_status()` - Keep in Property, delete from Admin
+
+### Admin ↔ User:
+- `toggle_status()` vs `update_user_status()` - Delete `toggle_status()`
+- `set_status()` vs `update_user_status()` - Delete from User class
+
+### User ↔ Property:
+- `get_property_stats_by_user()` - Move to Property class
+
+### Inspection ↔ Applications:
+- `get_tenant_applications()` - Move to Applications class
+
+### Inspection ↔ Property:
+- `is_landlord_own_property()` - Move to Property class
+
+## RECOMMENDATIONS FOR CLEANUP:
+
+### DELETE from Admin.php:
+1. `get_property_by_id()` (lines 446-463)
+2. `get_property_images()` (lines 500-509)
+3. `get_property_amenities()` (lines 512-524)
+4. `update_property_status()` (lines 466-476)
+5. `toggle_status()` (lines 568-578)
+
+### MOVE from Admin.php to appropriate classes:
+1. `get_landlord_properties()` → Property class
+2. `get_landlord_dashboard_stats()` → Property class
+3. `get_landlord_details()` → User class
+
+### DELETE from User.php:
+1. `set_status()` (lines 95-103)
+
+### MOVE from User.php:
+1. `get_property_stats_by_user()` → Property class
+
+### MOVE from Inspection.php to appropriate classes:
+1. `get_tenant_applications()` → Applications class
+2. `is_landlord_own_property()` → Property class
+
+### ADD to Property class:
+1. `get_property_images()` (from Admin)
+2. `get_property_amenities()` (from Admin)
+3. `get_landlord_properties()` (from Admin)
+4. `get_landlord_dashboard_stats()` (from Admin)
+5. `get_property_stats_by_user()` (from User)
+6. `is_landlord_own_property()` (from Inspection)
+
+### ADD to Applications class:
+1. `get_tenant_applications()` (from Inspection)
+
+## FILES ANALYSIS SUMMARY:
+- ✅ Property.php - Cleaned
+- ✅ Admin.php - Identified duplicates
+- ✅ User.php - Identified misplaced methods
+- ✅ Applications.php - Clean, well-focused
+- ✅ Inspection.php - Has misplaced methods
+- ✅ PropertyTracker.php - Clean, well-focused
+- ✅ State.php - Clean, well-focused
+- ✅ Common.php - Clean, well-focused
+
+This comprehensive analysis will help you clean up the codebase by removing redundancy and improving domain separation across all classes.

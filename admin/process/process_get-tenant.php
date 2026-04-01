@@ -1,7 +1,7 @@
 <?php
 session_start();
-require_once "../classes/Admin.php";
-$admin = new Admin;
+require_once "../../classes/User.php";
+$userObj = new User;
 header('Content-Type: application/json');
 
 if (
@@ -30,7 +30,7 @@ if (isset($_GET['id'])) {
     }
 
     // 4. FETCH DATA
-    $user = $admin->get_user_by_id($id);
+    $user = $userObj->get_user_by('id', $id);
 
     // 5. CONTEXT CHECK: Is this user actually a tenant?
     if ($user) {

@@ -6,7 +6,7 @@ include_once '../classes/PropertyTracker.php';
 include_once '../classes/Inspection.php';
 include_once '../classes/Applications.php';
 
-$id = (int) ($_GET['property_id'] ?? 0);
+$id = $_GET['property_id'] ?? 0;
 if (!$id) {
     header("Location: ../views/properties.php");
     exit();
@@ -21,8 +21,8 @@ if (!$details) {
     exit();
 }
 
-$user_id = (int) ($_SESSION['user_id'] ?? 0);
-$is_owner = $user_id > 0 && (int) $details['user_id'] === $user_id;
+$user_id = $_SESSION['user_id'] ?? 0;
+$is_owner = $user_id > 0 && $details['user_id'] === $user_id;
 $is_admin_viewer = !empty($_SESSION['is_admin']) && $_SESSION['is_admin'] === true;
 $is_publicly_visible = ($details['approval_status'] ?? '') === 'approved' && ($details['status'] ?? '') === 'available';
 
@@ -35,9 +35,8 @@ if (!$is_publicly_visible && !$is_owner && !$is_admin_viewer) {
 $user = new User();
 $user_details = $user->get_user_by('id', $details['user_id']);
 
-$images = $property->get_images($id);
-// Fix: Get dynamic amenities
-$amenities = $property->get_amenities_by_property($id); 
+$images = $property->get_property_images($id);
+$amenities = $property->get_property_amenities($id); 
 
 $Pt1 = new PropertyTracker();
 
@@ -201,7 +200,7 @@ unset($_SESSION['success'], $_SESSION['feedback'], $_SESSION['error']);
                             <div class="col-4">
                                 <div class="d-flex flex-column align-items-center">
                                     <i class="fas fa-eye fs-5 mb-1" style="color: #C44536;"></i>
-                                    <span class="fw-bold fs-5"><?php echo number_format((int) ($tracker['views_count'] ?? 0)); ?></span>
+                                    <span class="fw-bold fs-5"><?php echo number_format($tracker['views_count'] ?? 0); ?></span>
                                     <span class="small text-secondary">Views</span>
                                 </div>
                             </div>
@@ -210,7 +209,7 @@ unset($_SESSION['success'], $_SESSION['feedback'], $_SESSION['error']);
                             <div class="col-4">
                                 <div class="d-flex flex-column align-items-center">
                                     <i class="fas fa-calendar-check fs-5 mb-1" style="color: #C44536;"></i>
-                                    <span class="fw-bold fs-5"><?php echo number_format((int) ($tracker['inspection_count'] ?? 0)); ?></span>
+                                    <span class="fw-bold fs-5"><?php echo number_format($tracker['inspection_count'] ?? 0); ?></span>
                                     <span class="small text-secondary">Inspections</span>
                                 </div>
                             </div>
@@ -219,7 +218,7 @@ unset($_SESSION['success'], $_SESSION['feedback'], $_SESSION['error']);
                             <div class="col-4">
                                 <div class="d-flex flex-column align-items-center">
                                     <i class="fas fa-file-alt fs-5 mb-1" style="color: #C44536;"></i>
-                                    <span class="fw-bold fs-5"><?php echo number_format((int) ($tracker['application_count'] ?? 0)); ?></span>
+                                    <span class="fw-bold fs-5"><?php echo number_format($tracker['application_count'] ?? 0); ?></span>
                                     <span class="small text-secondary">Applications</span>
                                 </div>
                             </div>

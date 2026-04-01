@@ -6,11 +6,11 @@ if (!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true || empty($_S
     exit();
 }
 
-require_once 'classes/Admin.php';
+require_once '../classes/Property.php';
 
-$property_id = (int) ($_GET['id'] ?? 0);
-$admin = new Admin();
-$property = $admin->get_property_by_id($property_id);
+$property_id = $_GET['id'] ?? 0;
+$propertyObj = new Property();
+$property = $propertyObj->get_property_by_id($property_id);
 
 if (!$property) {
     $_SESSION['error'] = 'Property not found.';
@@ -18,8 +18,8 @@ if (!$property) {
     exit();
 }
 
-$images = $admin->get_property_images($property_id);
-$amenities = $admin->get_property_amenities($property_id);
+$images = $propertyObj->get_property_images($property_id);
+$amenities = $propertyObj->get_property_amenities($property_id);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -65,7 +65,7 @@ $amenities = $admin->get_property_amenities($property_id);
                                 </div>
                             </div>
                             <div class="text-lg-end">
-                                <div class="h3 fw-bold text-success mb-1">&#8358;<?= number_format((float) ($property['amount'] ?? 0), 2) ?></div>
+                                <div class="h3 fw-bold text-success mb-1">&#8358;<?= number_format($property['amount'] ?? 0, 2) ?></div>
                                 <div class="text-secondary">Submitted <?= !empty($property['created_at']) ? htmlspecialchars(date('F j, Y', strtotime($property['created_at']))) : 'N/A' ?></div>
                             </div>
                         </div>
@@ -97,7 +97,7 @@ $amenities = $admin->get_property_amenities($property_id);
                                 <div class="row g-4">
                                     <div class="col-md-6">
                                         <p><strong>Property Type:</strong> <?= htmlspecialchars($property['type_name'] ?? 'N/A') ?></p>
-                                        <p><strong>Bedrooms:</strong> <?= htmlspecialchars((string) ($property['bedroom'] ?? '0')) ?></p>
+                                        <p><strong>Bedrooms:</strong> <?= htmlspecialchars( ($property['bedroom'] ?? '0')) ?></p>
                                         <p><strong>Furnished:</strong> <?= htmlspecialchars($property['furnished'] ?? 'N/A') ?></p>
                                     </div>
                                     <div class="col-md-6">
@@ -139,7 +139,7 @@ $amenities = $admin->get_property_amenities($property_id);
                                 <?php } ?>
 
                                 <form method="post" action="process/process_property_review.php" class="mb-3">
-                                    <input type="hidden" name="property_id" value="<?= (int) $property['property_id'] ?>">
+                                    <input type="hidden" name="property_id" value="<?= $property['property_id'] ?>">
                                     <input type="hidden" name="action" value="approve">
                                     <button type="submit" class="btn btn-success w-100">
                                         <i class="fas fa-check me-2"></i>Approve Property
@@ -147,7 +147,7 @@ $amenities = $admin->get_property_amenities($property_id);
                                 </form>
 
                                 <form method="post" action="process/process_property_review.php">
-                                    <input type="hidden" name="property_id" value="<?= (int) $property['property_id'] ?>">
+                                    <input type="hidden" name="property_id" value="<?= $property['property_id'] ?>">
                                     <input type="hidden" name="action" value="reject">
                                     <div class="mb-3">
                                         <label for="rejection_reason" class="form-label fw-semibold">Rejection reason</label>

@@ -80,18 +80,6 @@ class Property extends Db {
         }
     }
 
-    //method to get prop types
-    public function get_property_types() {
-        try {
-            $sql = "SELECT * FROM property_types";
-            $stmt = $this->dbconn->prepare($sql);
-            $stmt->execute();
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            return false;
-        }
-    }
-
     // Search & filter
     public function get_properties($filters = []) {
         $sql = "SELECT p.*, s.state_name, l.lga_name, pt.type_name,
@@ -147,21 +135,25 @@ class Property extends Db {
 
     // Get property by id
     public function get_property_by_id($id, $options = []) {
-        $sql = "SELECT p.*, pt.type_name, s.state_name, l.lga_name, u.first_name, u.last_name, u.p_number, u.email 
-                FROM properties p 
-                JOIN property_types pt ON p.property_type_id = pt.type_id 
-                JOIN states s ON p.state_id = s.state_id 
-                JOIN lgas l ON p.lga_id = l.lga_id 
-                JOIN users u ON p.user_id = u.id WHERE p.property_id = ?";
-        $params = [$id];
+        try {
+            $sql = "SELECT p.*, pt.type_name, s.state_name, l.lga_name, u.first_name, u.last_name, u.p_number, u.email 
+                    FROM properties p 
+                    JOIN property_types pt ON p.property_type_id = pt.type_id 
+                    JOIN states s ON p.state_id = s.state_id 
+                    JOIN lgas l ON p.lga_id = l.lga_id 
+                    JOIN users u ON p.user_id = u.id WHERE p.property_id = ?";
+            $params = [$id];
 
-        if (!empty($options['public_only'])) {
-            $sql .= " AND p.approval_status = 'approved' AND p.status = 'available'";
+            if (!empty($options['public_only'])) {
+                $sql .= " AND p.approval_status = 'approved' AND p.status = 'available'";
+            }
+
+            $stmt = $this->dbconn->prepare($sql);
+            $stmt->execute($params);
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return false;
         }
-
-        $stmt = $this->dbconn->prepare($sql);
-        $stmt->execute($params);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
     // Save images
@@ -180,17 +172,73 @@ class Property extends Db {
         }
     }
 
-    //get landlord properties
-    public function get_landlord_prop($landlord){
-        try{
-            $sql= "SELECT * FROM properties WHERE user_id = ?";
-            $stmt= $this->dbconn->prepare($sql);
-            $stmt->execute([$landlord]);
-            $res= $stmt->fetchAll(PDO::FETCH_ASSOC);
-            return $res;
-        }catch(PDOException $e){
-            //echo $e->getMessage(); die();
-            return false;
+
+
+
+    public function get_landlord_properties($user_id, $limit = null, $offset = 0) {
+        try {
+            $limit = $limit !== null ? max(1, (int) $limit) : null;
+            $offset = max(0, (int) $offset);
+
+            $sql = "SELECT p.*, s.state_name, l.lga_name, pt.type_name,
+                    (SELECT image_path
+                     FROM property_images
+                     WHERE property_id = p.property_id AND is_primary = 1
+                     LIMIT 1) AS thumbnail
+                    FROM properties p
+                    JOIN states s ON p.state_id = s.state_id
+                    JOIN lgas l ON p.lga_id = l.lga_id
+                    JOIN property_types pt ON p.property_type_id = pt.type_id
+                    WHERE p.user_id = ? AND (p.deleted_at IS NULL AND p.status <> 'deleted')
+                    ORDER BY COALESCE(p.updated_at, p.created_at) DESC, p.created_at DESC";
+
+            if ($limit !== null) {
+                $sql .= " LIMIT " . $limit . " OFFSET " . $offset;
+            }
+
+            $stmt = $this->dbconn->prepare($sql);
+            $stmt->execute([$user_id]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
+
+    public function get_property_images($property_id) {
+        try {
+            $sql = "SELECT * FROM property_images WHERE property_id = ? ORDER BY is_primary DESC, image_id ASC";
+            $stmt = $this->dbconn->prepare($sql);
+            $stmt->execute([$property_id]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
+
+    public function get_property_amenities($property_id) {
+        try {
+            $sql = "SELECT a.amenity_name
+                    FROM property_amenities pa
+                    JOIN amenities a ON pa.amenity_id = a.amenity_id
+                    WHERE pa.property_id = ?";
+            $stmt = $this->dbconn->prepare($sql);
+            $stmt->execute([$property_id]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
+
+    public function get_landlord_property_count($user_id) {
+        try {
+            $sql = "SELECT COUNT(*)
+                    FROM properties
+                    WHERE user_id = ? AND (deleted_at IS NULL AND status <> 'deleted')";
+            $stmt = $this->dbconn->prepare($sql);
+            $stmt->execute([$user_id]);
+            return (int) $stmt->fetchColumn();
+        } catch (PDOException $e) {
+            return 0;
         }
     }
 
@@ -216,14 +264,12 @@ class Property extends Db {
 
             foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
                 $status = strtolower(trim($row['status'] ?? ''));
-                $count = (int) ($row['count'] ?? 0);
-
                 if (array_key_exists($status, $stats)) {
-                    $stats[$status] = $count;
+                    $stats[$status] = (int) ($row['count'] ?? 0);
                 }
             }
 
-            $stats['total_properties'] = $stats['available'] + $stats['taken'] + $stats['inactive'];
+            $stats['total_properties'] = $this->get_landlord_property_count($user_id);
 
             $sql = "SELECT COUNT(*)
                     FROM applications a
@@ -247,35 +293,20 @@ class Property extends Db {
         }
     }
 
-    public function get_landlord_property_count($user_id) {
+    public function get_landlord_applications($user_id, $limit = null) {
         try {
-            $sql = "SELECT COUNT(*)
-                    FROM properties
-                    WHERE user_id = ? AND (deleted_at IS NULL AND status <> 'deleted')";
-            $stmt = $this->dbconn->prepare($sql);
-            $stmt->execute([$user_id]);
-            return (int) $stmt->fetchColumn();
-        } catch (PDOException $e) {
-            return 0;
-        }
-    }
+            $limit = $limit !== null ? max(1, (int) $limit) : null;
 
-    public function get_landlord_properties($user_id, $limit = null, $offset = 0) {
-        try {
-            $sql = "SELECT p.*, s.state_name, l.lga_name, pt.type_name,
-                    (SELECT image_path
-                     FROM property_images
-                     WHERE property_id = p.property_id AND is_primary = 1
-                     LIMIT 1) AS thumbnail
-                    FROM properties p
-                    JOIN states s ON p.state_id = s.state_id
-                    JOIN lgas l ON p.lga_id = l.lga_id
-                    JOIN property_types pt ON p.property_type_id = pt.type_id
+            $sql = "SELECT a.application_id AS app_id, a.*, p.title, p.property_id,
+                    u.first_name, u.last_name, u.email
+                    FROM applications a
+                    JOIN properties p ON a.property_id = p.property_id
+                    JOIN users u ON a.user_id = u.id
                     WHERE p.user_id = ? AND (p.deleted_at IS NULL AND p.status <> 'deleted')
-                    ORDER BY COALESCE(p.updated_at, p.created_at) DESC, p.created_at DESC";
+                    ORDER BY a.created_at DESC";
 
             if ($limit !== null) {
-                $sql .= " LIMIT " . (int) $limit . " OFFSET " . (int) $offset;
+                $sql .= " LIMIT " . $limit;
             }
 
             $stmt = $this->dbconn->prepare($sql);
@@ -286,70 +317,19 @@ class Property extends Db {
         }
     }
 
-    public function get_landlord_applications($user_id, $limit = null) {
-        try {
-            $sql = "SELECT a.*, p.title, p.property_id, u.first_name, u.last_name, u.email
-                    FROM applications a
-                    JOIN properties p ON a.property_id = p.property_id
-                    JOIN users u ON a.user_id = u.id
-                    WHERE p.user_id = ? AND (p.deleted_at IS NULL AND p.status <> 'deleted')
-                    ORDER BY a.created_at DESC";
-
-            $stmt = $this->dbconn->prepare($sql . ($limit !== null ? " LIMIT " . (int) $limit : ""));
-            $stmt->execute([$user_id]);
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            return [];
-        }
-    }
 
     // Save amenities
     public function save_amenities($property_id, $amenities) {
-        $this->dbconn->prepare("DELETE FROM property_amenities WHERE property_id=?")->execute([$property_id]);
-        $stmt = $this->dbconn->prepare("INSERT INTO property_amenities (property_id, amenity_id) VALUES (?, ?)");
-        foreach ($amenities as $a_id) { $stmt->execute([$property_id, $a_id]); }
-    }
-
-    public function get_amenities_by_property($id) {
-    $sql = "SELECT a.amenity_name 
-            FROM property_amenities pa 
-            JOIN amenities a ON pa.amenity_id = a.amenity_id 
-            WHERE pa.property_id = ?";
-    $stmt = $this->dbconn->prepare($sql);
-    $stmt->execute([$id]);
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    // Get images
-    public function get_images($id) {
-        $stmt = $this->dbconn->prepare("SELECT * FROM property_images WHERE property_id = ?");
-        $stmt->execute([$id]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    // Get stats
-    public function get_stats($user_id) {
-        $sql = "SELECT status, COUNT(*) as count FROM properties WHERE user_id = ? GROUP BY status";
-        $stmt = $this->dbconn->prepare($sql);
-        $stmt->execute([$user_id]);
-        return $stmt->fetchAll(PDO::FETCH_KEY_PAIR); // Returns ['available' => 5, 'taken' => 2]
+        try {
+            $this->dbconn->prepare("DELETE FROM property_amenities WHERE property_id=?")->execute([$property_id]);
+            $stmt = $this->dbconn->prepare("INSERT INTO property_amenities (property_id, amenity_id) VALUES (?, ?)");
+            foreach ($amenities as $a_id) { $stmt->execute([$property_id, $a_id]); }
+        } catch (PDOException $e) {
+            return false;
+        }
     }
 
 
 
-    // Request to actually rent the place
-    public function apply_for_property($prop_id, $user_id, $message = "") {
-        $sql = "INSERT INTO applications (property_id, user_id, message) VALUES (?, ?, ?)";
-        return $this->dbconn->prepare($sql)->execute([$prop_id, $user_id, $message]);
-    }
-
-
-
-    // Helper to check if property is saved (for the heart color)
-    public function is_saved($user_id, $property_id) {
-        $stmt = $this->dbconn->prepare("SELECT 1 FROM wishlist WHERE user_id = ? AND property_id = ?");
-        $stmt->execute([$user_id, $property_id]);
-        return $stmt->rowCount() > 0;
-    }
 
 }

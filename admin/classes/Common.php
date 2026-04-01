@@ -17,8 +17,19 @@ public static function is_email($email){
     }
 }
 
+public static function application_status_badge($status){
+    $status = strtolower(trim($status));
 
+    if ($status === 'approved' || $status === 'accepted') {
+        return 'badge-active';
+    }
 
+    if ($status === 'rejected' || $status === 'declined') {
+        return 'badge-inactive';
+    }
+
+    return 'badge-pending';
+}
 
 }
 //different filter_var

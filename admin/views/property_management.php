@@ -200,13 +200,13 @@ unset($_SESSION['feedback'], $_SESSION['error']);
                                                         <td>
                                                             <span class="badge <?= $approval_badge ?>"><?= htmlspecialchars(ucfirst($approval_status)) ?></span>
                                                         </td>
-                                                        <td>&#8358;<?= number_format((float) ($property['amount'] ?? 0)) ?></td>
+                                                        <td>&#8358;<?= number_format($property['amount'] ?? 0) ?></td>
                                                         <td id="property-status-container-<?= $property['property_id'] ?>">
                                                             <span class="badge <?= $badge_class ?>"><?= htmlspecialchars(ucfirst($status)) ?></span>
                                                         </td>
                                                         <td>
                                                             <?php if ($approval_status === 'pending') { ?>
-                                                                <a href="/Hestia-PHP/admin/property-review.php?id=<?= (int) $property['property_id'] ?>" class="view-link">
+                                                                <a href="/Hestia-PHP/admin/property-review.php?id=<?= $property['property_id'] ?>" class="view-link">
                                                                     <i class="fas fa-eye me-1"></i> Review
                                                                 </a>
                                                             <?php } else { ?>
