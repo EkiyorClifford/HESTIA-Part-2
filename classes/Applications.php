@@ -67,6 +67,21 @@ class Applications extends Db{
             return false;
         }
     }
+
+    public function get_tenant_applications($user_id) {
+        try {
+            $sql = "SELECT a.*, p.title, p.amount, p.listing_type
+                    FROM applications a
+                    JOIN properties p ON a.property_id = p.property_id
+                    WHERE a.user_id = ?
+                    ORDER BY a.created_at DESC";
+            $stmt = $this->dbconn->prepare($sql);
+            $stmt->execute([$user_id]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
 }
 
 ?>

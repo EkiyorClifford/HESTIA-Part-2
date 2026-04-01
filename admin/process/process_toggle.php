@@ -43,7 +43,7 @@ if(isset($_POST['id']) && isset($_POST['type'])){
         $current = $property['status'];
         $target_status = ($current === "available") ? 'inactive' : 'available';
         
-        if($admin->update_property_status($id, $target_status)){
+        if($propertyObj->update_property_status($id, $target_status)){
             echo json_encode([
                 'success' => true, 
                 'new_status' => $target_status

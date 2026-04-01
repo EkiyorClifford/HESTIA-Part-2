@@ -51,26 +51,6 @@ class PropertyTracker extends Db {
         }
     }
 
-    // method to track inspection
-    public function track_inspection($property_id, $user_id) {
-        try {
-            // insert into inspections table
-            $sql = "INSERT INTO inspections (property_id, user_id, inspection_date, status) VALUES (?, ?, NOW(), 'pending')";
-            $stmt = $this->dbconn->prepare($sql);
-            $stmt->execute([$property_id, $user_id]);
-            
-            // upsert 
-            $upsert_sql = "INSERT INTO property_stats(property_id, inspection_count) VALUES (?, 1) ON DUPLICATE KEY UPDATE inspection_count = inspection_count + 1";
-            $upsert_stmt = $this->dbconn->prepare($upsert_sql);
-            $upsert_stmt->execute([$property_id]);
-            
-            return 'counted'; // newly added inspection
-        } catch(PDOException $e) {
-            // $e->getMessage(); die();
-            return false;
-        }
-    }
-
     public function increment_inspection_count($property_id) {
         try {
             $upsert_sql = "INSERT INTO property_stats(property_id, inspection_count) VALUES (?, 1) ON DUPLICATE KEY UPDATE inspection_count = inspection_count + 1";

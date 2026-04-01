@@ -52,22 +52,6 @@ class Property extends Db {
         }
     }
 
-    public function is_property_live($property_id) {
-        try {
-            $sql = "SELECT 1
-                    FROM properties
-                    WHERE property_id = ?
-                    AND approval_status = 'approved'
-                    AND status = 'available'
-                    LIMIT 1";
-            $stmt = $this->dbconn->prepare($sql);
-            $stmt->execute([$property_id]);
-            return (bool) $stmt->fetchColumn();
-        } catch (PDOException $e) {
-            return false;
-        }
-    }
-
     // Unified status updater
     public function update_status($property_id, $user_id, $status) {
         try {
@@ -75,6 +59,29 @@ class Property extends Db {
             $sql = "UPDATE properties SET status = ?, deleted_at = ? WHERE property_id = ? AND user_id = ?";
             $stmt = $this->dbconn->prepare($sql);
             return $stmt->execute([$status, $deleted_at, $property_id, $user_id]);
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
+    //method to get prop types
+    public function get_property_types() {
+        try {
+            $sql = "SELECT * FROM property_types";
+            $stmt = $this->dbconn->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
+    public function update_property_status($id, $new_status) {
+        try {
+            $sql = "UPDATE properties SET status = ? WHERE property_id = ?";
+            $stmt = $this->dbconn->prepare($sql);
+            $result = $stmt->execute([$new_status, $id]);
+            return ($result && $stmt->rowCount() > 0);
         } catch (PDOException $e) {
             return false;
         }
@@ -316,20 +323,4 @@ class Property extends Db {
             return [];
         }
     }
-
-
-    // Save amenities
-    public function save_amenities($property_id, $amenities) {
-        try {
-            $this->dbconn->prepare("DELETE FROM property_amenities WHERE property_id=?")->execute([$property_id]);
-            $stmt = $this->dbconn->prepare("INSERT INTO property_amenities (property_id, amenity_id) VALUES (?, ?)");
-            foreach ($amenities as $a_id) { $stmt->execute([$property_id, $a_id]); }
-        } catch (PDOException $e) {
-            return false;
-        }
-    }
-
-
-
-
 }

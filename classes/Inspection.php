@@ -31,15 +31,6 @@ class Inspection extends Db {
         }
         return false;
     }
-
-        // Get applications for the Tenant Dashboard
-    public function get_tenant_applications($user_id) {
-        $sql = "SELECT a.*, p.title, p.amount, p.listing_type FROM applications a JOIN properties p ON a.property_id = p.property_id WHERE a.user_id = ? ORDER BY a.created_at DESC";
-        $stmt = $this->dbconn->prepare($sql);
-        $stmt->execute([$user_id]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
     // Fetch inspections for a Landlord (to approve/reject)
     public function get_landlord_inspections($landlord_id, $limit = null) {
         $sql = "SELECT i.*, p.title, u.first_name, u.last_name, u.p_number 

@@ -101,11 +101,6 @@ try {
             $property->save_images($property_id, $_FILES['images']);
         }
 
-        // Save amenities
-        // if(!empty($_POST['amenities'])){
-        //     $property->save_property_amenities($property_id, $_POST['amenities']);
-        // }
-
         // SUCCESS: but i have to clear form data
         unset($_SESSION['form_data']); 
         $_SESSION['feedback'] = "Property submitted successfully and is now awaiting admin review.";

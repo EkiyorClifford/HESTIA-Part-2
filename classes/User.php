@@ -7,17 +7,6 @@ class User extends Db {
         $this->dbconn = $this->connect();
     }
 
-    public function get_property_stats_by_user($user_id) {
-        try {
-            $sql = "SELECT * FROM properties WHERE user_id = ?";
-            $stmt = $this->dbconn->prepare($sql);
-            $stmt->execute([$user_id]);
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            return false;
-        }
-    }
-
     //method to get user by field
     public function get_user_by($field, $value) {
         try {
@@ -101,13 +90,6 @@ class User extends Db {
             return false;
         }
     }
-    // method to log out
-    public function logout() {
-        session_unset();
-        session_destroy();
-        return true;
-    }
-
     // method to check if email exists and also if they want to update
     public function email_exists($email, $exclude_id = null) {
         $sql = "SELECT id FROM users WHERE email = ?";

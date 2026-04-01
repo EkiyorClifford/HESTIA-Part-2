@@ -316,19 +316,6 @@ class Admin extends Db {
         }
     }
 
-    // Update property status
-    public function update_property_status($id, $new_status) {
-        try {
-            $sql = "UPDATE properties SET status = ? WHERE property_id = ?";
-            $stmt = $this->dbconn->prepare($sql);
-            $result = $stmt->execute([$new_status, $id]);
-            
-            return ($result && $stmt->rowCount() > 0);
-        } catch (PDOException $e) {
-            return false;
-        }
-    }
-
     // Update admin profile information
     public function update_admin_profile($id, $data) {
         try {
@@ -379,20 +366,5 @@ class Admin extends Db {
         } catch (PDOException $e) {
             return false;
         }
-    }
-
-    // // method for the search on users page
-    // public function search_users($filters = []){
-    //        if (!empty($filters['keyword'])) {
-    //         $sql .= " AND (p.title LIKE ? OR p.prop_address LIKE ? OR l.lga_name LIKE ?)";
-    //         $search = "%" . $filters['keyword'] . "%";
-    //         $params[] = $search; $params[] = $search; $params[] = $search;
-    //     }
-
-    // }
-
-    // Destroy admin session
-    public function admin_logout() {
-        session_destroy();
     }
 }

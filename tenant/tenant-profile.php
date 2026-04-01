@@ -4,10 +4,12 @@ require_once '../userguard.php';
 require_once '../classes/User.php';
 require_once '../classes/Wishlist.php';
 require_once '../classes/Inspection.php';
+require_once '../classes/Applications.php';
 
 $user = new User();
 $wishlistObj = new Wishlist();
 $inspectionObj = new Inspection();
+$applicationsObj = new Applications();
 
 $usr_id = $_SESSION['user_id'] ?? 0;
 $usr = $user->get_user_by('id', $usr_id);
@@ -15,7 +17,7 @@ $tenant_user = $usr;
 
 $my_wishlist = $wishlistObj->get_user_wishlist($usr_id);
 $my_inspections = $inspectionObj->get_tenant_inspections($usr_id);
-$my_applications = $inspectionObj->get_tenant_applications($usr_id);
+$my_applications = $applicationsObj->get_tenant_applications($usr_id);
 
 $count_saved = count($my_wishlist);
 $count_apps = count($my_applications);

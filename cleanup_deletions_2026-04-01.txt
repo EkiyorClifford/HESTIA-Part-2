@@ -1,0 +1,95 @@
+Cleanup Deletions Log
+Date: 2026-04-01
+Prepared by: Codex
+
+Purpose
+- Track methods and stale code removed during the deeper cleanup pass.
+- Keep a simple record of what was deleted and why.
+
+Deletion Batch 1
+
+1. classes/User.php
+- Deleted method: get_property_stats_by_user($user_id)
+- Reason: No active usage found in views, processes, or classes. It also overlaps conceptually with property-domain responsibilities.
+
+- Deleted method: logout()
+- Reason: No active usage found. Logout is handled directly in process/process_logout.php.
+
+2. admin/classes/Admin.php
+- Deleted method: admin_logout()
+- Reason: No active usage found. Admin logout is handled directly in admin/process/process_admin_logout.php.
+
+- Deleted commented stub: old search_users() draft block
+- Reason: Dead commented code; not part of runtime behavior.
+
+3. classes/PropertyTracker.php
+- Deleted method: track_inspection($property_id, $user_id)
+- Reason: No active usage found. Inspection counting is handled by increment_inspection_count() from the inspection request flow.
+
+4. classes/Property.php
+- Deleted method: is_property_live($property_id)
+- Reason: No active usage found anywhere in active code.
+
+- Deleted method: save_amenities($property_id, $amenities)
+- Reason: No active usage found anywhere in active code. The add/edit property flow is not currently saving amenities through this method.
+
+5. process/process_add_property.php
+- Deleted stale commented line referring to save_property_amenities()
+- Reason: Outdated commented code pointing to a method that does not exist in the current class API.
+
+Notes
+- This batch only removes methods and comments confirmed to be unused in active runtime code.
+- Methods that may be misplaced but are still actively used were intentionally left alone for now to keep the cleanup safe and easy to explain.
+
+Deletion Batch 2
+
+6. classes/Inspection.php
+- Deleted method: get_tenant_applications($user_id)
+- Reason: Active method, but it belongs to the applications domain rather than inspections. Ownership moved to classes/Applications.php and caller updated.
+
+7. tenant/tenant-profile.php
+- Updated dependency usage:
+  - Added Applications class usage for tenant application history
+  - Stopped using Inspection for application retrieval
+
+Deletion Batch 3
+
+8. admin/classes/Admin.php
+- Deleted method: update_property_status($id, $new_status)
+- Reason: Active method, but it belongs to the property domain. Ownership moved to classes/Property.php and caller updated.
+
+9. admin/process/process_toggle.php
+- Updated property status toggle to use Property::update_property_status()
+- Reason: Keep property status writes inside the Property class instead of Admin.
+
+Empty Files Check
+Checked on: 2026-04-02
+
+The following files are currently empty (0 bytes):
+- assets/request.css
+- tenant/wishlist.php
+
+Note
+- These files were only identified and documented.
+- They were not edited or deleted in this check.
+
+Broader Recheck
+Checked on: 2026-04-02
+
+Folders rechecked specifically:
+- process/
+- admin/process/
+- views/
+- admin/views/
+- tenant/
+- landlord/
+- classes/
+- admin/classes/
+- assets/
+- admin/assets/
+
+Result
+- No additional empty files were found in the broader recheck.
+- The empty files remain:
+  - assets/request.css
+  - tenant/wishlist.php
