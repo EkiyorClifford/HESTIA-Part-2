@@ -167,6 +167,7 @@ unset($_SESSION['feedback'], $_SESSION['error']);
                                                 <th>Approval</th>
                                                 <th>Price</th>
                                                 <th>Status</th>
+                                                <th>Featured</th>
                                                 <th>Action</th>
                                             </tr>
                                         </thead>
@@ -204,6 +205,13 @@ unset($_SESSION['feedback'], $_SESSION['error']);
                                                         <td id="property-status-container-<?= $property['property_id'] ?>">
                                                             <span class="badge <?= $badge_class ?>"><?= htmlspecialchars(ucfirst($status)) ?></span>
                                                         </td>
+                                                        <td id="property-featured-container-<?= $property['property_id'] ?>">
+                                                            <?php if (($property['is_featured'] ?? 0) == 1) { ?>
+                                                                <span class="badge badge-active">Featured</span>
+                                                            <?php } else { ?>
+                                                                <span class="badge badge-inactive">No</span>
+                                                            <?php } ?>
+                                                        </td>
                                                         <td>
                                                             <?php if ($approval_status === 'pending') { ?>
                                                                 <a href="/Hestia-PHP/admin/property-review.php?id=<?= $property['property_id'] ?>" class="view-link">
@@ -221,12 +229,19 @@ unset($_SESSION['feedback'], $_SESSION['error']);
                                                                     title="Toggle Status">
                                                                 <i class="fas <?= $property['status'] === 'available' ? 'fa-toggle-on text-success' : 'fa-toggle-off text-danger' ?> fa-lg"></i>
                                                             </button>
+
+                                                            <button class="btn-featured border-0 bg-transparent ms-3"
+                                                                    data-id="<?= $property['property_id'] ?>"
+                                                                    data-featured="<?= $property['is_featured'] ?? 0 ?>"
+                                                                    title="Toggle Featured">
+                                                                <i class="fas fa-star <?= ($property['is_featured'] ?? 0) == 1 ? 'text-warning' : 'text-secondary' ?> fa-lg"></i>
+                                                            </button>
                                                         </td>
                                                     </tr>
                                                 <?php } ?>
                                             <?php } else { ?>
                                                 <tr>
-                                                    <td colspan="6" class="text-center">
+                                                    <td colspan="7" class="text-center">
                                                         <div class="empty-state">
                                                             <i class="fas fa-building"></i>
                                                             <h6>No properties found</h6>
@@ -375,6 +390,47 @@ unset($_SESSION['feedback'], $_SESSION['error']);
                 .finally(()=>{
                     this.style.opacity = '1';
                 })
+            });
+        });
+
+        document.querySelectorAll(".btn-featured").forEach(button => {
+            button.addEventListener('click', function () {
+                const propertyID = this.getAttribute('data-id');
+                const icon = this.querySelector('i');
+                const featuredContainer = document.getElementById(`property-featured-container-${propertyID}`);
+
+                this.style.opacity = '0.5';
+
+                const formData = new FormData();
+                formData.append('id', propertyID);
+                formData.append('type', 'featured');
+
+                fetch(`../process/process_toggle.php`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const isFeatured = parseInt(data.is_featured, 10) === 1;
+                        this.setAttribute('data-featured', isFeatured ? '1' : '0');
+                        icon.className = `fas fa-star ${isFeatured ? 'text-warning' : 'text-secondary'} fa-lg`;
+                        featuredContainer.innerHTML = isFeatured
+                            ? '<span class="badge badge-active">Featured</span>'
+                            : '<span class="badge badge-inactive">No</span>';
+
+                        showToast(isFeatured ? 'Property added to featured listings.' : 'Property removed from featured listings.', 'success');
+                    } else {
+                        showToast(data.error || 'Featured update failed.', 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('An error occurred. Please try again.', 'danger');
+                })
+                .finally(() => {
+                    this.style.opacity = '1';
+                });
             });
         });
 

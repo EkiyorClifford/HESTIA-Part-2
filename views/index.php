@@ -1,9 +1,9 @@
 <?php
 session_start();
+require_once '../classes/Property.php';
 
-// echo "<pre>";
-// print_r($_SESSION);
-// echo "</pre>";
+$propertyObj = new Property();
+$featured_properties = $propertyObj->get_featured_properties(3);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -17,23 +17,19 @@ session_start();
     <link rel="stylesheet" href="../assets/global.css">
 </head>
 <body>
-    <!-- Header with Navigation -->
     <?php include '../partials/nav.php'; ?>
 
-    <!-- Main Content -->
     <main>
-        <!-- Hero Section -->
         <section class="hero-section">
             <div class="container">
                 <h1>Rent Verified Homes, Directly</h1>
-                    <p class="lead">
-                    Browse verified properties and deal directly with landlords — no agents, no hidden fees.
-                    </p>
-                <a href="properties.php" class="btn btn-primary btn-lg me-3 mt-4" >Browse Properties</a>
+                <p class="lead">
+                    Browse verified properties and deal directly with landlords, no agents, no hidden fees.
+                </p>
+                <a href="properties.php" class="btn btn-primary btn-lg me-3 mt-4">Browse Properties</a>
             </div>
         </section>
 
-         <!-- Stats Section -->
         <section class="stats-section">
             <div class="container">
                 <div class="row">
@@ -65,7 +61,6 @@ session_start();
             </div>
         </section>
 
-        <!-- How It Works -->
         <section class="py-5 bg-light">
             <div class="container">
                 <h2 class="h2 fw-bold text-center mb-4">How Hestia Works</h2>
@@ -94,71 +89,59 @@ session_start();
                 </div>
             </div>
         </section>
-        <!-- Featured Properties Section -->
+
         <section class="container feature-section">
             <h2 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 50px; text-align: center; color: #D4A574;">
                 Featured Properties
             </h2>
             <div class="row">
-                <div class="col-md-4 mb-4">
-                    <div class="card">
-                        <img src="https://i.pinimg.com/474x/38/e4/b8/38e4b8a28a28a228c3eec995a0be3a39.jpg" class="card-img-top" alt="Cozy Apartment">
-                        <div class="card-body">
-                            <h5 class="card-title">Modern Downtown Apartment</h5>
-                            <p class="card-text">Luxurious 2-bedroom apartment with stunning city views, modern amenities, and walking distance to restaurants.</p>
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <span style="font-size: 1.4rem; font-weight: 800; color: #C44536;">₦500,000/yr</span>
-                                <span style="background: #e3f2fd; color: #8C3E2C; padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;">Affordable</span>
+                <?php if (!empty($featured_properties)) { ?>
+                    <?php foreach ($featured_properties as $property) { ?>
+                        <?php
+                        $thumbnail = !empty($property['thumbnail']) ? '../upload/properties/' . $property['thumbnail'] : 'https://via.placeholder.com/600x400?text=Featured+Property';
+                        $description = trim($property['description'] ?? '');
+                        $excerpt = $description !== '' ? substr($description, 0, 110) . (strlen($description) > 110 ? '...' : '') : 'Featured property now available on Hestia.';
+                        $tag = !empty($property['listing_type']) ? 'For ' . ucfirst($property['listing_type']) : 'Featured';
+                        ?>
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100">
+                                <img src="<?= htmlspecialchars($thumbnail) ?>" class="card-img-top" alt="<?= htmlspecialchars($property['title'] ?? 'Featured property') ?>">
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title"><?= htmlspecialchars($property['title'] ?? 'Untitled property') ?></h5>
+                                    <p class="card-text"><?= htmlspecialchars($excerpt) ?></p>
+                                    <div class="small text-muted mb-3">
+                                        <i class="fas fa-map-marker-alt me-1"></i><?= htmlspecialchars(($property['lga_name'] ?? 'Unknown area') . ', ' . ($property['state_name'] ?? 'Unknown state')) ?>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mb-3 mt-auto">
+                                        <span style="font-size: 1.4rem; font-weight: 800; color: #C44536;">&#8358;<?= number_format($property['amount'] ?? 0) ?><?= ($property['listing_type'] ?? '') === 'rent' ? '/yr' : '' ?></span>
+                                        <span style="background: #e3f2fd; color: #C44536; padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;"><?= htmlspecialchars($tag) ?></span>
+                                    </div>
+                                    <a href="property-details.php?property_id=<?= $property['property_id'] ?? 0 ?>" class="btn btn-primary w-100">View Details</a>
+                                </div>
                             </div>
-                            <a href="property-details.php" class="btn btn-primary w-100">View Details</a>
+                        </div>
+                    <?php } ?>
+                <?php } else { ?>
+                    <div class="col-12">
+                        <div class="text-center py-4 bg-light rounded">
+                            <p class="mb-0 text-muted">No featured properties are available right now.</p>
                         </div>
                     </div>
-                </div>
-                <div class="col-md-4 mb-4">
-                    <div class="card">
-                        <img src="https://i.ibb.co/7tT4PLkL/29-Two-Story-Suburban-Houses-That-Embrace-Family-Friendly-Living.jpg" class="card-img-top" alt="Spacious House">
-                        <div class="card-body">
-                            <h5 class="card-title">Family-Friendly House</h5>
-                            <p class="card-text">Beautiful 4-bedroom house with spacious garden, garage, and great neighborhood. Perfect for families.</p>
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <span style="font-size: 1.4rem; font-weight: 800; color: #C44536;">₦6,500,000/yr</span>
-                                <span style="background: #e3f2fd; color: #C44536; padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;">Premium 
-                                    Listing</span>
-                            </div>
-                            <a href="property-details.php" class="btn btn-primary w-100">View Details</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-4">
-                    <div class="card">
-                        <img src="https://korrecthomes.ng/wp-content/uploads/2024/05/Studio-Aprtment-1536x864.webp" class="card-img-top" alt="Modern Studio">
-                        <div class="card-body">
-                            <h5 class="card-title">Chic Studio Loft</h5>
-                            <p class="card-text">Contemporary studio with high ceilings, open concept design, and modern finishes. Ideal for professionals.</p>
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <span style="font-size: 1.4rem; font-weight: 800; color: #C44536;">₦900,000/yr</span>
-                                <span style="background: #e3f2fd; color: #C44536; padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;">In Demand</span>
-                            </div>
-                            <a href="property-details.php" class="btn btn-primary w-100">View Details</a>
-                        </div>
-                    </div>
-                </div>
+                <?php } ?>
             </div>
         </section>
-        
     </main>
 
-     <!-- CTA Section -->
-        <section class="cta-section">
-            <div class="container">
-                <h2>Find Your Place in a Better Rental Market</h2>
-                <p>Join thousands of tenants and landlords who are renting smarter—with transparency, control, and no hidden fees.</p>
-                <a href="register.php" class="btn btn-light mx-3 mt-3 join-hestia">Join Hestia — It's Free</a>
-            </div>
-            <div class="text-center mt-3">
+    <section class="cta-section">
+        <div class="container">
+            <h2>Find Your Place in a Better Rental Market</h2>
+            <p>Join thousands of tenants and landlords who are renting smarter with transparency, control, and no hidden fees.</p>
+            <a href="register.php" class="btn btn-light mx-3 mt-3 join-hestia">Join Hestia - It's Free</a>
+        </div>
+        <div class="text-center mt-3">
             <small>No credit card required. List or search in minutes.</small>
-            </div>
-        </section>
+        </div>
+    </section>
 
     <?php include '../partials/footer.php'; ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

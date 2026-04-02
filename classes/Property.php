@@ -87,6 +87,21 @@ class Property extends Db {
         }
     }
 
+    public function update_featured_status($id, $is_featured) {
+        try {
+            $is_featured = $is_featured ? 1 : 0;
+            $sql = "UPDATE properties
+                    SET is_featured = ?,
+                        featured_at = CASE WHEN ? = 1 THEN NOW() ELSE NULL END
+                    WHERE property_id = ?";
+            $stmt = $this->dbconn->prepare($sql);
+            $result = $stmt->execute([$is_featured, $is_featured, $id]);
+            return ($result && $stmt->rowCount() > 0);
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
     // Search & filter
     public function get_properties($filters = []) {
         $sql = "SELECT p.*, s.state_name, l.lga_name, pt.type_name,
@@ -138,6 +153,30 @@ class Property extends Db {
         $stmt = $this->dbconn->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function get_featured_properties($limit = 3) {
+        try {
+            if (!is_numeric($limit) || $limit < 1) {
+                $limit = 3;
+            }
+            $sql = "SELECT p.*, s.state_name, l.lga_name, pt.type_name,
+                    (SELECT image_path FROM property_images WHERE property_id = p.property_id AND is_primary = 1 LIMIT 1) AS thumbnail
+                    FROM properties p
+                    JOIN states s ON p.state_id = s.state_id
+                    JOIN lgas l ON p.lga_id = l.lga_id
+                    JOIN property_types pt ON p.property_type_id = pt.type_id
+                    WHERE p.is_featured = 1
+                    AND p.approval_status = 'approved'
+                    AND p.status = 'available'
+                    ORDER BY p.featured_at DESC, p.created_at DESC
+                    LIMIT " . $limit;
+            $stmt = $this->dbconn->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return [];
+        }
     }
 
     // Get property by id
