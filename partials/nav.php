@@ -89,9 +89,7 @@ $base_url = "/Hestia-PHP/";
                                 <li><a class="dropdown-item" href="<?php echo $base_url; ?>landlord/add-property.php"><i class="fas fa-plus me-2"></i>Add Property</a></li>
                             <?php } ?>
 
-                            <?php if($user_role == 'tenant'){ ?>
-                                <li><a class="dropdown-item" href="<?php echo $base_url; ?>tenant/wishlist.php"><i class="fas fa-heart me-2"></i>Wishlist</a></li>
-                            <?php } ?>
+                            <li><a class="dropdown-item" href="<?php echo $base_url; ?>tenant/wishlist.php"><i class="fas fa-heart me-2"></i>Wishlist</a></li>
 
                             <li><hr class="dropdown-divider"></li>
                             <li>

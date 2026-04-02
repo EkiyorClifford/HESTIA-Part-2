@@ -19,6 +19,8 @@ if (!$property || (int) $property['user_id'] !== (int) $_SESSION['user_id']) {
 }
 
 $ptypes = $propertyObj->get_property_types();
+$amenities = $propertyObj->get_all_amenities();
+$selected_amenity_ids = $propertyObj->get_property_amenity_ids($property_id);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -53,7 +55,7 @@ $ptypes = $propertyObj->get_property_types();
                 </div>
             <?php } ?>
 
-            <form action="../process/process_edit_property.php" method="POST">
+            <form action="../process/process_edit_property.php" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="property_id" value="<?= (int) $property['property_id'] ?>">
 
                 <div class="section-title">Basic Information</div>
@@ -134,6 +136,35 @@ $ptypes = $propertyObj->get_property_types();
                             <option value="inactive" <?= $property['status'] === 'inactive' ? 'selected' : '' ?>>Inactive</option>
                             <option value="deleted" <?= $property['status'] === 'deleted' ? 'selected' : '' ?>>Deleted</option>
                         </select>
+                    </div>
+                </div>
+
+                <div class="section-title">Media</div>
+                <div class="mb-4">
+                    <label for="images" class="form-label">Property Images</label>
+                    <input type="file" class="form-control" id="images" name="images[]" multiple accept="image/*">
+                    <small class="form-text text-muted">Upload multiple images (JPEG, PNG, JPG). The first uploaded image will be used as cover photo.</small>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Amenities</label>
+                    <div class="amenities-checkboxes">
+                        <?php foreach ($amenities as $amenity) { ?>
+                            <?php $amenity_id = (int) ($amenity['amenity_id'] ?? 0); ?>
+                            <div class="form-check">
+                                <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    id="amenity-<?= $amenity_id ?>"
+                                    name="amenities[]"
+                                    value="<?= $amenity_id ?>"
+                                    <?= in_array($amenity_id, $selected_amenity_ids, true) ? 'checked' : '' ?>
+                                >
+                                <label class="form-check-label" for="amenity-<?= $amenity_id ?>">
+                                    <?= htmlspecialchars($amenity['amenity_name'] ?? 'Amenity') ?>
+                                </label>
+                            </div>
+                        <?php } ?>
                     </div>
                 </div>
 

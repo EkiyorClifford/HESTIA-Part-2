@@ -5,6 +5,7 @@ require_once '../classes/User.php';
 require_once '../classes/Wishlist.php';
 require_once '../classes/Inspection.php';
 require_once '../classes/Applications.php';
+require_once '../classes/Common.php';
 
 $user = new User();
 $wishlistObj = new Wishlist();
@@ -31,20 +32,7 @@ foreach ($my_applications as $app) {
 
 $active_tenant_page = 'dashboard';
 
-function tenant_status_badge($status)
-{
-    $status = strtolower(trim($status));
-
-    if ($status === 'approved' || $status === 'accepted') {
-        return 'badge-available';
-    }
-
-    if ($status === 'pending') {
-        return 'badge-rented';
-    }
-
-    return 'badge-inactive';
-}
+$common = new Common();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -205,7 +193,7 @@ function tenant_status_badge($status)
                                                 <h3><?= htmlspecialchars($insp['title'] ?? 'Unknown property') ?></h3>
                                                 <p><?= htmlspecialchars($insp['lga_name'] ?? 'Unknown area') ?></p>
                                             </div>
-                                            <span class="badge-status <?= tenant_status_badge(($insp['status'] ?? 'pending')) ?>"><?= htmlspecialchars(ucfirst($insp['status'] ?? 'pending')) ?></span>
+                                            <span class="badge-status <?= Common::tenant_status_badge($insp['status'] ?? 'pending') ?>"><?= htmlspecialchars(ucfirst($insp['status'] ?? 'pending')) ?></span>
                                         </div>
                                         <div class="application-meta">
                                             Scheduled for <?= !empty($insp['inspection_date']) ? htmlspecialchars(date('M j, Y', strtotime($insp['inspection_date']))) : 'N/A' ?>
@@ -241,7 +229,7 @@ function tenant_status_badge($status)
                                                 <h3><?= htmlspecialchars($app['title'] ?? 'Unknown property') ?></h3>
                                                 <p><?= htmlspecialchars(ucfirst($app['listing_type'] ?? 'rent')) ?></p>
                                             </div>
-                                            <span class="badge-status <?= tenant_status_badge(($app['status'] ?? 'pending')) ?>"><?= htmlspecialchars(ucfirst($app['status'] ?? 'pending')) ?></span>
+                                            <span class="badge-status <?= Common::tenant_status_badge($app['status'] ?? 'pending') ?>"><?= htmlspecialchars(ucfirst($app['status'] ?? 'pending')) ?></span>
                                         </div>
                                         <div class="application-meta">Applied on <?= !empty($app['created_at']) ? htmlspecialchars(date('M j, Y', strtotime($app['created_at']))) : 'N/A' ?></div>
                                         <p class="tenant-amount">&#8358;<?= number_format(($app['amount'] ?? 0), 2) ?></p>

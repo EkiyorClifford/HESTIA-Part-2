@@ -13,7 +13,10 @@ $applicationsObj = new Applications();
 
 $usr_id = $_SESSION['user_id'] ?? 0;
 $usr = $user->get_user_by('id', $usr_id);
-$tenant_user = $usr;
+$current_user = $usr;
+$user_role = strtolower(trim($_SESSION['user_role'] ?? ($usr['role_'] ?? 'tenant')));
+$is_landlord = $user_role === 'landlord';
+$dashboard_link = $is_landlord ? '../landlord/landlord-profile.php' : '../tenant/tenant-profile.php';
 
 $my_wishlist = $wishlistObj->get_user_wishlist($usr_id);
 $my_inspections = $inspectionObj->get_tenant_inspections($usr_id);
@@ -49,7 +52,7 @@ if (!empty($my_wishlist)) {
     <link rel="stylesheet" href="../assets/tenant-profile.css">
     <link rel="stylesheet" href="../assets/wishlist.css">
 </head>
-<body class="tenant-dashboard-page tenant-wishlist-page">
+<body class="<?= $is_landlord ? 'tenant-wishlist-page' : 'tenant-dashboard-page tenant-wishlist-page' ?>">
     <?php include_once "../partials/nav.php"; ?>
 
     <main class="container py-4 py-lg-5">
@@ -58,8 +61,11 @@ if (!empty($my_wishlist)) {
         <section class="wishlist-hero">
             <div class="wishlist-hero-copy">
                 <p class="eyebrow">Wishlist</p>
-                <h1><?= htmlspecialchars($tenant_user['first_name'] ?? 'Tenant') ?>, here are the homes you bookmarked</h1>
-                <p>You have <?= number_format($saved_count) ?> saved <?= $saved_count === 1 ? 'property' : 'properties' ?>, with interest spread across <?= htmlspecialchars($top_state) ?> and beyond.</p>
+                <h1><?= htmlspecialchars($current_user['first_name'] ?? 'User') ?>, here are the homes you bookmarked</h1>
+                <p>
+                    You have <?= number_format($saved_count) ?> saved <?= $saved_count === 1 ? 'property' : 'properties' ?>, with interest spread across <?= htmlspecialchars($top_state) ?> and beyond.
+                    <?= $is_landlord ? ' Handy for tracking listings you like from the marketplace.' : '' ?>
+                </p>
             </div>
             <div class="wishlist-summary-grid">
                 <div class="wishlist-summary-card">
@@ -136,7 +142,9 @@ if (!empty($my_wishlist)) {
 
                             <div class="wishlist-card-actions">
                                 <a href="../views/property-details.php?property_id=<?= (int) $w['property_id'] ?>" class="action-btn edit">View details</a>
-                                <a href="../tenant/tenant-profile.php#applications-section" class="action-btn view">Track activity</a>
+                                <a href="<?= htmlspecialchars($dashboard_link . ($is_landlord ? '#properties-section' : '#applications-section')) ?>" class="action-btn view">
+                                    <?= $is_landlord ? 'Open dashboard' : 'Track activity' ?>
+                                </a>
                             </div>
                         </div>
                     </article>

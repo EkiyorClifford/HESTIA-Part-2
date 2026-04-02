@@ -4,6 +4,7 @@ require_once '../userguard.php';
 require_once '../classes/Property.php';
 require_once '../classes/User.php';
 require_once '../classes/Inspection.php';
+require_once '../classes/Landlord.php';
 
 if (($_SESSION['user_role'] ?? '') !== 'landlord') {
     header('Location: ../tenant/tenant-profile.php');
@@ -39,50 +40,8 @@ $stats = array_merge([
     'inspections' => 0,
 ], $stats ?: []);
 
-function landlord_status_badge(string $status): string
-{
-    $status = strtolower(trim($status));
-
-    if ($status === 'available') {
-        return 'badge-available';
-    }
-
-    if ($status === 'taken') {
-        return 'badge-rented';
-    }
-
-    return 'badge-inactive';
-}
-
-function application_badge(string $status): string
-{
-    $status = strtolower(trim($status));
-
-    if ($status === 'approved' || $status === 'accepted') {
-        return 'badge-available';
-    }
-
-    if ($status === 'rejected' || $status === 'declined') {
-        return 'badge-inactive';
-    }
-
-    return 'badge-rented';
-}
-
-function approval_badge($status)
-{
-    $status = strtolower(trim($status));
-
-    if ($status === 'approved') {
-        return 'badge-available';
-    }
-
-    if ($status === 'rejected') {
-        return 'badge-rejected';
-    }
-
-    return 'badge-rented';
-}
+//lastly instantiate landlord obj
+$Landlord = new Landlord();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -229,8 +188,8 @@ function approval_badge($status)
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td><span class="badge-status <?= approval_badge($property['approval_status'] ?? 'pending') ?>"><?= htmlspecialchars(ucfirst($property['approval_status'] ?? 'pending')) ?></span></td>
-                                                <td><span class="badge-status <?= landlord_status_badge($property['status'] ?? 'inactive') ?>"><?= htmlspecialchars(ucfirst($property['status'] ?? 'inactive')) ?></span></td>
+                                                <td><span class="badge-status <?= $Landlord->approval_badge($property['approval_status'] ?? 'pending') ?>"><?= htmlspecialchars(ucfirst($property['approval_status'] ?? 'pending')) ?></span></td>
+                                                <td><span class="badge-status <?= $Landlord->landlord_status_badge($property['status'] ?? 'inactive') ?>"><?= htmlspecialchars(ucfirst($property['status'] ?? 'inactive')) ?></span></td>
                                                 <td>&#8358;<?= number_format(($property['amount'] ?? 0)) ?></td>
                                                 <td>
                                                     <div class="action-btns">
@@ -287,7 +246,7 @@ function approval_badge($status)
                                                 <h3><?= htmlspecialchars(trim(($application['first_name'] ?? '') . ' ' . ($application['last_name'] ?? ''))) ?></h3>
                                                 <p><?= htmlspecialchars($application['title'] ?? 'Unknown property') ?></p>
                                             </div>
-                                            <span class="badge-status <?= application_badge($application['status'] ?? 'pending') ?>"><?= htmlspecialchars(ucfirst($application['status'] ?? 'pending')) ?></span>
+                                            <span class="badge-status <?= $Landlord->application_badge($application['status'] ?? 'pending') ?>"><?= htmlspecialchars(ucfirst($application['status'] ?? 'pending')) ?></span>
                                         </div>
                                         <div class="application-meta"><?= htmlspecialchars($application['email'] ?? '') ?></div>
                                         <?php if (!empty($application['message'])) { ?>
@@ -341,7 +300,7 @@ function approval_badge($status)
                                                 <h3><?= htmlspecialchars(trim(($inspection['first_name'] ?? '') . ' ' . ($inspection['last_name'] ?? ''))) ?></h3>
                                                 <p><?= htmlspecialchars($inspection['title'] ?? 'Unknown property') ?></p>
                                             </div>
-                                            <span class="badge-status <?= application_badge($inspection['status'] ?? 'pending') ?>"><?= htmlspecialchars(ucfirst($inspection['status'] ?? 'pending')) ?></span>
+                                            <span class="badge-status <?= $Landlord->application_badge($inspection['status'] ?? 'pending') ?>"><?= htmlspecialchars(ucfirst($inspection['status'] ?? 'pending')) ?></span>
                                         </div>
                                         <div class="application-meta">
                                             <?= htmlspecialchars($inspection['p_number'] ?? '') ?>

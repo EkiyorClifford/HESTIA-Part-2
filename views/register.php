@@ -53,17 +53,17 @@ session_start();
 
                 <!-- Login Form -->
                 <form class="auth-form" id="loginForm" action="../process/process_login.php" method="post">
-                    <?php if(isset($_SESSION['error'])): ?>
+                    <?php if(isset($_SESSION['error'])) { ?>
                         <div class="alert alert-danger">
                             <?php echo $_SESSION['error']; unset($_SESSION['error']); ?>
                         </div>
-                    <?php endif; ?>
+                    <?php } ?>
 
-                    <?php if(isset($_SESSION['feedback'])): ?>
+                    <?php if(isset($_SESSION['feedback'])) { ?>
                         <div class="alert alert-success">
                             <?php echo $_SESSION['feedback']; unset($_SESSION['feedback']); ?>
                         </div>
-                    <?php endif; ?>
+                    <?php } ?>
                     <div class="form-group">
                         <label>Your Email</label>
                         <input type="email" name="login_email" id="login_email" class="form-control" placeholder="you@example.com" required autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="email">

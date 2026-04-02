@@ -27,6 +27,7 @@ $lga_id = Common::cleandata($_POST['lga_id']);
 $prop_address = Common::cleandata($_POST['prop_address']);
 $bedroom = Common::cleandata($_POST['bedroom']);
 $furnished = Common::cleandata($_POST['furnished']);
+$amenity_ids = isset($_POST['amenities']) && is_array($_POST['amenities']) ? array_map('intval', $_POST['amenities']) : [];
 $user_id = $_SESSION['user_id'] ?? null;
 
 // 3. Validation Logic
@@ -100,6 +101,8 @@ try {
         if(isset($_FILES['images']) && !empty($_FILES['images']['name'][0])){
             $property->save_images($property_id, $_FILES['images']);
         }
+
+        $property->sync_property_amenities($property_id, $amenity_ids);
 
         // SUCCESS: but i have to clear form data
         unset($_SESSION['form_data']); 

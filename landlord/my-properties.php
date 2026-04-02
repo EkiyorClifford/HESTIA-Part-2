@@ -22,36 +22,7 @@ $property_pages = max(1, ceil($property_total / $properties_per_page));
 $property_page = min($property_page, $property_pages);
 $property_offset = ($property_page - 1) * $properties_per_page;
 $my_properties = $propObj->get_landlord_properties($user_id, $properties_per_page, $property_offset);
-
-function landlord_property_status_badge(string $status): string
-{
-    $status = strtolower(trim($status));
-
-    if ($status === 'available') {
-        return 'badge-available';
-    }
-
-    if ($status === 'taken') {
-        return 'badge-rented';
-    }
-
-    return 'badge-inactive';
-}
-
-function landlord_property_approval_badge(string $status): string
-{
-    $status = strtolower(trim($status));
-
-    if ($status === 'approved') {
-        return 'badge-available';
-    }
-
-    if ($status === 'rejected') {
-        return 'badge-rejected';
-    }
-
-    return 'badge-rented';
-}
+$Landlord = new Landlord();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -151,8 +122,8 @@ function landlord_property_approval_badge(string $status): string
                                                 </div>
                                             </div>
                                         </td>
-                                        <td><span class="badge-status <?= landlord_property_approval_badge($property['approval_status'] ?? 'pending') ?>"><?= htmlspecialchars(ucfirst($property['approval_status'] ?? 'pending')) ?></span></td>
-                                        <td><span class="badge-status <?= landlord_property_status_badge($property['status'] ?? 'inactive') ?>"><?= htmlspecialchars(ucfirst($property['status'] ?? 'inactive')) ?></span></td>
+                                        <td><span class="badge-status <?= $Landlord->approval_badge($property['approval_status'] ?? 'pending') ?>"><?= htmlspecialchars(ucfirst($property['approval_status'] ?? 'pending')) ?></span></td>
+                                        <td><span class="badge-status <?= $Landlord->landlord_status_badge($property['status'] ?? 'inactive') ?>"><?= htmlspecialchars(ucfirst($property['status'] ?? 'inactive')) ?></span></td>
                                         <td>&#8358;<?= number_format(($property['amount'] ?? 0)) ?></td>
                                         <td><?= !empty($activity_stamp) ? htmlspecialchars(date('M d, Y', strtotime($activity_stamp))) : 'N/A' ?></td>
                                         <td>

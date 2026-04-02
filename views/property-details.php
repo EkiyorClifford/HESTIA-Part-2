@@ -2,6 +2,7 @@
 session_start();
 require_once '../classes/Property.php';
 require_once '../classes/User.php';
+require_once '../classes/Wishlist.php';
 include_once '../classes/PropertyTracker.php';
 include_once '../classes/Inspection.php';
 include_once '../classes/Applications.php';
@@ -26,6 +27,8 @@ $is_owner = $user_id > 0 && $details['user_id'] === $user_id;
 $is_admin_viewer = !empty($_SESSION['is_admin']) && $_SESSION['is_admin'] === true;
 $is_publicly_visible = ($details['approval_status'] ?? '') === 'approved' && ($details['status'] ?? '') === 'available';
 
+
+//prevent props that admin has not approved from being viewed by non admins or non owners
 if (!$is_publicly_visible && !$is_owner && !$is_admin_viewer) {
     $_SESSION['error'] = 'That property is not currently available to the public.';
     header("Location: ../views/properties.php");
@@ -61,6 +64,13 @@ if ($user_id !== null) {
         $inspection_check = true;
     }
 }
+
+$wishlist = new Wishlist();
+$is_saved = false;
+if (!empty($_SESSION['user_id'])) {
+    $is_saved = $wishlist->is_property_saved($_SESSION['user_id'], $id);
+}
+
 //application
 
 //toast
@@ -135,7 +145,8 @@ unset($_SESSION['success'], $_SESSION['feedback'], $_SESSION['error']);
                     <?php if(!empty($amenities)){ ?>
                     <ul class="amenities-list d-flex flex-wrap list-unstyled">
                         <?php foreach($amenities as $amt){ ?>
-                        <li class="me-4 mb-2"><i class="fas fa-check text-success me-2"></i><?php echo htmlspecialchars($amt['amenity_name']); ?></li>
+                        <?php $iconClass = $property->getAmenityIconClass($amt['amenity_name']); ?>
+                        <li class="me-4 mb-2"><i class="fas <?php echo htmlspecialchars($iconClass); ?> text-primary me-2"></i><?php echo htmlspecialchars($amt['amenity_name']); ?></li>
                         <?php } ?>
                     </ul>
                     <?php } else { ?>
@@ -362,9 +373,10 @@ unset($_SESSION['success'], $_SESSION['feedback'], $_SESSION['error']);
                 <?php } ?>
                     
                     <!-- action buttons -->
-                    <button class="btn btn-outline-primary w-100 mb-2" style="border-color: #C44536; color: #C44536;">
-                        <i class="fas fa-heart me-2"></i> Save to Wishlist
-                    </button>
+                    <a href="../process/process_wishlist.php?prop_id=<?php echo $id; ?>" class="btn btn-outline-primary w-100 mb-2" style="border-color: #C44536; color: #C44536;">
+                        <i class="<?php echo $is_saved ? 'fas fa-heart me-2 text-danger' : 'far fa-heart me-2'; ?>"></i>
+                        <?php echo $is_saved ? 'Saved' : 'Save to Wishlist'; ?>
+                    </a>
                     <button class="btn btn-outline-primary w-100 mb-2" style="border-color: #C44536; color: #C44536;">
                         <i class="fas fa-share-alt me-2"></i> Share Property
                     </button>

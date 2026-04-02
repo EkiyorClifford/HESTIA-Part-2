@@ -1,18 +1,9 @@
 <?php
 session_start();
 require_once '../classes/Inspection.php';
+require_once '../classes/Common.php';
 //require userguard
 require_once '../userguard.php';
-
-function redirect_to_property_details($propertyId) {
-    $location = '../views/property-details.php';
-    if ($propertyId > 0) {
-        $location .= '?property_id=' . $propertyId;
-    }
-    header('Location: ' . $location);
-    exit();
-}
-
 
 $insp = new Inspection();
 
@@ -28,18 +19,18 @@ if (isset($_POST['request_btn'])) {
     // Check if user is trying to inspect their own property(thieves)
     if ($insp->is_landlord_own_property($prop_id, $user_id)) {
         $_SESSION['error'] = "You cannot request an inspection for your own property.";
-        redirect_to_property_details($prop_id);
+        Common::redirect_to_property_details($prop_id);
     }
 
     if (empty($date)) {
         $_SESSION['error'] = "Please select a valid date.";
-        redirect_to_property_details($prop_id);
+        Common::redirect_to_property_details($prop_id);
     }
 
     // Check if user has already requested inspection for this property
     if ($insp->check_inspection($prop_id, $user_id) !== false) {
         $_SESSION['error'] = "You have already requested an inspection for this property.";
-        redirect_to_property_details($prop_id);
+        Common::redirect_to_property_details($prop_id);
     }
 
     $result = $insp->request_inspection($prop_id, $user_id, $date);
@@ -51,7 +42,7 @@ if (isset($_POST['request_btn'])) {
     } else {
         $_SESSION['error'] = "Failed to send request. Try again.";
     }
-    redirect_to_property_details($prop_id);
+    Common::redirect_to_property_details($prop_id);
 }
 
 // --- ACTION 2: CANCEL (GET) ---

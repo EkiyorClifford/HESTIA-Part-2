@@ -1,14 +1,20 @@
 <?php
 session_start();
 require_once '../classes/State.php';
+require_once '../classes/Property.php';
 require_once '../partials/messages.php';
 require_once '../userguard.php';
 
 $state = new State();
+$propertyObj = new Property();
 $states = $state->get_active_states();
 $lglist = '<option value="" selected disabled>— select LGA —</option>';
 $ptypes = $state->get_property_types();
+$amenities = $propertyObj->get_all_amenities();
 $saved_data = $_SESSION['form_data'] ?? [];
+$saved_amenities = isset($saved_data['amenities']) && is_array($saved_data['amenities'])
+    ? array_map('intval', $saved_data['amenities'])
+    : [];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -151,34 +157,25 @@ $saved_data = $_SESSION['form_data'] ?? [];
                     <small class="form-text text-muted">Upload multiple images (JPEG, PNG, JPG). The first uploaded image will be used as cover photo.</small>
                 </div>
                 
-                <!-- Amenities would be in a seperate table -->
                 <div class="mb-4">
                     <label class="form-label">Amenities</label>
                     <div class="amenities-checkboxes">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="parking" name="amenities[]" value="parking">
-                            <label class="form-check-label" for="parking">Parking</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="pets" name="amenities[]" value="pets">
-                            <label class="form-check-label" for="pets">Pet Friendly</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="laundry" name="amenities[]" value="laundry">
-                            <label class="form-check-label" for="laundry">Laundry</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="gym" name="amenities[]" value="gym">
-                            <label class="form-check-label" for="gym">Gym</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="pool" name="amenities[]" value="pool">
-                            <label class="form-check-label" for="pool">Pool</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="balcony" name="amenities[]" value="balcony">
-                            <label class="form-check-label" for="balcony">Balcony</label>
-                        </div>
+                        <?php foreach ($amenities as $amenity) { ?>
+                            <?php $amenity_id = (int) ($amenity['amenity_id'] ?? 0); ?>
+                            <div class="form-check">
+                                <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    id="amenity-<?= $amenity_id ?>"
+                                    name="amenities[]"
+                                    value="<?= $amenity_id ?>"
+                                    <?= in_array($amenity_id, $saved_amenities, true) ? 'checked' : '' ?>
+                                >
+                                <label class="form-check-label" for="amenity-<?= $amenity_id ?>">
+                                    <?= htmlspecialchars($amenity['amenity_name'] ?? 'Amenity') ?>
+                                </label>
+                            </div>
+                        <?php } ?>
                     </div>
                 </div>
                 

@@ -204,6 +204,10 @@ class Property extends Db {
 
     // Save images
     public function save_images($property_id, $files) {
+        $existingStmt = $this->dbconn->prepare("SELECT COUNT(*) FROM property_images WHERE property_id = ?");
+        $existingStmt->execute([$property_id]);
+        $hasExistingImages = $existingStmt->fetchColumn() > 0;
+
         $sql = "INSERT INTO property_images (property_id, image_path, is_primary) VALUES (?, ?, ?)";
         $stmt = $this->dbconn->prepare($sql);
         
@@ -212,7 +216,8 @@ class Property extends Db {
                 $ext = pathinfo($name, PATHINFO_EXTENSION);
                 $filename = "hestia_" . time() . "_" . uniqid() . "." . $ext;
                 if (move_uploaded_file($files['tmp_name'][$k], "../upload/properties/" . $filename)) {
-                    $stmt->execute([$property_id, $filename, ($k === 0 ? 1 : 0)]);
+                    $isPrimary = (!$hasExistingImages && $k === 0) ? 1 : 0;
+                    $stmt->execute([$property_id, $filename, $isPrimary]);
                 }
             }
         }
@@ -272,6 +277,107 @@ class Property extends Db {
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
             return [];
+        }
+    }
+
+    public function getAmenityIconClass($name) {
+        $label = strtolower($name);
+        $map = [
+            'wifi' => 'fa-wifi',
+            'wi-fi' => 'fa-wifi',
+            'internet' => 'fa-wifi',
+            'air conditioner' => 'fa-fan',
+            'ac' => 'fa-fan',
+            'fan' => 'fa-fan',
+            'pool' => 'fa-swimmer',
+            'gym' => 'fa-dumbbell',
+            'fitness' => 'fa-dumbbell',
+            'parking' => 'fa-car',
+            'garage' => 'fa-car',
+            'water' => 'fa-tint',
+            'electricity' => 'fa-bolt',
+            'power' => 'fa-bolt',
+            'tv' => 'fa-tv',
+            'television' => 'fa-tv',
+            'laundry' => 'fa-tshirt',
+            'washer' => 'fa-tshirt',
+            'dryer' => 'fa-tshirt',
+            'dishwasher' => 'fa-sink',
+            'kitchen' => 'fa-utensils',
+            'furnished' => 'fa-couch',
+            'balcony' => 'fa-chair',
+            'garden' => 'fa-leaf',
+            'fireplace' => 'fa-fire',
+            'security' => 'fa-shield-alt',
+            'cctv' => 'fa-video',
+            'pet' => 'fa-paw',
+            'boat' => 'fa-ship',
+            'elevator' => 'fa-building',
+            'spa' => 'fa-spa',
+            'sauna' => 'fa-hot-tub',
+            'parking' => 'fa-parking',
+            'pet' => 'fa-paw',
+        ];
+
+        foreach ($map as $needle => $icon) {
+            if (strpos($label, $needle) !== false) {
+                return $icon;
+            }
+        }
+
+        return 'fa-check';
+    }
+
+    public function get_all_amenities() {
+        try {
+            $sql = "SELECT amenity_id, amenity_name FROM amenities ORDER BY amenity_name ASC";
+            $stmt = $this->dbconn->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
+
+    public function get_property_amenity_ids($property_id) {
+        try {
+            $sql = "SELECT amenity_id FROM property_amenities WHERE property_id = ?";
+            $stmt = $this->dbconn->prepare($sql);
+            $stmt->execute([$property_id]);
+            return array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
+
+    public function sync_property_amenities($property_id, $amenity_ids) {
+        try {
+            $amenity_ids = array_values(array_unique(array_map('intval', (array) $amenity_ids)));
+
+            $this->dbconn->beginTransaction();
+
+            $delete = $this->dbconn->prepare("DELETE FROM property_amenities WHERE property_id = ?");
+            $delete->execute([$property_id]);
+
+            if (!empty($amenity_ids)) {
+                $validLookup = $this->dbconn->prepare("SELECT amenity_id FROM amenities WHERE amenity_id = ?");
+                $insert = $this->dbconn->prepare("INSERT INTO property_amenities (property_id, amenity_id) VALUES (?, ?)");
+
+                foreach ($amenity_ids as $amenity_id) {
+                    $validLookup->execute([$amenity_id]);
+                    if ($validLookup->fetchColumn()) {
+                        $insert->execute([$property_id, $amenity_id]);
+                    }
+                }
+            }
+
+            $this->dbconn->commit();
+            return true;
+        } catch (PDOException $e) {
+            if ($this->dbconn->inTransaction()) {
+                $this->dbconn->rollBack();
+            }
+            return false;
         }
     }
 

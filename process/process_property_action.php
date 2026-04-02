@@ -3,6 +3,7 @@ session_start();
 require_once '../classes/Property.php';
 require_once '../classes/Inspection.php';
 require_once '../classes/Applications.php';
+require_once '../classes/Common.php';
 
 $user_id = $_SESSION['user_id'] ?? null;
 $user_role = $_SESSION['user_role'] ?? null;
@@ -21,21 +22,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $property_id = $_POST['property_id'] ?? 0;
 $action = $_POST['action'] ?? '';
 
-function landlord_property_redirect(string $fallback = '../landlord/landlord-profile.php#properties-section'): string
-{
-    $redirect_to = trim($_POST['redirect_to'] ?? '');
-
-    if ($redirect_to === '../landlord/my-properties.php') {
-        return $redirect_to;
-    }
-
-    if (preg_match('/^\.\.\/landlord\/landlord-profile\.php(?:\?property_page=\d+)?#properties-section$/', $redirect_to)) {
-        return $redirect_to;
-    }
-
-    return $fallback;
-}
-
 $property = new Property();
 
 if ($action === 'delete') {
@@ -51,7 +37,7 @@ if ($action === 'delete') {
         $_SESSION['error'] = 'Unable to delete property.';
     }
 
-    header('Location: ' . landlord_property_redirect());
+    header('Location: ' . Common::landlord_property_redirect());
     exit();
 }
 

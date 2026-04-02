@@ -145,15 +145,15 @@ unset($_SESSION['feedback'], $_SESSION['error']);
                     </button>
                 </div>
                 <div class="col-md-2">
-                    <?php if(!empty($_GET['search'])): ?>
+                    <?php if(!empty($_GET['search'])){ ?>
                         <a href="property_management.php?filter=<?= urlencode($filter) ?>&search=" class="btn btn-outline-secondary py-2">
                             Clear Search
                         </a>
-                    <?php endif; ?>
+                    <?php }; ?>
                 </div>
             </div>
         </form>
-                                           <!-- property management -->
+                    <!-- property management -->
                             <div class="section-card">
                                 <div class="section-title">
                                     <i class="fas fa-building"></i> PROPERTIES MANAGEMENT
@@ -434,11 +434,11 @@ unset($_SESSION['feedback'], $_SESSION['error']);
             });
         });
 
-        <?php if ($toast_message): ?>
+        <?php if ($toast_message){ ?>
         document.addEventListener('DOMContentLoaded', function () {
             showToast(<?= json_encode($toast_message) ?>, <?= json_encode($toast_type) ?>);
         });
-        <?php endif; ?>
+        <?php }; ?>
     </script>
     <!-- Toast Container -->
     <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100">

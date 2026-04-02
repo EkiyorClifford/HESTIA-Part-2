@@ -26,7 +26,12 @@ class Wishlist extends Db {
             return ['error' => $e->getMessage()];
         }
     }
-    
+
+    public function is_property_saved($user_id, $property_id) {
+        $stmt = $this->dbconn->prepare("SELECT 1 FROM wishlist WHERE user_id = ? AND property_id = ? LIMIT 1");
+        $stmt->execute([$user_id, $property_id]);
+        return $stmt->fetchColumn() !== false;
+    }
 
    public function get_user_wishlist($user_id) {
         $sql = "SELECT p.*, l.lga_name, s.state_name,

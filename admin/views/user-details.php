@@ -177,11 +177,11 @@ $page_subheading = 'Search, review, and moderate landlord and tenant accounts.';
                     </button>
                 </div>
                 <div class="col-md-2">
-                    <?php if(!empty($_GET['search'])): ?>
+                    <?php if(!empty($_GET['search'])){ ?>
                         <a href="user-details.php?filter=<?= $filter ?>&search=" class="btn btn-outline-secondary py-2">
                             Clear Search
                         </a>
-                    <?php endif; ?>
+                    <?php }; ?>
                 </div>
             </div>
         </form>

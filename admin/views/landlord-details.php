@@ -19,7 +19,7 @@ if ($landlord_id <= 0) {
 }
 
 $landlord = $userObj->get_user_by('id', $landlord_id);
-if (!$landlord || strtolower((string) ($landlord['role_'] ?? '')) !== 'landlord') {
+if (!$landlord || strtolower( ($landlord['role_'] ?? '')) !== 'landlord') {
     header("Location: user-details.php");
     exit();
 }
@@ -32,7 +32,7 @@ $page_heading = 'Landlord Details';
 $page_subheading = 'Review landlord profile information and the properties currently listed on the platform.';
 
 $full_name = trim(($landlord['first_name'] ?? '') . ' ' . ($landlord['last_name'] ?? ''));
-$landlord_status = strtolower((string) ($landlord['is_active'] ?? 'no')) === 'yes' ? 'Active' : 'Inactive';
+$landlord_status = strtolower(($landlord['is_active'] ?? 'no')) === 'yes' ? 'Active' : 'Inactive';
 $status_badge_class = $landlord_status === 'Active' ? 'badge-active' : 'badge-inactive';
 ?>
 
@@ -125,19 +125,19 @@ $status_badge_class = $landlord_status === 'Active' ? 'badge-active' : 'badge-in
                             <div class="d-flex flex-column flex-lg-row justify-content-between gap-4 align-items-lg-center">
                                 <div class="d-flex align-items-center gap-3">
                                     <div class="profile-avatar">
-                                        <?= htmlspecialchars(strtoupper(substr((string) ($landlord['first_name'] ?? ''), 0, 1) . substr((string) ($landlord['last_name'] ?? ''), 0, 1))) ?>
+                                        <?= htmlspecialchars(strtoupper(substr($landlord['first_name'] ?? '', 0, 1) . substr($landlord['last_name'] ?? '', 0, 1))) ?>
                                     </div>
                                     <div>
                                         <div class="text-uppercase small fw-semibold text-secondary mb-1">Landlord Profile</div>
                                         <h2 class="mb-1"><?= htmlspecialchars($full_name !== '' ? $full_name : 'Unnamed landlord') ?></h2>
                                         <div class="d-flex flex-wrap gap-2 align-items-center">
                                             <span class="badge <?= $status_badge_class ?>"><?= htmlspecialchars($landlord_status) ?></span>
-                                            <span class="text-secondary small">Joined <?= htmlspecialchars(date('F j, Y', strtotime((string) ($landlord['created_at'] ?? 'now')))) ?></span>
+                                            <span class="text-secondary small">Joined <?= htmlspecialchars(date('F j, Y', strtotime($landlord['created_at'] ?? 'now'))) ?></span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <a href="/Hestia-PHP/admin/views/user-details.php?search=<?= urlencode((string) ($landlord['email'] ?? '')) ?>&filter=landlord" class="btn btn-outline-dark rounded-pill px-4">
+                                <a href="/Hestia-PHP/admin/views/user-details.php?search=<?= urlencode($landlord['email'] ?? '') ?>&filter=landlord" class="btn btn-outline-dark rounded-pill px-4">
                                     <i class="fas fa-users me-2"></i>Return to List
                                 </a>
                             </div>
@@ -146,19 +146,19 @@ $status_badge_class = $landlord_status === 'Active' ? 'badge-active' : 'badge-in
                                 <div class="col-md-4">
                                     <div class="detail-chip">
                                         <span class="label">Email</span>
-                                        <span class="value"><?= htmlspecialchars((string) ($landlord['email'] ?? 'N/A')) ?></span>
+                                        <span class="value"><?= htmlspecialchars($landlord['email'] ?? 'N/A') ?></span>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="detail-chip">
                                         <span class="label">Phone</span>
-                                        <span class="value"><?= htmlspecialchars((string) (($landlord['p_number'] ?? '') !== '' ? $landlord['p_number'] : 'N/A')) ?></span>
+                                        <span class="value"><?= htmlspecialchars($landlord['p_number'] ?? 'N/A') ?></span>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="detail-chip">
                                         <span class="label">Role</span>
-                                        <span class="value"><?= htmlspecialchars(ucfirst((string) ($landlord['role_'] ?? 'landlord'))) ?></span>
+                                        <span class="value"><?= htmlspecialchars(ucfirst($landlord['role_'] ?? 'landlord')) ?></span>
                                     </div>
                                 </div>
                             </div>
@@ -227,8 +227,8 @@ $status_badge_class = $landlord_status === 'Active' ? 'badge-active' : 'badge-in
                                     <?php if (!empty($properties)) { ?>
                                         <?php foreach ($properties as $property) { ?>
                                             <?php
-                                            $approval_status = strtolower(trim((string) ($property['approval_status'] ?? 'pending')));
-                                            $property_status = strtolower(trim((string) ($property['status'] ?? 'inactive')));
+                                            $approval_status = strtolower(trim( ($property['approval_status'] ?? 'pending')));
+                                            $property_status = strtolower(trim( ($property['status'] ?? 'inactive')));
 
                                             $approval_badge = 'badge-pending';
                                             if ($approval_status === 'approved') {
@@ -246,12 +246,12 @@ $status_badge_class = $landlord_status === 'Active' ? 'badge-active' : 'badge-in
                                             ?>
                                             <tr>
                                                 <td>
-                                                    <div class="fw-semibold"><?= htmlspecialchars((string) ($property['title'] ?? 'Untitled property')) ?></div>
-                                                    <div class="small text-secondary"><?= htmlspecialchars((string) ($property['prop_address'] ?? 'No address provided')) ?></div>
+                                                    <div class="fw-semibold"><?= htmlspecialchars($property['title'] ?? 'Untitled property') ?></div>
+                                                    <div class="small text-secondary"><?= htmlspecialchars($property['prop_address'] ?? 'No address provided') ?></div>
                                                 </td>
-                                                <td><?= htmlspecialchars((string) ($property['type_name'] ?? 'N/A')) ?></td>
-                                                <td><?= htmlspecialchars(trim(((string) ($property['lga_name'] ?? '')) . ', ' . ((string) ($property['state_name'] ?? '')) , ' ,')) ?: 'N/A' ?></td>
-                                                <td>&#8358;<?= number_format((float) ($property['amount'] ?? 0)) ?></td>
+                                                <td><?= htmlspecialchars($property['type_name'] ?? 'N/A') ?></td>
+                                                <td><?= htmlspecialchars(trim($property['lga_name'] . ', ' . $property['state_name'] , ' ,') ?: 'N/A') ?></td>
+                                                <td>&#8358;<?= number_format( ($property['amount'] ?? 0)) ?></td>
                                                 <td>
                                                     <span class="badge <?= $approval_badge ?>"><?= htmlspecialchars(ucfirst($approval_status)) ?></span>
                                                 </td>
@@ -260,11 +260,11 @@ $status_badge_class = $landlord_status === 'Active' ? 'badge-active' : 'badge-in
                                                 </td>
                                                 <td>
                                                     <?php if ($approval_status === 'pending') { ?>
-                                                        <a href="/Hestia-PHP/admin/property-review.php?id=<?= (int) $property['property_id'] ?>" class="view-link">
+                                                        <a href="/Hestia-PHP/admin/property-review.php?id=<?= $property['property_id'] ?>" class="view-link">
                                                             <i class="fas fa-eye me-1"></i> Review
                                                         </a>
                                                     <?php } else { ?>
-                                                        <a href="/Hestia-PHP/views/property-details.php?property_id=<?= (int) $property['property_id'] ?>" class="view-link" target="_blank" rel="noopener noreferrer">
+                                                        <a href="/Hestia-PHP/views/property-details.php?property_id=<?= $property['property_id'] ?>" class="view-link" target="_blank" rel="noopener noreferrer">
                                                             <i class="fas fa-eye me-1"></i> View
                                                         </a>
                                                     <?php } ?>

@@ -127,7 +127,7 @@ $all_props = $propObj->get_properties($filters);
                             
                             <!-- WISHLIST HEART ICON -->
                             <div class="position-absolute top-0 end-0 p-2" style="z-index: 10;">
-                                <?php if (isset($_SESSION['user_id'])): ?>
+                                <?php if (isset($_SESSION['user_id'])){ ?>
                                     <?php 
                                         $is_saved = in_array((int) $p['property_id'], $saved_ids, true);
                                     ?>
@@ -136,12 +136,12 @@ $all_props = $propObj->get_properties($filters);
                                     title="<?php echo $is_saved ? 'Remove from Wishlist' : 'Add to Wishlist'; ?>">
                                         <i class="<?php echo $is_saved ? 'fas fa-heart text-danger' : 'far fa-heart'; ?>"></i>
                                     </a>
-                                <?php else: ?>
+                                <?php }else{ ?>
                                     <!-- If not logged in, clicking the heart takes them to login as tenant only o -->
                                     <a href="register.php" class="btn btn-white btn-sm rounded-circle shadow-sm bg-white">
                                         <i class="far fa-heart"></i>
                                     </a>
-                                <?php endif; ?>
+                                <?php }; ?>
                             </div>
 
                             <!-- Listing Type Badge -->

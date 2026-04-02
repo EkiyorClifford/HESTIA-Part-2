@@ -3,24 +3,21 @@ session_start();
 ini_set('display_errors', '0');
 require_once "../../classes/Property.php";
 require_once "../../classes/User.php";
+require_once "../../classes/Common.php";
 $propertyObj = new Property;
 $userObj = new User;
 header('Content-Type: application/json');
 
-function toggle_json_response($payload) {
-    echo json_encode($payload);
-    exit;
-}
 
 // 1. Check if the user is even logged in
 if (!isset($_SESSION['admin_id'])) {
-    toggle_json_response(['success' => false, 'message' => 'Unauthorized: Please log in.']);
+    Common::toggle_json_response(['success' => false, 'message' => 'Unauthorized: Please log in.']);
 }
 
 // 2. Check if the user is an Admin
 $allowed_roles = ['moderator', 'super_admin'];
 if (!isset($_SESSION['admin_role']) || !in_array($_SESSION['admin_role'], $allowed_roles)) {
-    toggle_json_response(['success' => false, 'message' => 'Access Denied: Only moderators and superadmins can toggle status.']);
+    Common::toggle_json_response(['success' => false, 'message' => 'Access Denied: Only moderators and superadmins can toggle status.']);
 }
 
 try {
@@ -29,7 +26,7 @@ try {
         $type = $_POST['type'];
         
         if($id <= 0){
-            toggle_json_response(['success' => false, 'error' => 'Invalid ID']);
+            Common::toggle_json_response(['success' => false, 'error' => 'Invalid ID']);
         }
         
         if ($type === 'property') {

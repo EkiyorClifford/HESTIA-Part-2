@@ -34,9 +34,35 @@ if (isset($_POST['updatebtn'])) {
     $furnished = $_POST['furnished'] ?? '';
     $address = Common::cleandata($_POST['prop_address']);
     $status = $_POST['status'] ?? 'available';
+    $amenity_ids = isset($_POST['amenities']) && is_array($_POST['amenities']) ? array_map('intval', $_POST['amenities']) : [];
 
     // 3. Validation
     $errors = [];
+
+    // Uploaded images validation
+    $uploaded_images = isset($_FILES['images']) && !empty($_FILES['images']['name'][0]);
+    $max_files = 6;
+    $max_size = 5 * 1024 * 1024;
+    $allowed_types = ['image/jpeg','image/png','image/webp'];
+
+    if ($uploaded_images) {
+        $files = $_FILES['images'];
+        $file_count = count($files['name']);
+
+        if ($file_count > $max_files) {
+            $errors[] = "Maximum $max_files images allowed.";
+        }
+
+        for ($i = 0; $i < $file_count; $i++) {
+            if ($files['error'][$i] !== UPLOAD_ERR_OK) {
+                $errors[] = "Error uploading image: " . $files['name'][$i];
+            } elseif ($files['size'][$i] > $max_size) {
+                $errors[] = "Image " . $files['name'][$i] . " is too large (Max 5MB).";
+            } elseif (!in_array($files['type'][$i], $allowed_types, true)) {
+                $errors[] = "Invalid format for " . $files['name'][$i];
+            }
+        }
+    }
 
     if (empty($title) || empty($description) || empty($address) || empty($amount)) {
         $errors[] = "All required fields must be filled.";
@@ -97,6 +123,10 @@ if (isset($_POST['updatebtn'])) {
     $result = $property->save_property($data, $prop_id);
 
     if ($result) {
+        $property->sync_property_amenities($prop_id, $amenity_ids);
+        if ($uploaded_images) {
+            $property->save_images($prop_id, $_FILES['images']);
+        }
         $_SESSION['feedback'] = $was_rejected
             ? "Property updated and resubmitted for admin review."
             : "Property updated successfully!";

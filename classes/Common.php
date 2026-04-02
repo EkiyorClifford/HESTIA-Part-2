@@ -17,8 +17,48 @@ public static function is_email($email){
     }
 }
 
+public static function toggle_json_response($payload) {
+    header('Content-Type: application/json');
+    echo json_encode($payload);
+    exit;
+}
 
+public static function landlord_property_redirect($fallback = '../landlord/landlord-profile.php#properties-section') {
+    $redirect_to = trim($_POST['redirect_to'] ?? '');
 
+    if ($redirect_to === '../landlord/my-properties.php') {
+        return $redirect_to;
+    }
+
+    if (preg_match('/^\.\.\/landlord\/landlord-profile\.php(?:\?property_page=\d+)?#properties-section$/', $redirect_to)) {
+        return $redirect_to;
+    }
+
+    return $fallback;
+}
+
+public static function redirect_to_property_details($propertyId) {
+    $location = '../views/property-details.php';
+    if ($propertyId > 0) {
+        $location .= '?property_id=' . $propertyId;
+    }
+    header('Location: ' . $location);
+    exit;
+}
+
+public static function tenant_status_badge($status) {
+    $status = strtolower(trim($status));
+
+    if ($status === 'approved' || $status === 'accepted') {
+        return 'badge-available';
+    }
+
+    if ($status === 'pending') {
+        return 'badge-rented';
+    }
+
+    return 'badge-inactive';
+}
 
 }
 //different filter_var
