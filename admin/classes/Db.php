@@ -1,5 +1,7 @@
 <?php
-require_once __DIR__ . "/config.php";
+$localConfig = __DIR__ . "/config.php";
+$exampleConfig = __DIR__ . "/config.example.php";
+require_once file_exists($localConfig) ? $localConfig : $exampleConfig;
 class Db{
     private $dbhost = DBHOST;
     private $dbname = DBNAME;

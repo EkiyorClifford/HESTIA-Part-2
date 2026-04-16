@@ -3,3 +3,5 @@
 *.log
 *.zip
 .env
+classes/config.php
+admin/classes/config.php
