@@ -22,8 +22,8 @@ if (!$details) {
     exit();
 }
 
-$user_id = $_SESSION['user_id'] ?? 0;
-$is_owner = $user_id > 0 && $details['user_id'] === $user_id;
+$user_id = (int) ($_SESSION['user_id'] ?? 0);
+$is_owner = $user_id > 0 && (int) $details['user_id'] === $user_id;
 $is_admin_viewer = !empty($_SESSION['is_admin']) && $_SESSION['is_admin'] === true;
 $is_publicly_visible = ($details['approval_status'] ?? '') === 'approved' && ($details['status'] ?? '') === 'available';
 
@@ -54,7 +54,7 @@ $inspection_check = false;
 
 $inspect = new Inspection();
 $can = false;
-if ($user_id !== null) {
+if ($user_id > 0) {
     $can = $inspect->is_landlord_own_property($id, $user_id);
     if($can) {
         $can_request = false;
@@ -318,7 +318,12 @@ unset($_SESSION['success'], $_SESSION['feedback'], $_SESSION['error']);
                     </div>
 
                     <!-- Inspection/Request Action -->
-                    <?php if(!$is_publicly_visible) { ?>
+                    <?php if ($is_admin_viewer) { ?>
+                        <div class="alert alert-secondary small mb-3">
+                            <i class="fas fa-user-shield me-2"></i>
+                            Administrator accounts cannot request viewings. Use a tenant or landlord account to test this flow.
+                        </div>
+                    <?php } elseif(!$is_publicly_visible) { ?>
                         <div class="alert alert-warning small">This property cannot receive inspection requests until it is approved and available.</div>
                     <?php } elseif(isset($_SESSION['user_id']) && $can_request === true && $inspection_check === false) { ?>
                         <span class="">We recommend booking a viewing before applying.</span>
@@ -332,7 +337,9 @@ unset($_SESSION['success'], $_SESSION['feedback'], $_SESSION['error']);
                                 <i class="fas fa-eye me-2"></i> Request Viewing
                             </button>
                         </form>
-                    <?php } elseif(!isset($_SESSION['user_id']) || $can_request === false) { ?>
+                    <?php } elseif(!isset($_SESSION['user_id'])) { ?>
+                        <div class="alert alert-warning small">Please login to book inspections</div>
+                    <?php } elseif($can_request === false) { ?>
                         <div class="alert alert-warning small">You can't inspect your own property</div>
                     <?php } elseif($inspection_check === true) { ?>
                         <div class="alert alert-warning small">You have already requested an inspection for this property</div>
@@ -341,7 +348,12 @@ unset($_SESSION['success'], $_SESSION['feedback'], $_SESSION['error']);
                     <?php } ?>
 
                     <!-- Application Form -->
-                    <?php if(!$is_publicly_visible) { ?>
+                    <?php if ($is_admin_viewer) { ?>
+                        <div class="alert alert-secondary small mb-3">
+                            <i class="fas fa-user-shield me-2"></i>
+                            Administrator accounts cannot submit rental applications.
+                        </div>
+                    <?php } elseif(!$is_publicly_visible) { ?>
                         <div class="alert alert-warning small">
                             <i class="fas fa-info-circle me-2"></i>
                             This property is not accepting applications until it is approved and available.
@@ -363,7 +375,12 @@ unset($_SESSION['success'], $_SESSION['feedback'], $_SESSION['error']);
                             <i class="fas fa-file-alt me-2"></i>APPLY NOW
                         </button>
                     </form>
-                <?php } elseif(!isset($_SESSION['user_id']) || $can_request === false) { ?>
+                <?php } elseif(!isset($_SESSION['user_id'])) { ?>
+                    <div class="alert alert-warning small">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Please login to apply for properties.
+                    </div>
+                <?php } elseif($can_request === false) { ?>
                     <div class="alert alert-warning small">You can't apply to your own property</div>
                 <?php } else { ?>
                     <div class="alert alert-warning small">
@@ -373,10 +390,17 @@ unset($_SESSION['success'], $_SESSION['feedback'], $_SESSION['error']);
                 <?php } ?>
                     
                     <!-- action buttons -->
+                    <?php if ($is_admin_viewer) { ?>
+                    <button type="button" class="btn btn-outline-secondary w-100 mb-2" disabled title="Not available for administrators">
+                        <i class="far fa-heart me-2"></i>
+                        Wishlist unavailable for admin
+                    </button>
+                    <?php } else { ?>
                     <a href="../process/process_wishlist.php?prop_id=<?php echo $id; ?>" class="btn btn-outline-primary w-100 mb-2" style="border-color: #C44536; color: #C44536;">
                         <i class="<?php echo $is_saved ? 'fas fa-heart me-2 text-danger' : 'far fa-heart me-2'; ?>"></i>
                         <?php echo $is_saved ? 'Saved' : 'Save to Wishlist'; ?>
                     </a>
+                    <?php } ?>
                     <button class="btn btn-outline-primary w-100 mb-2" style="border-color: #C44536; color: #C44536;">
                         <i class="fas fa-share-alt me-2"></i> Share Property
                     </button>

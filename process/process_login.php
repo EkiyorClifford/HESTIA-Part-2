@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once "../classes/User.php";
+require_once __DIR__ . '/../classes/User.php';
 
 $user = new User();
 
@@ -17,6 +17,8 @@ if (isset($_POST['loginbtn'])) {
     $userId = $user->login($email, $password);
 
     if ($userId) {
+        session_regenerate_id(true);
+        session_unset();
         $_SESSION['user_id'] = $userId;
         $_SESSION['user_role'] = $user->getUserRole($userId);
         $_SESSION['user_email'] = $email;

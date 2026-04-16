@@ -1,8 +1,8 @@
 <?php
 session_start();
-require_once '../classes/Applications.php';
-require_once '../classes/Common.php';
-require_once '../userguard.php';
+require_once __DIR__ . '/../classes/Applications.php';
+require_once __DIR__ . '/../classes/Common.php';
+require_once __DIR__ . '/../userguard.php';
 
 if($_SERVER['REQUEST_METHOD'] !== 'POST'  || !isset($_POST['application_btn'])){
     Common::redirect_to_property_details(0);
@@ -11,6 +11,11 @@ if($_SERVER['REQUEST_METHOD'] !== 'POST'  || !isset($_POST['application_btn'])){
 $property_id = $_POST['property_id'];
 $user_id = $_SESSION['user_id'];
 $message = htmlspecialchars(trim($_POST['message'] ?? ''), ENT_QUOTES, 'UTF-8');
+
+if (!empty($_SESSION['is_admin']) && $_SESSION['is_admin'] === true) {
+    $_SESSION['error'] = "Administrator accounts cannot submit rental applications.";
+    Common::redirect_to_property_details($property_id);
+}
 
 if($property_id <= 0 || empty($message)){
     $_SESSION['error'] = "Please enter a message before applying.";

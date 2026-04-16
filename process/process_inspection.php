@@ -1,9 +1,9 @@
 <?php
 session_start();
-require_once '../classes/Inspection.php';
-require_once '../classes/Common.php';
+require_once __DIR__ . '/../classes/Inspection.php';
+require_once __DIR__ . '/../classes/Common.php';
 //require userguard
-require_once '../userguard.php';
+require_once __DIR__ . '/../userguard.php';
 
 $insp = new Inspection();
 
@@ -15,6 +15,11 @@ $user_id = $_SESSION['user_id'];
 if (isset($_POST['request_btn'])) {
     $prop_id = $_POST['property_id'];
     $date = $_POST['inspection_date'];
+
+    if (!empty($_SESSION['is_admin']) && $_SESSION['is_admin'] === true) {
+        $_SESSION['error'] = "Administrator accounts cannot request viewings.";
+        Common::redirect_to_property_details($prop_id);
+    }
 
     // Check if user is trying to inspect their own property(thieves)
     if ($insp->is_landlord_own_property($prop_id, $user_id)) {
