@@ -1,8 +1,8 @@
 <?php
 session_start();
-require_once "../userguard.php";
-require_once "../classes/Common.php";
-require_once "../classes/Property.php";
+require_once __DIR__ . '/../userguard.php';
+require_once __DIR__ . '/../classes/Common.php';
+require_once __DIR__ . '/../classes/Property.php';
 
 
 

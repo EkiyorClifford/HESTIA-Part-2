@@ -1,7 +1,7 @@
 <?php
 // Process admin login
 session_start();
-require_once "../classes/Admin.php";
+require_once __DIR__ . "/../classes/Admin.php";
 $admin = new Admin;
 if(isset($_POST['loginbtn'])){
     $email = htmlspecialchars($_POST['email']);

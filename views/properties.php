@@ -1,9 +1,9 @@
 <?php
 session_start();
-require_once '../classes/Property.php';
-require_once "../classes/State.php";
-require_once "../classes/PropertyTracker.php";
-require_once "../classes/Wishlist.php";
+require_once __DIR__ . '/../classes/Property.php';
+require_once __DIR__ . '/../classes/State.php';
+require_once __DIR__ . '/../classes/PropertyTracker.php';
+require_once __DIR__ . '/../classes/Wishlist.php';
 
 $propObj = new Property();
 $stateObj = new State();
@@ -43,7 +43,7 @@ $all_props = $propObj->get_properties($filters);
     <link rel="stylesheet" href="../assets/global.css">
 </head>
 <body>
-    <?php include '../partials/nav.php'; ?>
+    <?php include __DIR__ . '/../partials/nav.php'; ?>
 
     <main class="container my-5">
         <h1 class="text-center mb-4" style="color: #C44536;">Find Your Next Home</h1>
@@ -123,11 +123,15 @@ $all_props = $propObj->get_properties($filters);
             <?php if (!empty($all_props)){ ?>
                 <?php foreach ($all_props as $p){ ?>
                     <div class="col-md-4">
-                        <div class="card h-100 position-relative">
+                        <div class="card h-100 position-relative hestia-property-card">
                             
                             <!-- WISHLIST HEART ICON -->
                             <div class="position-absolute top-0 end-0 p-2" style="z-index: 10;">
-                                <?php if (isset($_SESSION['user_id'])){ ?>
+                                <?php if (!empty($_SESSION['is_admin']) && $_SESSION['is_admin'] === true){ ?>
+                                    <span class="btn btn-white btn-sm rounded-circle shadow-sm bg-white" style="cursor: not-allowed; opacity: 0.9;" title="Administrators cannot save properties to the wishlist" role="img" aria-label="Wishlist not available for administrators">
+                                        <i class="far fa-heart text-secondary"></i>
+                                    </span>
+                                <?php } elseif (isset($_SESSION['user_id'])){ ?>
                                     <?php 
                                         $is_saved = in_array((int) $p['property_id'], $saved_ids, true);
                                     ?>
@@ -213,6 +217,7 @@ $all_props = $propObj->get_properties($filters);
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <?php include __DIR__ . '/../partials/hestia-easter-scripts.php'; ?>
     <script>
     // Track views when user clicks on property details
     document.addEventListener('DOMContentLoaded', function() {

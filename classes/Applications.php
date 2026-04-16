@@ -1,6 +1,6 @@
 <?php
-require_once "Db.php";
-require_once "PropertyTracker.php";
+require_once __DIR__ . "/Db.php";
+require_once __DIR__ . "/PropertyTracker.php";
 
 class Applications extends Db{
 

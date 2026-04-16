@@ -1,9 +1,9 @@
 <?php
 session_start();
-require_once '../classes/Property.php';
-require_once '../classes/Inspection.php';
-require_once '../classes/Applications.php';
-require_once '../classes/Common.php';
+require_once __DIR__ . '/../classes/Property.php';
+require_once __DIR__ . '/../classes/Inspection.php';
+require_once __DIR__ . '/../classes/Applications.php';
+require_once __DIR__ . '/../classes/Common.php';
 
 $user_id = $_SESSION['user_id'] ?? null;
 $user_role = $_SESSION['user_role'] ?? null;

@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once '../classes/Property.php';
+require_once __DIR__ . '/../classes/Property.php';
 
 $propertyObj = new Property();
 $featured_properties = $propertyObj->get_featured_properties(3);
@@ -16,17 +16,25 @@ $featured_properties = $propertyObj->get_featured_properties(3);
     <link rel="stylesheet" href="../assets/index.css">
     <link rel="stylesheet" href="../assets/global.css">
 </head>
-<body>
-    <?php include '../partials/nav.php'; ?>
+<body data-hestia-page="home">
+    <?php include __DIR__ . '/../partials/nav.php'; ?>
 
     <main>
-        <section class="hero-section">
+        <section class="hero-section" id="hestiaHero">
             <div class="container">
-                <h1>Rent Verified Homes, Directly</h1>
-                <p class="lead">
-                    Browse verified properties and deal directly with landlords, no agents, no hidden fees.
-                </p>
-                <a href="properties.php" class="btn btn-primary btn-lg me-3 mt-4">Browse Properties</a>
+                <div class="hestia-hero-default">
+                    <h1>Rent Verified Homes, Directly</h1>
+                    <p class="lead">
+                        Browse verified properties and deal directly with landlords, no agents, no hidden fees.
+                    </p>
+                    <p class="small text-white-50 mt-3 mb-0 d-none" id="hestiaNightOwlLine">Still browsing at this hour? We respect the dedication.</p>
+                    <a href="properties.php" class="btn btn-primary btn-lg me-3 mt-4">Browse Properties</a>
+                </div>
+                <div class="hestia-hero-olympus d-none">
+                    <h1>Welcome to Mount Olympus</h1>
+                    <p class="lead">The hearth approves this home search.</p>
+                    <a href="properties.php" class="btn btn-primary btn-lg me-3 mt-4">Browse Properties</a>
+                </div>
             </div>
         </section>
 
@@ -104,7 +112,7 @@ $featured_properties = $propertyObj->get_featured_properties(3);
                         $tag = !empty($property['listing_type']) ? 'For ' . ucfirst($property['listing_type']) : 'Featured';
                         ?>
                         <div class="col-md-4 mb-4">
-                            <div class="card h-100">
+                            <div class="card h-100 hestia-property-card position-relative">
                                 <img src="<?= htmlspecialchars($thumbnail) ?>" class="card-img-top" alt="<?= htmlspecialchars($property['title'] ?? 'Featured property') ?>">
                                 <div class="card-body d-flex flex-column">
                                     <h5 class="card-title"><?= htmlspecialchars($property['title'] ?? 'Untitled property') ?></h5>
@@ -143,7 +151,8 @@ $featured_properties = $propertyObj->get_featured_properties(3);
         </div>
     </section>
 
-    <?php include '../partials/footer.php'; ?>
+    <?php include __DIR__ . '/../partials/footer.php'; ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <?php include __DIR__ . '/../partials/hestia-easter-scripts.php'; ?>
 </body>
 </html>

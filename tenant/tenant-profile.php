@@ -1,11 +1,11 @@
 <?php
 session_start();
-require_once '../userguard.php';
-require_once '../classes/User.php';
-require_once '../classes/Wishlist.php';
-require_once '../classes/Inspection.php';
-require_once '../classes/Applications.php';
-require_once '../classes/Common.php';
+require_once __DIR__ . '/../userguard.php';
+require_once __DIR__ . '/../classes/User.php';
+require_once __DIR__ . '/../classes/Wishlist.php';
+require_once __DIR__ . '/../classes/Inspection.php';
+require_once __DIR__ . '/../classes/Applications.php';
+require_once __DIR__ . '/../classes/Common.php';
 
 $user = new User();
 $wishlistObj = new Wishlist();
@@ -47,8 +47,8 @@ $common = new Common();
     <link rel="stylesheet" href="../assets/tenant-profile.css">
     <link rel="stylesheet" href="../assets/global.css">
 </head>
-<body class="tenant-dashboard-page">
-    <?php include '../partials/nav.php'; ?>
+<body class="tenant-dashboard-page" data-hestia-dashboard="tenant">
+    <?php include __DIR__ . '/../partials/nav.php'; ?>
 
     <button class="btn btn-primary mobile-menu-btn d-lg-none position-fixed bottom-0 end-0 m-3 rounded-pill shadow" type="button" data-bs-toggle="offcanvas" data-bs-target="#tenantSidebar" style="z-index: 1040;">
         <i class="fas fa-bars"></i> Menu
@@ -59,20 +59,21 @@ $common = new Common();
             <h5 class="offcanvas-title">Hestia<span>.</span></h5>
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
         </div>
-        <?php $sidebar_mode = 'mobile'; include 'partials/sidebar.php'; ?>
+        <?php $sidebar_mode = 'mobile'; include __DIR__ . '/partials/sidebar.php'; ?>
     </div>
 
     <div class="dashboard-container tenant-dashboard">
-        <?php $sidebar_mode = 'desktop'; include 'partials/sidebar.php'; ?>
+        <?php $sidebar_mode = 'desktop'; include __DIR__ . '/partials/sidebar.php'; ?>
 
         <main class="main-content">
-            <?php include '../partials/messages.php'; ?>
+            <?php include __DIR__ . '/../partials/messages.php'; ?>
 
             <section class="welcome-section tenant-hero">
                 <div class="welcome-copy">
                     <p class="eyebrow">Tenant Dashboard</p>
                     <h1>Welcome back, <?= htmlspecialchars($usr['first_name'] ?? 'Tenant') ?></h1>
                     <p>Track saved homes, keep an eye on applications, and stay on top of upcoming inspections from one calm workspace.</p>
+                    <p class="small text-muted mt-2 mb-0 d-none" id="hestiaNightOwlLine">Still browsing at this hour? We respect the dedication.</p>
                 </div>
                 <div class="summary-panel">
                     <div class="summary-item">
@@ -249,7 +250,7 @@ $common = new Common();
                         <div class="section-header">
                             <h2 class="section-title">Reviews</h2>
                         </div>
-                        <div class="tenant-reviews-card">
+                        <div class="tenant-reviews-card" id="hestiaReviewsTeaser" role="button" tabindex="0" title="Try clicking three times">
                             <div class="tenant-reviews-icon"><i class="fas fa-pen-fancy"></i></div>
                             <h3>Reviews Coming Soon</h3>
                             <p>When post-visit reviews land, this panel will become your place for notes, ratings, and follow-up reflections.</p>
@@ -265,6 +266,7 @@ $common = new Common();
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <?php include __DIR__ . '/../partials/hestia-easter-scripts.php'; ?>
     <script>
         document.querySelectorAll('.offcanvas .nav-link').forEach((link) => {
             link.addEventListener('click', () => {

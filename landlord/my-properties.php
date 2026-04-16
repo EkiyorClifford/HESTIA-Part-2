@@ -1,8 +1,9 @@
 <?php
 session_start();
-require_once '../userguard.php';
-require_once '../classes/Property.php';
-require_once '../classes/User.php';
+require_once __DIR__ . '/../userguard.php';
+require_once __DIR__ . '/../classes/Property.php';
+require_once __DIR__ . '/../classes/User.php';
+require_once __DIR__ . '/../classes/Landlord.php';
 
 if (($_SESSION['user_role'] ?? '') !== 'landlord') {
     header('Location: ../tenant/tenant-profile.php');
@@ -11,6 +12,7 @@ if (($_SESSION['user_role'] ?? '') !== 'landlord') {
 
 $propObj = new Property();
 $userObj = new User();
+$Landlord = new Landlord();
 $user_id = $_SESSION['user_id'] ?? 0;
 $userdeets = $userObj->get_user_by('id', $user_id);
 $active_landlord_page = 'properties';
@@ -22,7 +24,7 @@ $property_pages = max(1, ceil($property_total / $properties_per_page));
 $property_page = min($property_page, $property_pages);
 $property_offset = ($property_page - 1) * $properties_per_page;
 $my_properties = $propObj->get_landlord_properties($user_id, $properties_per_page, $property_offset);
-$Landlord = new Landlord();
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -37,7 +39,7 @@ $Landlord = new Landlord();
     <link rel="stylesheet" href="../assets/global.css">
 </head>
 <body>
-    <?php include 'partials/navbar.php'; ?>
+    <?php include __DIR__ . '/partials/navbar.php'; ?>
 
     <button class="btn btn-primary mobile-menu-btn d-lg-none position-fixed bottom-0 end-0 m-3 rounded-pill shadow" type="button" data-bs-toggle="offcanvas" data-bs-target="#landlordSidebar" style="z-index: 1040;">
         <i class="fas fa-bars"></i> Menu
@@ -48,20 +50,20 @@ $Landlord = new Landlord();
             <h5 class="offcanvas-title">Hestia<span>.</span></h5>
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
         </div>
-        <?php $sidebar_mode = 'mobile'; include 'partials/sidebar.php'; ?>
+        <?php $sidebar_mode = 'mobile'; include __DIR__ . '/partials/sidebar.php'; ?>
     </div>
 
     <div class="dashboard-container">
-        <?php $sidebar_mode = 'desktop'; include 'partials/sidebar.php'; ?>
+        <?php $sidebar_mode = 'desktop'; include __DIR__ . '/partials/sidebar.php'; ?>
 
         <main class="main-content">
-            <?php include '../partials/messages.php'; ?>
+            <?php include __DIR__ . '/../partials/messages.php'; ?>
 
             <section class="welcome-section">
                 <div class="welcome-copy">
                     <p class="eyebrow">Portfolio</p>
                     <h1><?= htmlspecialchars($userdeets['first_name'] ?? 'Landlord') ?>, here is your property desk</h1>
-                    <p>Everything you own is ranked by latest activity so recently approved, edited, or moderated properties stay at the top.</p>
+                    <p>Everything you own is listed with the most recently added properties first.</p>
                 </div>
                 <div class="summary-panel">
                     <div class="summary-item">
@@ -85,7 +87,7 @@ $Landlord = new Landlord();
                 </div>
 
                 <?php if (!empty($my_properties)) { ?>
-                    <div class="table-note mb-3">Sorted by most recent property activity.</div>
+                    <div class="table-note mb-3">Sorted by date added (newest first).</div>
                     <div class="table-responsive">
                         <table class="table landlord-table">
                             <thead>
@@ -168,6 +170,7 @@ $Landlord = new Landlord();
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <?php include __DIR__ . '/../partials/hestia-easter-scripts.php'; ?>
     <script>
         document.querySelectorAll('.offcanvas .nav-link').forEach((link) => {
             link.addEventListener('click', () => {

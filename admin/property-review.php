@@ -6,7 +6,7 @@ if (!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true || empty($_S
     exit();
 }
 
-require_once '../classes/Property.php';
+require_once __DIR__ . '/classes/Property.php';
 
 $property_id = $_GET['id'] ?? 0;
 $propertyObj = new Property();
@@ -32,15 +32,15 @@ $amenities = $propertyObj->get_property_amenities($property_id);
     <link rel="stylesheet" href="assets/admin.css">
 </head>
 <body>
-    <?php include 'partials/navbar.php'; ?>
+    <?php include __DIR__ . '/partials/navbar.php'; ?>
 
     <main class="admin-page">
         <div class="container">
             <div class="admin-shell">
-                <?php include 'partials/sidebar.php'; ?>
+                <?php include __DIR__ . '/partials/sidebar.php'; ?>
 
                 <div class="admin-content">
-                    <?php include '../partials/messages.php'; ?>
+                    <?php include __DIR__ . '/../partials/messages.php'; ?>
 
                     <div class="text-start mb-4">
                         <a href="views/admin-dashboard.php" class="view-link">

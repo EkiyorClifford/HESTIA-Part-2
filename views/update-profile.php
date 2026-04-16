@@ -1,7 +1,7 @@
 <?php
 session_start();
-require_once '../userguard.php';
-require_once '../classes/User.php';
+require_once __DIR__ . '/../userguard.php';
+require_once __DIR__ . '/../classes/User.php';
 
 $userObj = new User();
 $user_id = $_SESSION['user_id'] ?? 0;
@@ -33,11 +33,11 @@ $is_tenant_profile = ($_SESSION['user_role'] ?? '') === 'tenant';
     <link rel="stylesheet" href="../assets/global.css">
 </head>
 <body class="<?= $is_tenant_profile ? 'tenant-dashboard-page tenant-profile-editor-page' : '' ?>">
-    <?php include '../partials/nav.php'; ?>
+    <?php include __DIR__ . '/../partials/nav.php'; ?>
 
     <main class="profile-editor-page">
         <div class="container">
-            <?php include '../partials/messages.php'; ?>
+            <?php include __DIR__ . '/../partials/messages.php'; ?>
 
             <div class="profile-editor-shell">
                 <section class="profile-intro-card">
@@ -111,5 +111,6 @@ $is_tenant_profile = ($_SESSION['user_role'] ?? '') === 'tenant';
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <?php include __DIR__ . '/../partials/hestia-easter-scripts.php'; ?>
 </body>
 </html>

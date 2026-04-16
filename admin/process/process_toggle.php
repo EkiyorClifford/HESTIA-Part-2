@@ -1,9 +1,9 @@
 <?php
 session_start();
 ini_set('display_errors', '0');
-require_once "../../classes/Property.php";
-require_once "../../classes/User.php";
-require_once "../../classes/Common.php";
+require_once __DIR__ . "/../../classes/Property.php";
+require_once __DIR__ . "/../../classes/User.php";
+require_once __DIR__ . "/../../classes/Common.php";
 $propertyObj = new Property;
 $userObj = new User;
 header('Content-Type: application/json');
@@ -14,10 +14,21 @@ if (!isset($_SESSION['admin_id'])) {
     Common::toggle_json_response(['success' => false, 'message' => 'Unauthorized: Please log in.']);
 }
 
-// 2. Check if the user is an Admin
-$allowed_roles = ['moderator', 'super_admin'];
-if (!isset($_SESSION['admin_role']) || !in_array($_SESSION['admin_role'], $allowed_roles)) {
-    Common::toggle_json_response(['success' => false, 'message' => 'Access Denied: Only moderators and superadmins can toggle status.']);
+// 2. Check if the user is an Admin (align with process_get-tenant.php role values)
+$allowed_roles = ['moderator', 'super_admin', 'superadmin'];
+$admin_role = strtolower(trim($_SESSION['admin_role'] ?? ''));
+if ($admin_role === '') {
+    Common::toggle_json_response(['success' => false, 'message' => 'Access Denied: Admin role not set.']);
+}
+$role_ok = false;
+foreach ($allowed_roles as $r) {
+    if ($admin_role === strtolower($r)) {
+        $role_ok = true;
+        break;
+    }
+}
+if (!$role_ok) {
+    Common::toggle_json_response(['success' => false, 'message' => 'Access Denied: Only moderators and super admins can toggle status.']);
 }
 
 try {
@@ -33,20 +44,20 @@ try {
             $property = $propertyObj->get_property_by_id($id);
             
             if (!$property) {
-                toggle_json_response(['success' => false, 'error' => 'Property not found']);
+                Common::toggle_json_response(['success' => false, 'error' => 'Property not found']);
             }
             
             $current = $property['status'];
             $target_status = ($current === "available") ? 'inactive' : 'available';
             
             if($propertyObj->update_property_status($id, $target_status)){
-                toggle_json_response([
+                Common::toggle_json_response([
                     'success' => true, 
                     'new_status' => $target_status
                 ]);
             }
 
-            toggle_json_response([
+            Common::toggle_json_response([
                 'success' => false, 
                 'error' => 'Database update failed. (Is the ID correct or value already set?)'
             ]);
@@ -54,60 +65,60 @@ try {
             $property = $propertyObj->get_property_by_id($id);
 
             if (!$property) {
-                toggle_json_response(['success' => false, 'error' => 'Property not found']);
+                Common::toggle_json_response(['success' => false, 'error' => 'Property not found']);
             }
 
             $current = $property['is_featured'] ?? 0;
             $target_featured = ($current == 1) ? 0 : 1;
 
             if ($target_featured === 1 && (($property['approval_status'] ?? '') !== 'approved' || ($property['status'] ?? '') !== 'available')) {
-                toggle_json_response(['success' => false, 'error' => 'Only approved and available properties can be featured']);
+                Common::toggle_json_response(['success' => false, 'error' => 'Only approved and available properties can be featured']);
             }
 
             if ($propertyObj->update_featured_status($id, $target_featured)) {
-                toggle_json_response([
+                Common::toggle_json_response([
                     'success' => true,
                     'is_featured' => $target_featured
                 ]);
             }
 
-            toggle_json_response([
+            Common::toggle_json_response([
                 'success' => false,
                 'error' => 'Featured update failed.'
             ]);
         } elseif ($type === 'user') {
             if ($id == $_SESSION['admin_id']) {
-                toggle_json_response(['success' => false, 'error' => 'You cannot deactivate your own account']);
+                Common::toggle_json_response(['success' => false, 'error' => 'You cannot deactivate your own account']);
             }
             
             $user = $userObj->get_user_by('id', $id);
 
             if (!$user) {
-                toggle_json_response(['success' => false, 'error' => 'User not found']);
+                Common::toggle_json_response(['success' => false, 'error' => 'User not found']);
             }
 
             $current = $user['is_active'] ?? null;
             $target_status = ($current === "yes") ? 'no' : 'yes';
             
             if($userObj->set_status($id, $target_status)){
-                toggle_json_response([
+                Common::toggle_json_response([
                     'success' => true, 
                     'new_status' => $target_status
                 ]);
             }
 
-            toggle_json_response([
+            Common::toggle_json_response([
                 'success' => false, 
                 'error' => 'Database update failed. (Is the ID correct or value already set?)'
             ]);
         }
 
-        toggle_json_response(['success' => false, 'error' => 'Invalid toggle type']);
+        Common::toggle_json_response(['success' => false, 'error' => 'Invalid toggle type']);
     }
 
-    toggle_json_response(['success' => false, 'error' => 'Missing parameters']);
+    Common::toggle_json_response(['success' => false, 'error' => 'Missing parameters']);
 } catch (Throwable $e) {
-    toggle_json_response([
+    Common::toggle_json_response([
         'success' => false,
         'error' => 'Server error while processing toggle.',
         'debug' => $e->getMessage()

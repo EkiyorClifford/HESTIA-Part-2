@@ -1,6 +1,13 @@
 <?php
 session_start();
-require_once '../classes/Wishlist.php';
+require_once __DIR__ . '/../classes/Wishlist.php';
+
+if (!empty($_SESSION['is_admin']) && $_SESSION['is_admin'] === true) {
+    $_SESSION['error'] = 'Administrators cannot save properties to the wishlist.';
+    $redirect = $_SERVER['HTTP_REFERER'] ?? '../views/properties.php';
+    header('Location: ' . $redirect);
+    exit();
+}
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: ../views/register.php");

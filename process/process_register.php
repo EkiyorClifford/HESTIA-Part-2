@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once "../classes/User.php"; // Adjust this path to where your class is defined
+require_once __DIR__ . '/../classes/User.php'; // Adjust this path to where your class is defined
 
 $user = new User();
 

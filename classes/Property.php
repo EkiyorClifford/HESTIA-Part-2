@@ -1,5 +1,5 @@
 <?php
-require_once "Db.php";
+require_once __DIR__ . "/Db.php";
 
 class Property extends Db {
     private $dbconn;
@@ -240,8 +240,8 @@ class Property extends Db {
                     JOIN states s ON p.state_id = s.state_id
                     JOIN lgas l ON p.lga_id = l.lga_id
                     JOIN property_types pt ON p.property_type_id = pt.type_id
-                    WHERE p.user_id = ? AND (p.deleted_at IS NULL AND p.status <> 'deleted')
-                    ORDER BY COALESCE(p.updated_at, p.created_at) DESC, p.created_at DESC";
+                    WHERE p.user_id = ? AND p.status <> 'deleted'
+                    ORDER BY p.created_at DESC";
 
             if ($limit !== null) {
                 $sql .= " LIMIT " . $limit . " OFFSET " . $offset;
@@ -352,7 +352,7 @@ class Property extends Db {
 
     public function sync_property_amenities($property_id, $amenity_ids) {
         try {
-            $amenity_ids = array_values(array_unique(array_map('intval', (array) $amenity_ids)));
+            $amenity_ids = array_values(array_unique(array_map('intval', $amenity_ids)));
 
             $this->dbconn->beginTransaction();
 
@@ -385,10 +385,10 @@ class Property extends Db {
         try {
             $sql = "SELECT COUNT(*)
                     FROM properties
-                    WHERE user_id = ? AND (deleted_at IS NULL AND status <> 'deleted')";
+                    WHERE user_id = ? AND status <> 'deleted'";
             $stmt = $this->dbconn->prepare($sql);
             $stmt->execute([$user_id]);
-            return (int) $stmt->fetchColumn();
+            return $stmt->fetchColumn();
         } catch (PDOException $e) {
             return 0;
         }
@@ -409,7 +409,7 @@ class Property extends Db {
 
             $sql = "SELECT status, COUNT(*) AS count
                     FROM properties
-                    WHERE user_id = ? AND (deleted_at IS NULL AND status <> 'deleted')
+                    WHERE user_id = ? AND status <> 'deleted'
                     GROUP BY status";
             $stmt = $this->dbconn->prepare($sql);
             $stmt->execute([$user_id]);
@@ -417,7 +417,7 @@ class Property extends Db {
             foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
                 $status = strtolower(trim($row['status'] ?? ''));
                 if (array_key_exists($status, $stats)) {
-                    $stats[$status] = (int) ($row['count'] ?? 0);
+                    $stats[$status] =  ($row['count'] ?? 0);
                 }
             }
 
@@ -426,18 +426,18 @@ class Property extends Db {
             $sql = "SELECT COUNT(*)
                     FROM applications a
                     JOIN properties p ON a.property_id = p.property_id
-                    WHERE p.user_id = ? AND (p.deleted_at IS NULL AND p.status <> 'deleted')";
+                    WHERE p.user_id = ? AND p.status <> 'deleted'";
             $stmt = $this->dbconn->prepare($sql);
             $stmt->execute([$user_id]);
-            $stats['applications'] = (int) $stmt->fetchColumn();
+            $stats['applications'] =  $stmt->fetchColumn();
 
             $sql = "SELECT COUNT(*)
                     FROM inspections i
                     JOIN properties p ON i.property_id = p.property_id
-                    WHERE p.user_id = ? AND (p.deleted_at IS NULL AND p.status <> 'deleted')";
+                    WHERE p.user_id = ? AND p.status <> 'deleted'";
             $stmt = $this->dbconn->prepare($sql);
             $stmt->execute([$user_id]);
-            $stats['inspections'] = (int) $stmt->fetchColumn();
+            $stats['inspections'] = $stmt->fetchColumn();
 
             return $stats;
         } catch (PDOException $e) {
@@ -447,14 +447,14 @@ class Property extends Db {
 
     public function get_landlord_applications($user_id, $limit = null) {
         try {
-            $limit = $limit !== null ? max(1, (int) $limit) : null;
+            $limit = $limit !== null ? max(1,  $limit) : null;
 
             $sql = "SELECT a.application_id AS app_id, a.*, p.title, p.property_id,
                     u.first_name, u.last_name, u.email
                     FROM applications a
                     JOIN properties p ON a.property_id = p.property_id
                     JOIN users u ON a.user_id = u.id
-                    WHERE p.user_id = ? AND (p.deleted_at IS NULL AND p.status <> 'deleted')
+                    WHERE p.user_id = ? AND p.status <> 'deleted'
                     ORDER BY a.created_at DESC";
 
             if ($limit !== null) {

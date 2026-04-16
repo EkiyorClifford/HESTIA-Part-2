@@ -7,7 +7,7 @@ if (!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true || empty($_S
     exit();
 }
 
-require_once '../classes/Admin.php';
+require_once __DIR__ . '/../classes/Admin.php';
 
 $active_admin_page = 'properties';
 $admin = new Admin();
@@ -52,7 +52,7 @@ unset($_SESSION['feedback'], $_SESSION['error']);
 </head>
 
 <body>
-    <?php include "../partials/navbar.php"; ?>
+    <?php include __DIR__ . "/../partials/navbar.php"; ?>
 
         <!-- Property Details Modal -->
     <div class="modal fade" id="propertyModal" tabindex="-1" aria-labelledby="propertyName" aria-hidden="true">
@@ -79,7 +79,7 @@ unset($_SESSION['feedback'], $_SESSION['error']);
     <main class="admin-page">
     <div class="container">
         <div class="admin-shell">
-            <?php include "../partials/sidebar.php"; ?>
+            <?php include __DIR__ . "/../partials/sidebar.php"; ?>
 
             <div class="admin-content">
         <!-- back to the dashboard -->
@@ -282,12 +282,16 @@ unset($_SESSION['feedback'], $_SESSION['error']);
                     }
 
                     const property = data.property;
-                    const images = property.images ? JSON.parse(property.images) : [];
-                    const imageHtml = images.length > 0 
+                    const imgFile = (data.primary_image || (Array.isArray(data.image_paths) && data.image_paths[0]) || '').trim();
+                    const imageHtml = imgFile
                         ? `<div class="mb-3">
-                            <img src="../upload/properties/${images[0]}" class="img-fluid rounded" style="max-height: 200px; object-fit: cover; width: 100%;">
+                            <img src="../../upload/properties/${imgFile}" class="img-fluid rounded" style="max-height: 200px; object-fit: cover; width: 100%;" alt="">
                         </div>`
                         : '<div class="text-center p-3 bg-light rounded mb-3"><i class="fas fa-image fa-3x text-muted"></i><p class="text-muted mb-0 mt-2">No images available</p></div>';
+
+                    const bedrooms = property.bedroom != null && property.bedroom !== '' ? property.bedroom : 'N/A';
+                    const typeName = property.type_name || 'N/A';
+                    const listingType = property.listing_type ? String(property.listing_type) : 'N/A';
 
                     propertyModalBody.innerHTML = `
                         ${imageHtml}
@@ -304,9 +308,9 @@ unset($_SESSION['feedback'], $_SESSION['error']);
                         <hr>
                         <div class="row">
                             <div class="col-md-6">
-                                <p><strong>Type:</strong> ${property.type || 'N/A'}</p>
-                                <p><strong>Bedrooms:</strong> ${property.bedrooms || 'N/A'}</p>
-                                <p><strong>Bathrooms:</strong> ${property.bathrooms || 'N/A'}</p>
+                                <p><strong>Property type:</strong> ${typeName}</p>
+                                <p><strong>Bedrooms:</strong> ${bedrooms}</p>
+                                <p><strong>Listing type:</strong> ${listingType}</p>
                             </div>
                             <div class="col-md-6">
                                 <p><strong>Landlord:</strong> ${property.first_name} ${property.last_name}</p>
@@ -320,7 +324,7 @@ unset($_SESSION['feedback'], $_SESSION['error']);
                             <p class="text-muted">${property.description || 'No description available'}</p>
                         </div>
                         <div class="text-center mt-3">
-                            <a href="../views/property-details.php?property_id=${property.property_id}" class="btn btn-warning" target="_blank">
+                            <a href="../../views/property-details.php?property_id=${property.property_id}" class="btn btn-warning" target="_blank" rel="noopener">
                                 <i class="fas fa-external-link-alt me-2"></i>View Full Property Page
                             </a>
                         </div>
@@ -381,6 +385,8 @@ unset($_SESSION['feedback'], $_SESSION['error']);
                         badgeContainer.innerHTML = `<span class="badge ${badgeClass}">${label}</span>`;
                         
                         showToast(`Property ${newStatus === 'available' ? 'activated' : 'deactivated'} successfully!`, 'success');
+                    } else {
+                        showToast(data.error || data.message || 'Update failed.', 'danger');
                     }
                 })
                 .catch(error => {

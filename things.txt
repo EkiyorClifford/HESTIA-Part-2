@@ -1,8 +1,0 @@
-When listed
-Number of views
-Inspection requests
-Application count
-
-make sure properties have a table just like user in the admin dashboard. 
-Also another page to show properties that are pending and not been approved by the user.
-Implement view count.

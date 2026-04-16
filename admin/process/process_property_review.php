@@ -6,7 +6,7 @@ if (!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true || empty($_S
     exit();
 }
 
-require_once '../classes/Admin.php';
+require_once __DIR__ . '/../classes/Admin.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: ../views/property_management.php');

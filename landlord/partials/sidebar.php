@@ -8,6 +8,7 @@ $landlord_nav_items = [
     ['href' => '../landlord/add-property.php', 'label' => 'Add Property', 'icon' => 'fas fa-plus-circle', 'key' => 'add-property'],
     ['href' => '../landlord/landlord-profile.php#applications-section', 'label' => 'Applications', 'icon' => 'fas fa-file-alt', 'key' => 'applications'],
     ['href' => '../landlord/landlord-profile.php#inspections-section', 'label' => 'Inspections', 'icon' => 'fas fa-calendar-check', 'key' => 'inspections'],
+    ['href' => '../tenant/wishlist.php', 'label' => 'Wishlist', 'icon' => 'fas fa-heart', 'key' => 'wishlist'],
     ['href' => '../views/index.php', 'label' => 'View Site', 'icon' => 'fas fa-external-link-alt', 'key' => 'view-site'],
 ];
 ?>

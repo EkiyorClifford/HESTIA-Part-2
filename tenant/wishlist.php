@@ -1,10 +1,10 @@
 <?php
 session_start();
-require_once '../userguard.php';
-require_once '../classes/User.php';
-require_once '../classes/Wishlist.php';
-require_once '../classes/Inspection.php';
-require_once '../classes/Applications.php';
+require_once __DIR__ . '/../userguard.php';
+require_once __DIR__ . '/../classes/User.php';
+require_once __DIR__ . '/../classes/Wishlist.php';
+require_once __DIR__ . '/../classes/Inspection.php';
+require_once __DIR__ . '/../classes/Applications.php';
 
 $user = new User();
 $wishlistObj = new Wishlist();
@@ -52,11 +52,11 @@ if (!empty($my_wishlist)) {
     <link rel="stylesheet" href="../assets/tenant-profile.css">
     <link rel="stylesheet" href="../assets/wishlist.css">
 </head>
-<body class="<?= $is_landlord ? 'tenant-wishlist-page' : 'tenant-dashboard-page tenant-wishlist-page' ?>">
-    <?php include_once "../partials/nav.php"; ?>
+<body class="<?= $is_landlord ? 'tenant-wishlist-page' : 'tenant-dashboard-page tenant-wishlist-page' ?>" data-hestia-wishlist-count="<?= (int) $saved_count ?>">
+    <?php include_once __DIR__ . '/../partials/nav.php'; ?>
 
     <main class="container py-4 py-lg-5">
-        <?php include '../partials/messages.php'; ?>
+        <?php include __DIR__ . '/../partials/messages.php'; ?>
 
         <section class="wishlist-hero">
             <div class="wishlist-hero-copy">
@@ -160,9 +160,19 @@ if (!empty($my_wishlist)) {
                 </div>
             </section>
         <?php } ?>
+
+        <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100">
+            <div id="hestiaWishlistSevenToast" class="toast align-items-center text-bg-dark border-0" role="alert" aria-live="polite" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">You've entered serious house-hunting territory.</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <?php include __DIR__ . '/../partials/hestia-easter-scripts.php'; ?>
     <script>
         const sortSelect = document.getElementById('wishlistSort');
         const wishlistGrid = document.getElementById('wishlistGrid');

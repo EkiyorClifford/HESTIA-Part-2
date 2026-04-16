@@ -1,7 +1,7 @@
 <?php
 session_start();
-require_once '../userguard.php';
-require_once '../classes/Property.php';
+require_once __DIR__ . '/../userguard.php';
+require_once __DIR__ . '/../classes/Property.php';
 
 if (($_SESSION['user_role'] ?? '') !== 'landlord') {
     header('Location: ../tenant/tenant-profile.php');
@@ -36,11 +36,11 @@ $selected_amenity_ids = $propertyObj->get_property_amenity_ids($property_id);
     <link rel="stylesheet" href="../assets/add_property.css">
 </head>
 <body>
-    <?php include '../partials/nav.php'; ?>
+    <?php include __DIR__ . '/../partials/nav.php'; ?>
 
     <main class="container" style="margin-top: 100px;">
         <div class="form-container">
-            <?php include '../partials/messages.php'; ?>
+            <?php include __DIR__ . '/../partials/messages.php'; ?>
             <h2>Edit property</h2>
             <div class="form-subtitle">Update your listing details</div>
 
@@ -173,5 +173,6 @@ $selected_amenity_ids = $propertyObj->get_property_amenity_ids($property_id);
         </div>
     </main>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <?php include __DIR__ . '/../partials/hestia-easter-scripts.php'; ?>
 </body>
 </html>

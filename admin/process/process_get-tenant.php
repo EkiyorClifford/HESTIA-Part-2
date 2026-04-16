@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once "../../classes/User.php";
+require_once __DIR__ . "/../../classes/User.php";
 $userObj = new User;
 header('Content-Type: application/json');
 

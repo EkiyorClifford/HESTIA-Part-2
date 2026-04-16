@@ -16,7 +16,7 @@ session_start();
 </head>
 <body>
     <!-- Navigation -->
-    <?php include '../partials/nav.php'; ?>
+    <?php include __DIR__ . '/../partials/nav.php'; ?>
 
     <!-- Page Header -->
     <div class="page-header">
@@ -214,6 +214,7 @@ session_start();
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <?php include __DIR__ . '/../partials/hestia-easter-scripts.php'; ?>
 
     <!-- FAQ Toggle Script -->
     <script>

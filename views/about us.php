@@ -12,7 +12,7 @@
 </head>
 <body>
     <!-- Navigation -->
-    <?php include '../partials/nav.php'; ?>
+    <?php include __DIR__ . '/../partials/nav.php'; ?>
 
     <!-- Hero Section -->
     <section class="hero-section">

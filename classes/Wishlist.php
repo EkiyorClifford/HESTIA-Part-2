@@ -1,5 +1,5 @@
 <?php
-require_once 'Db.php';
+require_once __DIR__ . "/Db.php";
 class Wishlist extends Db {
     private $dbconn;
     

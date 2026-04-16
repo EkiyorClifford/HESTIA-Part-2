@@ -1,5 +1,5 @@
 <?php
-require_once "Db.php";
+require_once __DIR__ . "/Db.php";
 
 class Landlord extends Db{
 
@@ -9,51 +9,50 @@ class Landlord extends Db{
         $this->dbconn= $this->connect();
     }
 
-    //method for landlord badges
-    function landlord_status_badge($status)
-{
-    $status = strtolower(trim($status));
+    public function landlord_status_badge($status)
+    {
+        $status = strtolower(trim($status));
 
-    if ($status === 'available') {
-        return 'badge-available';
-    }
+        if ($status === 'available') {
+            return 'badge-available';
+        }
 
-    if ($status === 'taken') {
-        return 'badge-rented';
-    }
+        if ($status === 'taken') {
+            return 'badge-rented';
+        }
 
-    return 'badge-inactive';
-}
-
-function application_badge($status)
-{
-    $status = strtolower(trim($status));
-
-    if ($status === 'approved' || $status === 'accepted') {
-        return 'badge-available';
-    }
-
-    if ($status === 'rejected' || $status === 'declined') {
         return 'badge-inactive';
     }
 
-    return 'badge-rented';
-}
+    public function application_badge($status)
+    {
+        $status = strtolower(trim($status));
 
-function approval_badge($status)
-{
-    $status = strtolower(trim($status));
+        if ($status === 'approved' || $status === 'accepted') {
+            return 'badge-available';
+        }
 
-    if ($status === 'approved') {
-        return 'badge-available';
+        if ($status === 'rejected' || $status === 'declined') {
+            return 'badge-inactive';
+        }
+
+        return 'badge-rented';
     }
 
-    if ($status === 'rejected') {
-        return 'badge-rejected';
-    }
+    public function approval_badge($status)
+    {
+        $status = strtolower(trim($status));
 
-    return 'badge-rented';
-}
+        if ($status === 'approved') {
+            return 'badge-available';
+        }
+
+        if ($status === 'rejected') {
+            return 'badge-rejected';
+        }
+
+        return 'badge-rented';
+    }
 
 }
 

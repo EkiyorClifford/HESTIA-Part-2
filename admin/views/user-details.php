@@ -6,7 +6,7 @@ if (!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true || empty($_S
     exit();
 }
 
-require_once "../classes/Admin.php";
+require_once __DIR__ . "/../classes/Admin.php";
 $admin = new Admin;
 
 $filter = $_GET['filter'] ?? 'all';
@@ -71,12 +71,12 @@ $page_subheading = 'Search, review, and moderate landlord and tenant accounts.';
 </head>
 
 <body>
-    <?php include "../partials/navbar.php"; ?>
+    <?php include __DIR__ . "/../partials/navbar.php"; ?>
 
     <main class="admin-page">
     <div class="container">
         <div class="admin-shell">
-            <?php include "../partials/sidebar.php"; ?>
+            <?php include __DIR__ . "/../partials/sidebar.php"; ?>
 
             <div class="admin-content">
     <!-- Tenant Details Modal -->
@@ -329,6 +329,7 @@ $page_subheading = 'Search, review, and moderate landlord and tenant accounts.';
                 const formData = new FormData();
                 formData.append('id', userID);
                 formData.append('is_active', current);
+                formData.append('type', 'user');
                 
                 fetch(`../process/process_toggle.php`, {
                     method: 'POST',
@@ -354,6 +355,8 @@ $page_subheading = 'Search, review, and moderate landlord and tenant accounts.';
                         
                         // Show toast
                         showToast(`User ${newStatus === 'yes' ? 'activated' : 'disabled'} successfully!`, 'success');
+                    } else {
+                        showToast(data.error || data.message || 'Update failed.', 'danger');
                     }
                 })
                 .catch(error => {

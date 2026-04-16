@@ -1,5 +1,5 @@
 <?php
-require_once 'Db.php';
+require_once __DIR__ . "/Db.php";
 
 class PropertyTracker extends Db {
     private $dbconn;
@@ -81,9 +81,24 @@ class PropertyTracker extends Db {
     // method to count views, apllications and inspections
     public function count_stats($property_id) {
         try {
-            $sql = "SELECT views_count, application_count, inspection_count FROM property_stats WHERE property_id = ?";
+            $sql = "SELECT
+                        COALESCE(ps.views_count, 0) AS views_count,
+                        (
+                            SELECT COUNT(*)
+                            FROM applications a
+                            WHERE a.property_id = ?
+                        ) AS application_count,
+                        (
+                            SELECT COUNT(*)
+                            FROM inspections i
+                            WHERE i.property_id = ?
+                        ) AS inspection_count
+                    FROM (
+                        SELECT ? AS property_id
+                    ) AS ref
+                    LEFT JOIN property_stats ps ON ps.property_id = ref.property_id";
             $stmt = $this->dbconn->prepare($sql);
-            $stmt->execute([$property_id]);
+            $stmt->execute([$property_id, $property_id, $property_id]);
             return $stmt->fetch(PDO::FETCH_ASSOC) ?: [
                 'views_count' => 0,
                 'application_count' => 0,

@@ -6,8 +6,8 @@ if (!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true || empty($_S
     exit();
 }
 
-require_once "../classes/Admin.php";
-require_once "../classes/Common.php";
+require_once __DIR__ . "/../classes/Admin.php";
+require_once __DIR__ . "/../classes/Common.php";
 
 $admin = new Admin();
 
@@ -81,12 +81,12 @@ $inactive_width = min(100, ($property_counts['inactive'] / $total_properties) * 
     <link href="../assets/admin.css" rel="stylesheet">
 </head>
 <body>
-    <?php include "../partials/navbar.php"; ?>
+    <?php include __DIR__ . "/../partials/navbar.php"; ?>
 
     <main class="admin-page">
         <div class="container">
             <div class="admin-shell">
-                <?php include "../partials/sidebar.php"; ?>
+                <?php include __DIR__ . "/../partials/sidebar.php"; ?>
 
                 <div class="admin-content">
                     <div class="welcome-card">
@@ -185,9 +185,10 @@ $inactive_width = min(100, ($property_counts['inactive'] / $total_properties) * 
                                         </table>
                                     </div>
                                 <?php } else { ?>
-                                    <div class="empty-state">
+                                    <div class="empty-state" id="hestiaAdminPeaceEgg">
                                         <i class="fas fa-check-circle"></i>
                                         <h6>No pending properties</h6>
+                                        <p class="small fst-italic text-secondary mb-2 mb-md-3">The queue is clean. Enjoy this suspicious peace.</p>
                                         <p class="small mb-0">New landlord submissions will appear here for review.</p>
                                     </div>
                                 <?php } ?>
@@ -403,6 +404,14 @@ $inactive_width = min(100, ($property_counts['inactive'] / $total_properties) * 
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <?php include __DIR__ . '/../../partials/hestia-easter-scripts.php'; ?>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (document.getElementById('hestiaAdminPeaceEgg') && window.hestiaEaster) {
+                window.hestiaEaster.unlock('admin-peace');
+            }
+        });
+    </script>
 
 </body>
 </html>
