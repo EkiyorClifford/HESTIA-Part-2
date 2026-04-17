@@ -1,7 +1,8 @@
 <?php
+require dirname(__DIR__, 2) . '/config/app.php';
 // Process admin login
 session_start();
-require_once __DIR__ . "/../classes/Admin.php";
+require_once BASE_PATH . '/admin/classes/Admin.php';
 $admin = new Admin;
 if(isset($_POST['loginbtn'])){
     $email = htmlspecialchars($_POST['email']);

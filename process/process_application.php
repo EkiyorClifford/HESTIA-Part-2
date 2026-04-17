@@ -1,8 +1,9 @@
 <?php
+require dirname(__DIR__) . '/config/app.php';
 session_start();
-require_once __DIR__ . '/../classes/Applications.php';
-require_once __DIR__ . '/../classes/Common.php';
-require_once __DIR__ . '/../userguard.php';
+require_once BASE_PATH . '/classes/Applications.php';
+require_once BASE_PATH . '/classes/Common.php';
+require_once BASE_PATH . '/userguard.php';
 
 if($_SERVER['REQUEST_METHOD'] !== 'POST'  || !isset($_POST['application_btn'])){
     Common::redirect_to_property_details(0);

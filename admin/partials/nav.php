@@ -3,4 +3,4 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-include __DIR__ . '/navbar.php';
+include BASE_PATH . '/admin/partials/navbar.php';

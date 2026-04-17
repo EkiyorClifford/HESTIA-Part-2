@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . "/Db.php";
+require_once BASE_PATH . '/classes/Db.php';
 
 class PropertyTracker extends Db {
     private $dbconn;

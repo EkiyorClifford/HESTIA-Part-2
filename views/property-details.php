@@ -1,4 +1,5 @@
 <?php
+require dirname(__DIR__) . '/config/app.php';
 session_start();
 require_once '../classes/Property.php';
 require_once '../classes/User.php';

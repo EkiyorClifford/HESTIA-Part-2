@@ -1,9 +1,10 @@
 <?php
+require dirname(__DIR__) . '/config/app.php';
 session_start();
-require_once __DIR__ . '/../classes/State.php';
-require_once __DIR__ . '/../classes/Property.php';
-require_once __DIR__ . '/../partials/messages.php';
-require_once __DIR__ . '/../userguard.php';
+require_once BASE_PATH . '/classes/State.php';
+require_once BASE_PATH . '/classes/Property.php';
+require_once BASE_PATH . '/partials/messages.php';
+require_once BASE_PATH . '/userguard.php';
 
 $state = new State();
 $propertyObj = new Property();
@@ -33,12 +34,12 @@ $saved_amenities = isset($saved_data['amenities']) && is_array($saved_data['amen
 </head>
 <body>
     <!-- Header with Navigation - HESTIA style -->
-    <?php include __DIR__ . '/../partials/nav.php'; ?>
+    <?php include BASE_PATH . '/partials/nav.php'; ?>
 
     <!-- Main Content -->
     <main class="container" style="margin-top: 100px;">
         <div class="form-container">
-            <?php include __DIR__ . '/../partials/messages.php'; ?>
+            <?php include BASE_PATH . '/partials/messages.php'; ?>
             <h2>Add property</h2>
             <div class="form-subtitle">List your space with HESTIA</div>
             
@@ -200,7 +201,7 @@ $saved_amenities = isset($saved_data['amenities']) && is_array($saved_data['amen
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <?php include __DIR__ . '/../partials/hestia-easter-scripts.php'; ?>
+    <?php include BASE_PATH . '/partials/hestia-easter-scripts.php'; ?>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function(){

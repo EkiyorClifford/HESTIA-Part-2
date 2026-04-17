@@ -1,4 +1,5 @@
 <?php
+require dirname(__DIR__, 2) . '/config/app.php';
 session_start();
 
 if (!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true || empty($_SESSION['admin_id'])) {
@@ -6,8 +7,8 @@ if (!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true || empty($_S
     exit();
 }
 
-require_once __DIR__ . "/../classes/Admin.php";
-require_once __DIR__ . "/../classes/Common.php";
+require_once BASE_PATH . '/admin/classes/Admin.php';
+require_once BASE_PATH . '/admin/classes/Common.php';
 
 $admin = new Admin();
 
@@ -81,12 +82,12 @@ $inactive_width = min(100, ($property_counts['inactive'] / $total_properties) * 
     <link href="../assets/admin.css" rel="stylesheet">
 </head>
 <body>
-    <?php include __DIR__ . "/../partials/navbar.php"; ?>
+    <?php include BASE_PATH . '/admin/partials/navbar.php'; ?>
 
     <main class="admin-page">
         <div class="container">
             <div class="admin-shell">
-                <?php include __DIR__ . "/../partials/sidebar.php"; ?>
+                <?php include BASE_PATH . '/admin/partials/sidebar.php'; ?>
 
                 <div class="admin-content">
                     <div class="welcome-card">
@@ -404,7 +405,7 @@ $inactive_width = min(100, ($property_counts['inactive'] / $total_properties) * 
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <?php include __DIR__ . '/../../partials/hestia-easter-scripts.php'; ?>
+    <?php include BASE_PATH . '/partials/hestia-easter-scripts.php'; ?>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             if (document.getElementById('hestiaAdminPeaceEgg') && window.hestiaEaster) {

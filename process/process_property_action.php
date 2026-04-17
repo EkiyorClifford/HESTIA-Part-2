@@ -1,9 +1,10 @@
 <?php
+require dirname(__DIR__) . '/config/app.php';
 session_start();
-require_once __DIR__ . '/../classes/Property.php';
-require_once __DIR__ . '/../classes/Inspection.php';
-require_once __DIR__ . '/../classes/Applications.php';
-require_once __DIR__ . '/../classes/Common.php';
+require_once BASE_PATH . '/classes/Property.php';
+require_once BASE_PATH . '/classes/Inspection.php';
+require_once BASE_PATH . '/classes/Applications.php';
+require_once BASE_PATH . '/classes/Common.php';
 
 $user_id = $_SESSION['user_id'] ?? null;
 $user_role = $_SESSION['user_role'] ?? null;

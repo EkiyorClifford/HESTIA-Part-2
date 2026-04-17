@@ -1,4 +1,5 @@
 <?php
+require dirname(__DIR__) . '/config/app.php';
 session_start();
 ?>
 
@@ -16,7 +17,7 @@ session_start();
 </head>
 <body>
     <!-- Navigation -->
-    <?php include __DIR__ . '/../partials/nav.php'; ?>
+    <?php include BASE_PATH . '/partials/nav.php'; ?>
 
     <!-- Page Header -->
     <div class="page-header">
@@ -214,7 +215,7 @@ session_start();
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <?php include __DIR__ . '/../partials/hestia-easter-scripts.php'; ?>
+    <?php include BASE_PATH . '/partials/hestia-easter-scripts.php'; ?>
 
     <!-- FAQ Toggle Script -->
     <script>

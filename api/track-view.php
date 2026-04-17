@@ -1,6 +1,7 @@
 <?php
+require dirname(__DIR__) . '/config/app.php';
 header('Content-Type: application/json');
-require_once __DIR__ . '/../classes/PropertyTracker.php';
+require_once BASE_PATH . '/classes/PropertyTracker.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $property_id = $_POST['property_id'] ?? null;

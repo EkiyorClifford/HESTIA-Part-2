@@ -1,4 +1,5 @@
 <?php
+require dirname(__DIR__, 2) . '/config/app.php';
 session_start();
 
 if (!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true || empty($_SESSION['admin_id'])) {
@@ -6,7 +7,7 @@ if (!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true || empty($_S
     exit();
 }
 
-require_once __DIR__ . "/../classes/Admin.php";
+require_once BASE_PATH . '/admin/classes/Admin.php';
 $admin = new Admin;
 
 $filter = $_GET['filter'] ?? 'all';
@@ -71,12 +72,12 @@ $page_subheading = 'Search, review, and moderate landlord and tenant accounts.';
 </head>
 
 <body>
-    <?php include __DIR__ . "/../partials/navbar.php"; ?>
+    <?php include BASE_PATH . '/admin/partials/navbar.php'; ?>
 
     <main class="admin-page">
     <div class="container">
         <div class="admin-shell">
-            <?php include __DIR__ . "/../partials/sidebar.php"; ?>
+            <?php include BASE_PATH . '/admin/partials/sidebar.php'; ?>
 
             <div class="admin-content">
     <!-- Tenant Details Modal -->

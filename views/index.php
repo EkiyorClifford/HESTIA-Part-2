@@ -1,6 +1,7 @@
 <?php
+require dirname(__DIR__) . '/config/app.php';
 session_start();
-require_once __DIR__ . '/../classes/Property.php';
+require_once BASE_PATH . '/classes/Property.php';
 
 $propertyObj = new Property();
 $featured_properties = $propertyObj->get_featured_properties(3);
@@ -17,7 +18,7 @@ $featured_properties = $propertyObj->get_featured_properties(3);
     <link rel="stylesheet" href="../assets/global.css">
 </head>
 <body data-hestia-page="home">
-    <?php include __DIR__ . '/../partials/nav.php'; ?>
+    <?php include BASE_PATH . '/partials/nav.php'; ?>
 
     <main>
         <section class="hero-section" id="hestiaHero">
@@ -151,8 +152,8 @@ $featured_properties = $propertyObj->get_featured_properties(3);
         </div>
     </section>
 
-    <?php include __DIR__ . '/../partials/footer.php'; ?>
+    <?php include BASE_PATH . '/partials/footer.php'; ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <?php include __DIR__ . '/../partials/hestia-easter-scripts.php'; ?>
+    <?php include BASE_PATH . '/partials/hestia-easter-scripts.php'; ?>
 </body>
 </html>

@@ -4,7 +4,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-require_once '../classes/User.php';
+require_once BASE_PATH . '/classes/User.php';
 $userObj = new User();
 
 $user_name = "";

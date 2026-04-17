@@ -1,9 +1,10 @@
 <?php
+require dirname(__DIR__) . '/config/app.php';
 session_start();
-require_once __DIR__ . '/../classes/Property.php';
-require_once __DIR__ . '/../classes/State.php';
-require_once __DIR__ . '/../classes/PropertyTracker.php';
-require_once __DIR__ . '/../classes/Wishlist.php';
+require_once BASE_PATH . '/classes/Property.php';
+require_once BASE_PATH . '/classes/State.php';
+require_once BASE_PATH . '/classes/PropertyTracker.php';
+require_once BASE_PATH . '/classes/Wishlist.php';
 
 $propObj = new Property();
 $stateObj = new State();
@@ -43,7 +44,7 @@ $all_props = $propObj->get_properties($filters);
     <link rel="stylesheet" href="../assets/global.css">
 </head>
 <body>
-    <?php include __DIR__ . '/../partials/nav.php'; ?>
+    <?php include BASE_PATH . '/partials/nav.php'; ?>
 
     <main class="container my-5">
         <h1 class="text-center mb-4" style="color: #C44536;">Find Your Next Home</h1>
@@ -217,7 +218,7 @@ $all_props = $propObj->get_properties($filters);
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <?php include __DIR__ . '/../partials/hestia-easter-scripts.php'; ?>
+    <?php include BASE_PATH . '/partials/hestia-easter-scripts.php'; ?>
     <script>
     // Track views when user clicks on property details
     document.addEventListener('DOMContentLoaded', function() {

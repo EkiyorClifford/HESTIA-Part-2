@@ -1,4 +1,5 @@
 <?php
+require dirname(__DIR__, 2) . '/config/app.php';
 session_start();
 // $newpass= "molotov";
 // $hash= password_hash($newpass, PASSWORD_DEFAULT);

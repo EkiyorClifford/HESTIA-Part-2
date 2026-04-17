@@ -1,3 +1,6 @@
+<?php
+require dirname(__DIR__) . '/config/app.php';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,7 +15,7 @@
 </head>
 <body>
     <!-- Navigation -->
-    <?php include __DIR__ . '/../partials/nav.php'; ?>
+    <?php include BASE_PATH . '/partials/nav.php'; ?>
 
     <!-- Hero Section -->
     <section class="hero-section">

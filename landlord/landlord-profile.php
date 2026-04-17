@@ -1,10 +1,11 @@
 <?php
+require dirname(__DIR__) . '/config/app.php';
 session_start();
-require_once __DIR__ . '/../userguard.php';
-require_once __DIR__ . '/../classes/Property.php';
-require_once __DIR__ . '/../classes/User.php';
-require_once __DIR__ . '/../classes/Inspection.php';
-require_once __DIR__ . '/../classes/Landlord.php';
+require_once BASE_PATH . '/userguard.php';
+require_once BASE_PATH . '/classes/Property.php';
+require_once BASE_PATH . '/classes/User.php';
+require_once BASE_PATH . '/classes/Inspection.php';
+require_once BASE_PATH . '/classes/Landlord.php';
 
 if (($_SESSION['user_role'] ?? '') !== 'landlord') {
     header('Location: ../tenant/tenant-profile.php');
@@ -56,7 +57,7 @@ $Landlord = new Landlord();
     <link rel="stylesheet" href="../assets/global.css">
 </head>
 <body data-hestia-dashboard="landlord">
-    <?php include __DIR__ . '/partials/navbar.php'; ?>
+    <?php include BASE_PATH . '/landlord/partials/navbar.php'; ?>
 
     <button class="btn btn-primary mobile-menu-btn d-lg-none position-fixed bottom-0 end-0 m-3 rounded-pill shadow" type="button" data-bs-toggle="offcanvas" data-bs-target="#landlordSidebar" style="z-index: 1040;">
         <i class="fas fa-bars"></i> Menu
@@ -67,14 +68,14 @@ $Landlord = new Landlord();
             <h5 class="offcanvas-title">Hestia<span>.</span></h5>
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
         </div>
-        <?php $sidebar_mode = 'mobile'; include __DIR__ . '/partials/sidebar.php'; ?>
+        <?php $sidebar_mode = 'mobile'; include BASE_PATH . '/landlord/partials/sidebar.php'; ?>
     </div>
 
     <div class="dashboard-container">
-        <?php $sidebar_mode = 'desktop'; include __DIR__ . '/partials/sidebar.php'; ?>
+        <?php $sidebar_mode = 'desktop'; include BASE_PATH . '/landlord/partials/sidebar.php'; ?>
 
         <main class="main-content">
-            <?php include __DIR__ . '/../partials/messages.php'; ?>
+            <?php include BASE_PATH . '/partials/messages.php'; ?>
 
             <section class="welcome-section">
                 <div class="welcome-copy">
@@ -346,7 +347,7 @@ $Landlord = new Landlord();
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <?php include __DIR__ . '/../partials/hestia-easter-scripts.php'; ?>
+    <?php include BASE_PATH . '/partials/hestia-easter-scripts.php'; ?>
     <script>
         const dashboardSearch = document.getElementById('dashboardSearch');
         const propertyRows = Array.from(document.querySelectorAll('#propertiesTable tbody tr'));

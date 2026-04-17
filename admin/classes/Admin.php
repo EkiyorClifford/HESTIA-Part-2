@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . "/Db.php";
+require_once BASE_PATH . '/admin/classes/Db.php';
 
 class Admin extends Db {
     private $dbconn;

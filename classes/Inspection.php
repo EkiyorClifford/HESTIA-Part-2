@@ -1,6 +1,6 @@
 <?php
-require_once __DIR__ . "/Db.php";
-require_once __DIR__ . "/PropertyTracker.php";
+require_once BASE_PATH . '/classes/Db.php';
+require_once BASE_PATH . '/classes/PropertyTracker.php';
 class Inspection extends Db {
     private $dbconn;
     

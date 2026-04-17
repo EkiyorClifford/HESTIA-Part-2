@@ -1,7 +1,4 @@
 <?php
-// Base path for the application
-define("BASE_PATH", __DIR__ . "/../");
-
 // Database configuration
 define("DBUSER", "root");
 define("DBPASS", "");
