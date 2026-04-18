@@ -32,12 +32,12 @@ $featured_properties = $propertyObj->get_featured_properties(3);
                         Browse verified properties and deal directly with landlords, no agents, no hidden fees.
                     </p>
                     <p class="small text-white-50 mt-3 mb-0 d-none" id="hestiaNightOwlLine">Still browsing at this hour? We respect the dedication.</p>
-                    <a href="properties.php" class="btn btn-primary btn-lg me-3 mt-4">Browse Properties</a>
+                    <a href="../views/properties.php" class="btn btn-primary btn-lg me-3 mt-4" role="button">Browse Properties</a>
                 </div>
                 <div class="hestia-hero-olympus d-none">
                     <h1>Welcome to Mount Olympus</h1>
                     <p class="lead">The hearth approves this home search.</p>
-                    <a href="properties.php" class="btn btn-primary btn-lg me-3 mt-4">Browse Properties</a>
+                    <a href="../views/properties.php" class="btn btn-primary btn-lg me-3 mt-4">Browse Properties</a>
                 </div>
             </div>
         </section>
