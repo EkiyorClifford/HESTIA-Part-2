@@ -12,9 +12,8 @@ $featured_properties = $propertyObj->get_featured_properties(3);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home - HESTIA Property Rentals</title>
-    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
-    <link rel="icon" type="image/png" href="../favicon.png">
-    <link rel="shortcut icon" href="../favicon.ico">
+    <link rel="icon" type="image/png" href="https://i.ibb.co/ccncV96R/Hestia-favicon.png">
+    <link rel="shortcut icon" href="https://i.ibb.co/ccncV96R/Hestia-favicon.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="../assets/global.css">
@@ -37,9 +36,10 @@ $featured_properties = $propertyObj->get_featured_properties(3);
                 <div class="hestia-hero-olympus d-none">
                     <h1>Welcome to Mount Olympus</h1>
                     <p class="lead">The hearth approves this home search.</p>
-                    <a href="../views/properties.php" class="btn btn-primary btn-lg me-3 mt-4">Browse Properties</a>
+                    <a href="../views/properties.php" class="btn btn-primary btn-lg me-3 mt-4" role="button">Browse Properties</a>
                 </div>
             </div>
+            <video src=""></video>
         </section>
 
         <section class="stats-section">
