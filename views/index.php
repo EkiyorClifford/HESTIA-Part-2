@@ -17,7 +17,8 @@ $featured_properties = $propertyObj->get_featured_properties(3);
     <link rel="shortcut icon" href="../favicon.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="../assets/combined.min.css">
+    <link rel="stylesheet" href="../assets/global.css">
+    <link rel="stylesheet" href="../assets/index.css">
 </head>
 <body data-hestia-page="home">
     <?php include BASE_PATH . '/partials/nav.php'; ?>
@@ -117,7 +118,7 @@ $featured_properties = $propertyObj->get_featured_properties(3);
                         <div class="col-md-4 mb-4">
                             <div class="card h-100 hestia-property-card position-relative">
                                 <picture>
-                                    <source srcset="<?= htmlspecialchars(str_replace(['.jpg', '.jpeg', '.png'], '.webp', $thumbnail)) ?>" type="image/webp">
+                                    <source srcset="<?= htmlspecialchars('../upload/properties/optimized/' . pathinfo($property['thumbnail'], PATHINFO_FILENAME) . '.webp') ?>" type="image/webp">
                                     <source srcset="<?= htmlspecialchars($thumbnail) ?>" type="<?= htmlspecialchars(pathinfo($thumbnail, PATHINFO_EXTENSION) === 'png' ? 'image/png' : 'image/jpeg') ?>">
                                     <img src="<?= htmlspecialchars($thumbnail) ?>" class="card-img-top" alt="<?= htmlspecialchars($property['title'] ?? 'Featured property') ?>" loading="lazy" decoding="async">
                                 </picture>
