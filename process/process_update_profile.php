@@ -1,7 +1,8 @@
 <?php
+require dirname(__DIR__) . '/config/app.php';
 session_start();
-require_once __DIR__ . '/../userguard.php';
-require_once __DIR__ . '/../classes/User.php';
+require_once BASE_PATH . '/userguard.php';
+require_once BASE_PATH . '/classes/User.php';
 
 $user_id = $_SESSION['user_id'] ?? null;
 if (!$user_id) {

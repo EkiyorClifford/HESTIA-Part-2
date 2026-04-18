@@ -1,11 +1,12 @@
 <?php
+require dirname(__DIR__) . '/config/app.php';
 session_start();
-require_once __DIR__ . '/../userguard.php';
-require_once __DIR__ . '/../classes/User.php';
-require_once __DIR__ . '/../classes/Wishlist.php';
-require_once __DIR__ . '/../classes/Inspection.php';
-require_once __DIR__ . '/../classes/Applications.php';
-require_once __DIR__ . '/../classes/Common.php';
+require_once BASE_PATH . '/userguard.php';
+require_once BASE_PATH . '/classes/User.php';
+require_once BASE_PATH . '/classes/Wishlist.php';
+require_once BASE_PATH . '/classes/Inspection.php';
+require_once BASE_PATH . '/classes/Applications.php';
+require_once BASE_PATH . '/classes/Common.php';
 
 $user = new User();
 $wishlistObj = new Wishlist();
@@ -40,6 +41,9 @@ $common = new Common();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tenant Dashboard | Hestia</title>
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="shortcut icon" href="../favicon.ico">
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -48,7 +52,7 @@ $common = new Common();
     <link rel="stylesheet" href="../assets/global.css">
 </head>
 <body class="tenant-dashboard-page" data-hestia-dashboard="tenant">
-    <?php include __DIR__ . '/../partials/nav.php'; ?>
+    <?php include BASE_PATH . '/partials/nav.php'; ?>
 
     <button class="btn btn-primary mobile-menu-btn d-lg-none position-fixed bottom-0 end-0 m-3 rounded-pill shadow" type="button" data-bs-toggle="offcanvas" data-bs-target="#tenantSidebar" style="z-index: 1040;">
         <i class="fas fa-bars"></i> Menu
@@ -59,14 +63,14 @@ $common = new Common();
             <h5 class="offcanvas-title">Hestia<span>.</span></h5>
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
         </div>
-        <?php $sidebar_mode = 'mobile'; include __DIR__ . '/partials/sidebar.php'; ?>
+        <?php $sidebar_mode = 'mobile'; include BASE_PATH . '/tenant/partials/sidebar.php'; ?>
     </div>
 
     <div class="dashboard-container tenant-dashboard">
-        <?php $sidebar_mode = 'desktop'; include __DIR__ . '/partials/sidebar.php'; ?>
+        <?php $sidebar_mode = 'desktop'; include BASE_PATH . '/tenant/partials/sidebar.php'; ?>
 
         <main class="main-content">
-            <?php include __DIR__ . '/../partials/messages.php'; ?>
+            <?php include BASE_PATH . '/partials/messages.php'; ?>
 
             <section class="welcome-section tenant-hero">
                 <div class="welcome-copy">
@@ -266,7 +270,7 @@ $common = new Common();
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <?php include __DIR__ . '/../partials/hestia-easter-scripts.php'; ?>
+    <?php include BASE_PATH . '/partials/hestia-easter-scripts.php'; ?>
     <script>
         document.querySelectorAll('.offcanvas .nav-link').forEach((link) => {
             link.addEventListener('click', () => {

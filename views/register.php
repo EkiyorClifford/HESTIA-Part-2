@@ -1,4 +1,5 @@
 <?php
+require dirname(__DIR__) . '/config/app.php';
 session_start();
 
 ?>
@@ -8,6 +9,9 @@ session_start();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hestia | find your place</title>
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="shortcut icon" href="../favicon.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="../assets/register.css">
@@ -18,7 +22,11 @@ session_start();
         <!-- LEFT SIDE - HESTIA STORY -->
         <div class="auth-hero">
             <div class="logo-container">
-                <img src="../image/hestia logo.png" alt="Hestia Logo">
+                <picture>
+                            <source srcset="../image/optimized/hestia logo.webp" type="image/webp">
+                            <source srcset="../image/optimized/hestia logo.png" type="image/png">
+                            <img src="../image/optimized/hestia logo.png" alt="Hestia Logo" loading="lazy" decoding="async">
+                        </picture>
             </div>
             <!-- <div class="hestia-logo">HESTIA</div> -->
             <h1>find your place in a better rental market</h1>

@@ -1,6 +1,6 @@
 <?php
-$localConfig = __DIR__ . "/config.php";
-$exampleConfig = __DIR__ . "/config.example.php";
+$localConfig = BASE_PATH . '/admin/classes/config.php';
+$exampleConfig = BASE_PATH . '/admin/classes/config.example.php';
 require_once file_exists($localConfig) ? $localConfig : $exampleConfig;
 class Db{
     private $dbhost = DBHOST;

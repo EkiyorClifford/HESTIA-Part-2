@@ -4,7 +4,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-require_once '../classes/User.php';
+require_once BASE_PATH . '/classes/User.php';
 $userObj = new User();
 
 $user_name = "";
@@ -21,7 +21,7 @@ if (isset($_SESSION['user_id'])) {
         $user_name = $user['first_name'] . ' ' . $user['last_name'];
     }
 }
-$base_url = "/Hestia-PHP/"; 
+$base_url = "/"; 
 ?>
 
 <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark">

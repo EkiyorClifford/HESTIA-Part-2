@@ -1,5 +1,6 @@
 <?php
-require_once __DIR__ . '/../classes/State.php';
+require dirname(__DIR__) . '/config/app.php';
+require_once BASE_PATH . '/classes/State.php';
 
 // Check if state_id is set
 if(isset($_POST['state_id'])) {

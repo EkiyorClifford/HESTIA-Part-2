@@ -1,7 +1,8 @@
 <?php
+require dirname(__DIR__) . '/config/app.php';
 session_start();
-require_once __DIR__ . '/../classes/Property.php';
-require_once __DIR__ . '/../classes/Common.php'; 
+require_once BASE_PATH . '/classes/Property.php';
+require_once BASE_PATH . '/classes/Common.php'; 
 
 $property = new Property();
 $user_id = $_SESSION['user_id'] ?? null;

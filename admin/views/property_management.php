@@ -1,4 +1,5 @@
 <?php
+require dirname(__DIR__, 2) . '/config/app.php';
 session_start();
 
 // Add authentication check
@@ -7,7 +8,7 @@ if (!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true || empty($_S
     exit();
 }
 
-require_once __DIR__ . '/../classes/Admin.php';
+require_once BASE_PATH . '/admin/classes/Admin.php';
 
 $active_admin_page = 'properties';
 $admin = new Admin();
@@ -33,6 +34,9 @@ unset($_SESSION['feedback'], $_SESSION['error']);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Property Management | Hestia Admin</title>
+    <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+    <link rel="icon" type="image/png" href="../../favicon.png">
+    <link rel="shortcut icon" href="../../favicon.ico">
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -52,7 +56,7 @@ unset($_SESSION['feedback'], $_SESSION['error']);
 </head>
 
 <body>
-    <?php include __DIR__ . "/../partials/navbar.php"; ?>
+    <?php include BASE_PATH . '/admin/partials/navbar.php'; ?>
 
         <!-- Property Details Modal -->
     <div class="modal fade" id="propertyModal" tabindex="-1" aria-labelledby="propertyName" aria-hidden="true">
@@ -79,7 +83,7 @@ unset($_SESSION['feedback'], $_SESSION['error']);
     <main class="admin-page">
     <div class="container">
         <div class="admin-shell">
-            <?php include __DIR__ . "/../partials/sidebar.php"; ?>
+            <?php include BASE_PATH . '/admin/partials/sidebar.php'; ?>
 
             <div class="admin-content">
         <!-- back to the dashboard -->

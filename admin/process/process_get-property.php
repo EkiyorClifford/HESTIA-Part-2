@@ -1,4 +1,5 @@
 <?php
+require dirname(__DIR__, 2) . '/config/app.php';
 session_start();
 
 if (!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true || empty($_SESSION['admin_id'])) {
@@ -7,7 +8,7 @@ if (!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true || empty($_S
     exit();
 }
 
-require_once __DIR__ . "/../../classes/Property.php";
+require_once BASE_PATH . '/classes/Property.php';
 
 $propertyObj = new Property();
 

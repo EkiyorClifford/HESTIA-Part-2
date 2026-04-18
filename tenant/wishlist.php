@@ -1,10 +1,11 @@
 <?php
+require dirname(__DIR__) . '/config/app.php';
 session_start();
-require_once __DIR__ . '/../userguard.php';
-require_once __DIR__ . '/../classes/User.php';
-require_once __DIR__ . '/../classes/Wishlist.php';
-require_once __DIR__ . '/../classes/Inspection.php';
-require_once __DIR__ . '/../classes/Applications.php';
+require_once BASE_PATH . '/userguard.php';
+require_once BASE_PATH . '/classes/User.php';
+require_once BASE_PATH . '/classes/Wishlist.php';
+require_once BASE_PATH . '/classes/Inspection.php';
+require_once BASE_PATH . '/classes/Applications.php';
 
 $user = new User();
 $wishlistObj = new Wishlist();
@@ -45,6 +46,9 @@ if (!empty($my_wishlist)) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wishlist | Hestia</title>
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="shortcut icon" href="../favicon.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="../assets/global.css">
@@ -53,10 +57,10 @@ if (!empty($my_wishlist)) {
     <link rel="stylesheet" href="../assets/wishlist.css">
 </head>
 <body class="<?= $is_landlord ? 'tenant-wishlist-page' : 'tenant-dashboard-page tenant-wishlist-page' ?>" data-hestia-wishlist-count="<?= (int) $saved_count ?>">
-    <?php include_once __DIR__ . '/../partials/nav.php'; ?>
+    <?php include_once BASE_PATH . '/partials/nav.php'; ?>
 
     <main class="container py-4 py-lg-5">
-        <?php include __DIR__ . '/../partials/messages.php'; ?>
+        <?php include BASE_PATH . '/partials/messages.php'; ?>
 
         <section class="wishlist-hero">
             <div class="wishlist-hero-copy">
@@ -172,7 +176,7 @@ if (!empty($my_wishlist)) {
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <?php include __DIR__ . '/../partials/hestia-easter-scripts.php'; ?>
+    <?php include BASE_PATH . '/partials/hestia-easter-scripts.php'; ?>
     <script>
         const sortSelect = document.getElementById('wishlistSort');
         const wishlistGrid = document.getElementById('wishlistGrid');

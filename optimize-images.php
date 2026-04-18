@@ -1,0 +1,74 @@
+<?php
+// Image Optimization Script
+$imagesDir = __DIR__ . '/image/';
+$outputDir = __DIR__ . '/image/optimized/';
+
+if (!file_exists($outputDir)) {
+    mkdir($outputDir, 0755, true);
+}
+
+// Get all PNG and JPEG images
+$pngImages = glob($imagesDir . '*.png');
+$jpegImages = glob($imagesDir . '*.jpg');
+$jpegImages = array_merge($jpegImages, glob($imagesDir . '*.jpeg'));
+$images = array_merge($pngImages, $jpegImages);
+
+foreach ($images as $image) {
+    $filename = basename($image);
+    $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+    $outputPath = $outputDir . $filename;
+    $webpPath = $outputDir . pathinfo($filename, PATHINFO_FILENAME) . '.webp';
+    
+    // Create optimized version based on file type
+    if ($extension === 'png') {
+        $source = imagecreatefrompng($image);
+    } else {
+        $source = imagecreatefromjpeg($image);
+    }
+    
+    // Get original dimensions
+    $width = imagesx($source);
+    $height = imagesy($source);
+    
+    // Calculate new dimensions (max width 1200px for web)
+    $maxWidth = 1200;
+    if ($width > $maxWidth) {
+        $ratio = $maxWidth / $width;
+        $newWidth = $maxWidth;
+        $newHeight = $height * $ratio;
+        
+        $resized = imagecreatetruecolor($newWidth, $newHeight);
+        imagealphablending($resized, false);
+        imagesavealpha($resized, true);
+        
+        imagecopyresampled($resized, $source, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+        imagedestroy($source);
+        $source = $resized;
+    }
+    
+    // Save optimized version
+    if ($extension === 'png') {
+        imagepng($source, $outputPath, 8); // 8 = good compression for PNG
+    } else {
+        imagejpeg($source, $outputPath, 85); // 85 = good quality for JPEG
+    }
+    
+    // Create WebP version for better compression
+    imagewebp($source, $webpPath, 85); // 85 = good quality for WebP
+    
+    imagedestroy($source);
+    
+    $originalSize = filesize($image);
+    $optimizedSize = filesize($outputPath);
+    $webpSize = filesize($webpPath);
+    $savings = (($originalSize - $optimizedSize) / $originalSize) * 100;
+    $webpSavings = (($originalSize - $webpSize) / $originalSize) * 100;
+    
+    echo "Optimized $filename:\n";
+    echo "  Original: " . round($originalSize/1024) . "KB\n";
+    echo "  Optimized ($extension): " . round($optimizedSize/1024) . "KB (" . round($savings) . "% savings)\n";
+    echo "  WebP: " . round($webpSize/1024) . "KB (" . round($webpSavings) . "% savings)\n\n";
+}
+
+echo "Image optimization complete!\n";
+?>

@@ -1,4 +1,5 @@
 <?php
+require dirname(__DIR__, 2) . '/config/app.php';
 session_start();
 
 if (!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true || empty($_SESSION['admin_id'])) {
@@ -6,8 +7,8 @@ if (!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true || empty($_S
     exit();
 }
 
-require_once __DIR__ . "/../../classes/User.php";
-require_once __DIR__ . "/../../classes/Property.php";
+require_once BASE_PATH . '/classes/User.php';
+require_once BASE_PATH . '/classes/Property.php';
 
 $userObj = new User();
 $propertyObj = new Property();
@@ -42,7 +43,9 @@ $status_badge_class = $landlord_status === 'Active' ? 'badge-active' : 'badge-in
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Landlord Details | Hestia Admin</title>
-
+    <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+    <link rel="icon" type="image/png" href="../../favicon.png">
+    <link rel="shortcut icon" href="../../favicon.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -106,12 +109,12 @@ $status_badge_class = $landlord_status === 'Active' ? 'badge-active' : 'badge-in
     </style>
 </head>
 <body>
-    <?php include __DIR__ . "/../partials/navbar.php"; ?>
+    <?php include BASE_PATH . '/admin/partials/navbar.php'; ?>
 
     <main class="admin-page">
         <div class="container">
             <div class="admin-shell">
-                <?php include __DIR__ . "/../partials/sidebar.php"; ?>
+                <?php include BASE_PATH . '/admin/partials/sidebar.php'; ?>
 
                 <div class="admin-content">
                     <div class="text-start mb-4">

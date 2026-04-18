@@ -1,7 +1,8 @@
 <?php
+require dirname(__DIR__) . '/config/app.php';
 session_start();
-require_once __DIR__ . '/../userguard.php';
-require_once __DIR__ . '/../classes/User.php';
+require_once BASE_PATH . '/userguard.php';
+require_once BASE_PATH . '/classes/User.php';
 
 $userObj = new User();
 $user_id = $_SESSION['user_id'] ?? 0;
@@ -24,6 +25,9 @@ $is_tenant_profile = ($_SESSION['user_role'] ?? '') === 'tenant';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Update Profile | Hestia</title>
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="shortcut icon" href="../favicon.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -33,11 +37,11 @@ $is_tenant_profile = ($_SESSION['user_role'] ?? '') === 'tenant';
     <link rel="stylesheet" href="../assets/global.css">
 </head>
 <body class="<?= $is_tenant_profile ? 'tenant-dashboard-page tenant-profile-editor-page' : '' ?>">
-    <?php include __DIR__ . '/../partials/nav.php'; ?>
+    <?php include BASE_PATH . '/partials/nav.php'; ?>
 
     <main class="profile-editor-page">
         <div class="container">
-            <?php include __DIR__ . '/../partials/messages.php'; ?>
+            <?php include BASE_PATH . '/partials/messages.php'; ?>
 
             <div class="profile-editor-shell">
                 <section class="profile-intro-card">
@@ -111,6 +115,6 @@ $is_tenant_profile = ($_SESSION['user_role'] ?? '') === 'tenant';
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <?php include __DIR__ . '/../partials/hestia-easter-scripts.php'; ?>
+    <?php include BASE_PATH . '/partials/hestia-easter-scripts.php'; ?>
 </body>
 </html>

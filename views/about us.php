@@ -1,9 +1,15 @@
+<?php
+require dirname(__DIR__) . '/config/app.php';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About Us - HESTIA Property Rentals</title>
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="shortcut icon" href="../favicon.ico">
     <!-- Bootstrap CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -12,7 +18,7 @@
 </head>
 <body>
     <!-- Navigation -->
-    <?php include __DIR__ . '/../partials/nav.php'; ?>
+    <?php include BASE_PATH . '/partials/nav.php'; ?>
 
     <!-- Hero Section -->
     <section class="hero-section">
@@ -35,7 +41,11 @@
                         <p>With over <span class="intro-highlight">10,000+ verified properties</span> and <span class="intro-highlight">50,000+ satisfied customers</span>, HESTIA has become the go-to platform for property rentals in Nigeria.</p>
                     </div>
                     <div class="col-lg-6 logo-gradient">
-                        <img src="image/ChatGPT Image Feb 4, 2026, 10_33_10 PM.png" alt="Premium Properties" class="img-fluid rounded-4" style="box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);">
+                        <picture>
+                            <source srcset="image/optimized/ChatGPT Image Feb 4, 2026, 10_33_10 PM.webp" type="image/webp">
+                            <source srcset="image/optimized/ChatGPT Image Feb 4, 2026, 10_33_10 PM.png" type="image/png">
+                            <img src="image/optimized/ChatGPT Image Feb 4, 2026, 10_33_10 PM.png" alt="Premium Properties" class="img-fluid rounded-4" style="box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);" loading="lazy" decoding="async">
+                        </picture>
                     </div>
                 </div>
             </section>
@@ -168,17 +178,29 @@
                 <div class="row g-4">
                     <div class="col-md-4">
                         <div class="gallery-img">
-                            <img src="image/4BED-MASSIONETTE-1B.png" alt="Cozy Maisonette - 4 Bedrooms" loading="lazy">
+                            <picture>
+                            <source srcset="../image/optimized/4BED-MASSIONETTE-1B.webp" type="image/webp">
+                            <source srcset="../image/optimized/4BED-MASSIONETTE-1B.png" type="image/png">
+                            <img src="../image/optimized/4BED-MASSIONETTE-1B.png" alt="Cozy Maisonette - 4 Bedrooms" loading="lazy" decoding="async">
+                        </picture>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="gallery-img">
-                            <img src="image/5-BED-DUPE-500MI.png" alt="Luxury Condo - Premium Living" loading="lazy">
+                            <picture>
+                            <source srcset="../image/optimized/5-BED-DUPE-500MI.webp" type="image/webp">
+                            <source srcset="../image/optimized/5-BED-DUPE-500MI.png" type="image/png">
+                            <img src="../image/optimized/5-BED-DUPE-500MI.png" alt="Luxury Condo - Premium Living" loading="lazy" decoding="async">
+                        </picture>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="gallery-img">
-                            <img src="image/NEW-5-850.png" alt="Charming Mansion - 5 Bedrooms" loading="lazy">
+                            <picture>
+                            <source srcset="../image/optimized/NEW-5-850.webp" type="image/webp">
+                            <source srcset="../image/optimized/NEW-5-850.png" type="image/png">
+                            <img src="../image/optimized/NEW-5-850.png" alt="Charming Mansion - 5 Bedrooms" loading="lazy" decoding="async">
+                        </picture>
                         </div>
                     </div>
                 </div>

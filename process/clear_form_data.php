@@ -1,4 +1,5 @@
 <?php
+require dirname(__DIR__) . '/config/app.php';
 session_start();
 
 // Clear form data from session

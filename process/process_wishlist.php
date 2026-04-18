@@ -1,6 +1,7 @@
 <?php
+require dirname(__DIR__) . '/config/app.php';
 session_start();
-require_once __DIR__ . '/../classes/Wishlist.php';
+require_once BASE_PATH . '/classes/Wishlist.php';
 
 if (!empty($_SESSION['is_admin']) && $_SESSION['is_admin'] === true) {
     $_SESSION['error'] = 'Administrators cannot save properties to the wishlist.';

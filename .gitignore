@@ -2,6 +2,10 @@
 /node_modules
 *.log
 *.zip
+*.zip
+*.rar
+*.7z
+*.tar.gz
 .env
 classes/config.php
 admin/classes/config.php

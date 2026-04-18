@@ -1,6 +1,7 @@
 <?php
+require dirname(__DIR__) . '/config/app.php';
 session_start();
-require_once __DIR__ . '/../classes/User.php';
+require_once BASE_PATH . '/classes/User.php';
 
 $user = new User();
 

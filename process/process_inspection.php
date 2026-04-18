@@ -1,9 +1,10 @@
 <?php
+require dirname(__DIR__) . '/config/app.php';
 session_start();
-require_once __DIR__ . '/../classes/Inspection.php';
-require_once __DIR__ . '/../classes/Common.php';
+require_once BASE_PATH . '/classes/Inspection.php';
+require_once BASE_PATH . '/classes/Common.php';
 //require userguard
-require_once __DIR__ . '/../userguard.php';
+require_once BASE_PATH . '/userguard.php';
 
 $insp = new Inspection();
 

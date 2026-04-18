@@ -1,4 +1,5 @@
 <?php
+require dirname(__DIR__) . '/config/app.php';
 session_start();
 require_once '../classes/Property.php';
 require_once '../classes/User.php';
@@ -84,6 +85,9 @@ unset($_SESSION['success'], $_SESSION['feedback'], $_SESSION['error']);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($details['title']); ?> - HESTIA</title>
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="shortcut icon" href="../favicon.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="../assets/property-details.css">
@@ -120,14 +124,22 @@ unset($_SESSION['success'], $_SESSION['feedback'], $_SESSION['error']);
             <div class="col-lg-8">
                 <!-- Main Image -->
                 <?php $main_img = (!empty($images)) ? $images[0]['image_path'] : 'default.png'; ?>
-                <img src="../upload/properties/<?php echo $main_img; ?>" alt="Property Main Image" class="property-image mb-4 w-100 rounded-3 shadow-sm" style="height: 450px; object-fit: cover;" loading="eager" fetchpriority="high" decoding="async">
+                <picture>
+                            <source srcset="../upload/properties/optimized/<?php echo pathinfo($main_img, PATHINFO_FILENAME); ?>.webp" type="image/webp">
+                            <source srcset="../upload/properties/<?php echo $main_img; ?>" type="<?php echo pathinfo($main_img, PATHINFO_EXTENSION) === 'png' ? 'image/png' : 'image/jpeg'; ?>">
+                            <img src="../upload/properties/<?php echo $main_img; ?>" alt="Property Main Image" class="property-image mb-4 w-100 rounded-3 shadow-sm" style="height: 450px; object-fit: cover;" loading="eager" fetchpriority="high" decoding="async">
+                        </picture>
 
                 <!-- Dynamic Gallery -->
                 <div class="gallery row g-2 g-md-3">
                     <?php foreach($images as $key => $img){ if($key == 0) continue;?>
                     <div class="col-6 col-md-4">
                         <div class="gallery-item">
-                            <img src="../upload/properties/<?php echo $img['image_path']; ?>" class="img-fluid rounded-2" style="height: 150px; width: 100%; object-fit: cover;" loading="lazy" decoding="async">
+                            <picture>
+                                <source srcset="../upload/properties/optimized/<?php echo pathinfo($img['image_path'], PATHINFO_FILENAME); ?>.webp" type="image/webp">
+                                <source srcset="../upload/properties/<?php echo $img['image_path']; ?>" type="<?php echo pathinfo($img['image_path'], PATHINFO_EXTENSION) === 'png' ? 'image/png' : 'image/jpeg'; ?>">
+                                <img src="../upload/properties/<?php echo $img['image_path']; ?>" class="img-fluid rounded-2" style="height: 150px; width: 100%; object-fit: cover;" loading="lazy" decoding="async">
+                            </picture>
                         </div>
                     </div>
                     <?php } ?>
