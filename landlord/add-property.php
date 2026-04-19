@@ -23,9 +23,8 @@ $saved_amenities = isset($saved_data['amenities']) && is_array($saved_data['amen
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Property | HESTIA</title>
-    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
-    <link rel="icon" type="image/png" href="../favicon.png">
-    <link rel="shortcut icon" href="../favicon.ico">
+    <link rel="icon" type="image/png" href="https://i.ibb.co/ccncV96R/Hestia-favicon.png">
+    <link rel="shortcut icon" href="https://i.ibb.co/ccncV96R/Hestia-favicon.png">
     <!-- Bootstrap CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
